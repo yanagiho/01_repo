@@ -1,16 +1,8 @@
-
-# mac
-.DS_Store
-
-# node
 node_modules/
-MangaCatch/node_modules/
-
-# build outputs
 dist/
 dist-electron/
-MangaCatch/dist/
-MangaCatch/dist-electron/
-
-# trash
-_trash_MC/
+.DS_Store
+*.log
+.env*
+_trash_*/
+_trash*/
