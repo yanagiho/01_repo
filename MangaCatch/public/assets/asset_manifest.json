@@ -1,0 +1,103 @@
+{
+  "generatedAt": "2026-01-28T09:24:20.997Z",
+  "mode": "copy",
+  "covers": [
+    {
+      "id": "cover_001",
+      "file": "assets/covers/cover_001.png",
+      "src": "書影_PNG_20260116/書影_1-粉雪ポルカ.png"
+    },
+    {
+      "id": "cover_002",
+      "file": "assets/covers/cover_002.png",
+      "src": "書影_PNG_20260116/書影_2-銀曜日のおとぎばなし書影.png"
+    },
+    {
+      "id": "cover_003",
+      "file": "assets/covers/cover_003.png",
+      "src": "書影_PNG_20260116/書影_3-金のアレクサンドラ書影.png"
+    },
+    {
+      "id": "cover_004",
+      "file": "assets/covers/cover_004.png",
+      "src": "書影_PNG_20260116/書影_4-炭に白蓮.png"
+    },
+    {
+      "id": "cover_005",
+      "file": "assets/covers/cover_005.png",
+      "src": "書影_PNG_20260116/書影_5-冴羽リョウと槇村香仮書影.png"
+    },
+    {
+      "id": "cover_006",
+      "file": "assets/covers/cover_006.png",
+      "src": "書影_PNG_20260116/書影_6-バンビ～ノ書影.png"
+    },
+    {
+      "id": "cover_007",
+      "file": "assets/covers/cover_007.png",
+      "src": "書影_PNG_20260116/書影_7-ryota書影.png"
+    },
+    {
+      "id": "cover_008",
+      "file": "assets/covers/cover_008.png",
+      "src": "書影_PNG_20260116/書影_8-gataro書影.png"
+    },
+    {
+      "id": "cover_009",
+      "file": "assets/covers/cover_009.png",
+      "src": "書影_PNG_20260116/書影_9-南郷勇一と賢二.png"
+    },
+    {
+      "id": "cover_010",
+      "file": "assets/covers/cover_010.png",
+      "src": "書影_PNG_20260116/書影_10-高峰ルリ.png"
+    }
+  ],
+  "characters": [
+    {
+      "id": "chara_001",
+      "file": "assets/characters/chara_001.png",
+      "src": "切り抜き_キャラクター_PNG_20260116/切り抜き_1-粉雪ポルカ.png"
+    },
+    {
+      "id": "chara_002",
+      "file": "assets/characters/chara_002.png",
+      "src": "切り抜き_キャラクター_PNG_20260116/切り抜き_2-銀曜日のおとぎばなし.png"
+    },
+    {
+      "id": "chara_003",
+      "file": "assets/characters/chara_003.png",
+      "src": "切り抜き_キャラクター_PNG_20260116/切り抜き_3-金のアレクサンドラ.png"
+    },
+    {
+      "id": "chara_004",
+      "file": "assets/characters/chara_004.png",
+      "src": "切り抜き_キャラクター_PNG_20260116/切り抜き_4-炭に白蓮_白蓮.png"
+    },
+    {
+      "id": "chara_005",
+      "file": "assets/characters/chara_005.png",
+      "src": "切り抜き_キャラクター_PNG_20260116/切り抜き_6-伴省吾.png"
+    },
+    {
+      "id": "chara_006",
+      "file": "assets/characters/chara_006.png",
+      "src": "切り抜き_キャラクター_PNG_20260116/切り抜き_7-Ryota.png"
+    },
+    {
+      "id": "chara_007",
+      "file": "assets/characters/chara_007.png",
+      "src": "切り抜き_キャラクター_PNG_20260116/切り抜き_8-gataro-low.png"
+    },
+    {
+      "id": "chara_008",
+      "file": "assets/characters/chara_008.png",
+      "src": "切り抜き_キャラクター_PNG_20260116/切り抜き_9-南郷勇一と賢二.png"
+    },
+    {
+      "id": "chara_009",
+      "file": "assets/characters/chara_009.png",
+      "src": "切り抜き_キャラクター_PNG_20260116/切り抜き_10-高峰ルリ.png"
+    }
+  ]
+}

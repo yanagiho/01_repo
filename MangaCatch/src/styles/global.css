@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Outfit:wght@500;700&display=swap');
+
+:root {
+    --color-bg: #0f0f13;
+    --color-primary: #3b82f6;
+    --color-accent: #f43f5e;
+    --color-text: #f3f4f6;
+    --color-glass: rgba(255, 255, 255, 0.05);
+
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'Inter', sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    overflow: hidden;
+    user-select: none;
+    cursor: none;
+    /* Hide cursor for kiosk */
+}
+
+#root {
+    width: 100vw;
+    height: 100vh;
+}

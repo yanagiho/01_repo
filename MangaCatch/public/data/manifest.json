@@ -1,0 +1,158 @@
+{
+  "manifest_version": "1.1",
+  "game_id": "mangacatch",
+  "updated_at": "2026-01-27",
+  "paths": {
+    "characters_dir": "assets/characters/",
+    "books_dir": "assets/books/"
+  },
+  "fallback": {
+    "character_placeholder": "assets/characters/placeholder.png",
+    "book_placeholder": "assets/books/placeholder.png"
+  },
+  "artists": [
+    {
+      "artist_id": "mutsu_ako",
+      "name_ja": "陸奥A子",
+      "name_en": "MUTSU Ako"
+    },
+    {
+      "artist_id": "hagiiwa_mutsumi",
+      "name_ja": "萩岩睦美",
+      "name_en": "HAGIIWA Mutsumi"
+    },
+    {
+      "artist_id": "fumizuki_kyoko",
+      "name_ja": "文月今日子",
+      "name_en": "FUMIZUKI Kyoko"
+    },
+    {
+      "artist_id": "yamada_keiko",
+      "name_ja": "山田圭子",
+      "name_en": "YAMADA Keiko"
+    },
+    {
+      "artist_id": "hojo_tsukasa",
+      "name_ja": "北条司",
+      "name_en": "HOJO Tsukasa"
+    },
+    {
+      "artist_id": "sekiya_tetsuji",
+      "name_ja": "せきやてつじ",
+      "name_en": "SEKIYA Tetsuji"
+    },
+    {
+      "artist_id": "hatanakta_jun",
+      "name_ja": "畑中純",
+      "name_en": "HATANAKTA Jun"
+    },
+    {
+      "artist_id": "sekiya_hisashi",
+      "name_ja": "関谷ひさし",
+      "name_en": "SEKIYA Hisashi"
+    }
+  ],
+  "types": [
+    {
+      "type_id": "type01",
+      "display_name": "七本樫夕芽",
+      "artist_id": "mutsu_ako",
+      "character_filename": "type01.png",
+      "book_filename": "type01.png",
+      "rarity_tier": "common",
+      "rarity_point": 1,
+      "weight": 10,
+      "score": 100,
+      "work_title": "粉雪ポルカ",
+      "work_author_name": "陸奥A子",
+      "recommend_text": "（仮）推薦文（後で差し替え）",
+      "character_name_en": "NANAHONGASHI Yume",
+      "work_title_en": "Konayuki Polka",
+      "author_name_en": "MUTSU Ako",
+      "data_status": "本データ"
+    },
+    {
+      "type_id": "type02",
+      "display_name": "ポー",
+      "artist_id": "hagiiwa_mutsumi",
+      "character_filename": "type02.png",
+      "book_filename": "type02.png",
+      "rarity_tier": "common",
+      "rarity_point": 1,
+      "weight": 10,
+      "score": 100,
+      "work_title": "銀曜日のおとぎばなし",
+      "work_author_name": "萩岩睦美",
+      "recommend_text": "（仮）推薦文（後で差し替え）",
+      "character_name_en": "Poe",
+      "work_title_en": "Ginyoubi no Otogibanashi",
+      "author_name_en": "HAGIIWA Mutsumi",
+      "data_status": "本データ"
+    },
+    {
+      "type_id": "type03",
+      "display_name": "アレクサンドラ",
+      "artist_id": "fumizuki_kyoko",
+      "character_filename": "type03.png",
+      "book_filename": "type03.png",
+      "rarity_tier": "common",
+      "rarity_point": 1,
+      "weight": 10,
+      "score": 100,
+      "work_title": "金のアレクサンドラ",
+      "work_author_name": "文月今日子",
+      "recommend_text": "（仮）推薦文（後で差し替え）",
+      "character_name_en": "Alexandra",
+      "work_title_en": "Golden Alexandra",
+      "author_name_en": "FUMIZUKI Kyoko",
+      "data_status": "本データ"
+    },
+    {
+      "type_id": "type04",
+      "display_name": "白蓮",
+      "artist_id": "yamada_keiko",
+      "character_filename": "type04.png",
+      "book_filename": "type04.png",
+      "rarity_tier": "common",
+      "rarity_point": 1,
+      "weight": 10,
+      "score": 100,
+      "work_title": "炭に白蓮",
+      "work_author_name": "山田圭子",
+      "recommend_text": "（仮）推薦文（後で差し替え）",
+      "character_name_en": "Byakuren",
+      "work_title_en": "Sumi ni Byakuren",
+      "author_name_en": "YAMADA Keiko",
+      "data_status": "本データ"
+    },
+    {
+      "type_id": "type05",
+      "display_name": "冴羽獠＆槇村香",
+      "artist_id": "hojo_tsukasa",
+      "character_filename": "placeholder.png",
+      "book_filename": "type05.png",
+      "rarity_tier": "common",
+      "rarity_point": 1,
+      "weight": 10,
+      "score": 100,
+      "work_title": "シティーハンター",
+      "work_author_name": "北条司",
+      "recommend_text": "（仮）推薦文（後で差し替え）",
+      "character_name_en": "SAEBA Ryo & MAKIMURA Kaori",
+      "work_title_en": "City Hunter",
+      "author_name_en": "HOJO Tsukasa",
+      "data_status": "仮データ"
+    },
+    {
+      "type_id": "type06",
+      "display_name": "伴省吾",
+      "artist_id": "sekiya_tetsuji",
+      "character_filename": "type06.png",
+      "book_filename": "type06.png",
+      "rarity_tier": "rare",
+      "rarity_point": 3,
+      "weight": 6,
+      "score": 150,
+      "work_title": "バンビ～ノ！",
+      "work_author_name": "せきやてつじ",
+      "recommend_text": "（仮）推_
