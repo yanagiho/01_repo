@@ -1,0 +1,370 @@
+spec:
+  id: mangacatch
+  version: "1.3"
+  title: "マンガキャッチ"
+  purpose: "ミュージアム常設・大型ディスプレイ向け非接触ミニゲーム（タッチレスラクティブ）"
+  deliverable:
+    dev_machine: "macOS（開発）"
+    delivery_target: "Windows 11（納品・稼働）"
+
+platform:
+  os: "Windows 11"
+  display:
+    resolution: [1920, 1080]
+    refresh_hz: 60
+    connection: "HDMI"
+    scaling_policy: "FHD固定（内部スケール不要）"
+  kiosk:
+    fullscreen: true
+    auto_return_to_title: true
+    auto_return_seconds_default: 20
+    note: "無人稼働を前提。例外発生時も停止しないことを最優先"
+  staff_menu:
+    required: true
+    functions:
+      - STOP_TO_TITLE
+      - VOLUME_SLIDER_MASTER
+    open_method:
+      type: "secret_hotkey"
+      default: "Ctrl+Alt+M"
+      close: "Esc"
+    note: "スタッフ終了手段は既存仕様に準拠（必要に応じてキーは差替え可）"
+
+audio:
+  bgm: true
+  se: true
+  volume:
+    master_slider: true
+    initial_percent_default: 60
+    note: "館内環境に合わせて現地調整。スタッフメニューで変更可能"
+
+camera:
+  in_app_capture: false
+  upload: false
+  storage: false
+  note: "撮影タイム画面を表示し、来館者がスマホで撮影する運用"
+
+input:
+  sensor: "タッチレスラクティブ"
+  middleware: "TouchDesigner + HokuyoUtil"
+  strategy:
+    goal: "A. より安定（参加順ロック）"
+    approach:
+      - "HokuyoUtilの追跡・平滑化を使用"
+      - "TouchDesigner側で参加順ロックし、最大3人にID(=リングID)を確定"
+      - "ゲーム側は固定長payloadをパースしてリングへ反映（追跡はしない）"
+
+  td_to_game:
+    transport: "OSC/UDP"
+    host: "127.0.0.1"
+    port: 7000
+    address: "/mangacatch/players"
+    coordinate_system:
+      type: "normalized"
+      origin: "top-left"
+      x_range: [0.0, 1.0]   # left -> right
+      y_range: [0.0, 1.0]   # top -> bottom
+      clamp_out_of_range: true
+      to_screen_px:
+        screen_w: 1920
+        screen_h: 1080
+        formula:
+          screen_x: "x * 1920"
+          screen_y: "y * 1080"
+    payload:
+      type: "float_array_fixed_length"
+      length: 10
+      layout: [frame, x1, y1, id1, x2, y2, id2, x3, y3, id3]
+      semantics:
+        frame: "経過フレーム（ログ用途）"
+        x: "正規化X(0..1)"
+        y: "正規化Y(0..1)"
+        id: "リングID（1..3）"
+      empty_slot:
+        x: -1
+        y: -1
+        id: 0
+
+  hokuyoutil_reference:
+    raw_output:
+      address: "/touches"
+      note: "HokuyoUtil生出力はTD内で処理し、ゲームには /mangacatch/players に整形して送信する（衝突防止）"
+    parameters_initial:
+      smoothing: 0.20
+      birth_frames: 2
+      keep_alive_frames: 5
+      tracking_distance: 0.08
+      merge_distance: 0.10
+    onsite_tuning_allowed: true
+    tuning_targets: ["smoothing", "birth_frames", "keep_alive_frames", "tracking_distance", "merge_distance"]
+
+players:
+  max_players: 3
+  rings:
+    max_rings: 3
+    ring_ids: [1, 2, 3]
+    join_mid_game: true
+
+  assignment_rule:
+    mode: "participation_order_lock"
+    description: "最初に検出された3人をRing1..3に割当、原則固定。空きが出たら次の人を参加順で割当。"
+    join_condition:
+      consecutive_frames_required: 2
+    leave_condition:
+      no_detection_seconds: 1.5
+    overflow_behavior: "ignore_newcomer_until_slot_free"
+
+  ring_ui:
+    distinguish_method: "number_label"
+    show_individual_scores_in_play: true
+
+gameplay:
+  session:
+    time_limit_sec_default: 30
+    adjustable: true
+
+  scenes_flow:
+    - TITLE
+    - TUTORIAL_VIDEO
+    - COUNTDOWN
+    - PLAY
+    - RESULT
+    - RECOMMEND
+    - PHOTO_TIME
+    - DAILY_RANKING
+    - TITLE
+
+  play_rules:
+    concept: "落下するキャラをリングで囲い、画面下部の選択範囲に入った瞬間にGET"
+    ring_control:
+      use_axis:
+        x: true
+        y: false
+      note: "yは受信するがv1では未使用（将来拡張用・ログ用）"
+
+    selection_zone:
+      visible: false
+      position: "bottom"
+      height_px_default: 240
+      adjustable: true
+
+    capture_condition:
+      - "character_center_in_selection_zone == true"
+      - "character_center_within_ring_radius == true"
+
+    multi_ring_collision:
+      mode: "nearest_ring_wins"
+      description: "同一キャラに複数リングが同時ヒットした場合、キャラ中心に最も近いリングへ帰属し1回のみGET"
+
+    spawn_and_motion_defaults:
+      spawn_interval_sec: 0.60
+      fall_speed_px_per_sec: 600
+      horizontal_wobble: "sine + mild_noise"
+      adjustable: true
+
+  scoring:
+    per_player_score: true
+    per_player_breakdown_in_result: true
+    total_score:
+      used_for_ranking: true
+      display_in_play: true
+
+  rarity:
+    tiers:
+      common: { tier: 1, rarity_point: 1 }
+      rare: { tier: 2, rarity_point: 3 }
+      super_rare: { tier: 3, rarity_point: 6 }
+
+    type_defaults:
+      - type_id: "type01"
+        tier: "common"
+        weight: 10
+        score: 100
+      - type_id: "type02"
+        tier: "common"
+        weight: 10
+        score: 100
+      - type_id: "type03"
+        tier: "common"
+        weight: 10
+        score: 100
+      - type_id: "type04"
+        tier: "common"
+        weight: 10
+        score: 100
+      - type_id: "type05"
+        tier: "common"
+        weight: 10
+        score: 100
+      - type_id: "type06"
+        tier: "rare"
+        weight: 6
+        score: 150
+      - type_id: "type07"
+        tier: "rare"
+        weight: 6
+        score: 150
+      - type_id: "type08"
+        tier: "rare"
+        weight: 6
+        score: 150
+      - type_id: "type09"
+        tier: "super_rare"
+        weight: 3
+        score: 250
+      - type_id: "type10"
+        tier: "super_rare"
+        weight: 3
+        score: 250
+
+    rarity_sum_definition:
+      description: "取得した画像ごとに rarity_point を加算した合計"
+      used_for_ranking_tiebreak: true
+
+ranking:
+  daily_only: true
+  storage: "local"
+  top_n: 30
+  show_dummy_on_boot: true
+  participant_count_record: false
+
+  entry:
+    score: "total_score"
+    rarity_sum: "rarity_sum"
+    achieved_at: "timestamp"
+
+  sort_order:
+    - key: "total_score"
+      order: "desc"
+    - key: "rarity_sum"
+      order: "desc"   # 取得レア合計が高い順
+    - key: "achieved_at"
+      order: "asc"    # 達成時刻が早い順
+
+content:
+  image_types:
+    count: 10
+    ids: ["type01","type02","type03","type04","type05","type06","type07","type08","type09","type10"]
+  artists:
+    count: 8
+    note: "2名が2種類担当、残り6名が各1種類担当"
+  recommendation_text:
+    status: "temporary"
+    rule: "推薦文言は仮実装。表示文言に『（仮）』を含める。"
+
+assets:
+  manifest:
+    required: true
+    format_preferred: "JSON"
+    location_default: "data/manifest.json"
+    required_fields:
+      - type_id
+      - character_filename
+      - book_filename
+      - artist_id
+      - display_name
+      - score
+      - rarity_tier
+      - rarity_point
+      - weight
+      - work_title
+      - work_author_name
+      - recommend_text
+
+  character_cutout:
+    format: "PNG"
+    alpha: true
+    color_profile: "sRGB"
+    recommended_size_px: [1000, 1000]
+    runtime_handling:
+      allow_var_size: true
+      load_scale_max_edge_px: 1024
+
+  book_cover:
+    format: "PNG"
+    alpha_required: false
+    aspect_ratio: "free"
+    ui_fit: "contain"
+
+  naming_convention_final:
+    characters: "assets/characters/type01.png .. type10.png"
+    books: "assets/books/type01.png .. type10.png"
+    note: "現状のファイル名ゆれはmanifestで吸収。最終的にリネームして統一する。"
+
+  fallback:
+    missing_asset_fallback:
+      enabled: true
+      placeholder_character: "assets/characters/placeholder.png"
+      placeholder_book: "assets/books/placeholder.png"
+
+ui:
+  play_screen:
+    show_total_score: true
+    show_individual_scores: true
+    ring_labels: true
+
+  result_screen:
+    show_total_score: true
+    show_individual_scores: true
+    show_individual_breakdown:
+      by_type: true
+      fields: ["count", "score_sum", "rarity_sum"]
+
+  photo_time:
+    show_frame: true
+    show_score: true
+    show_datetime: true
+    note: "アプリ側は撮影しない。画面を撮ってもらう。"
+
+config:
+  external_config_file: true
+  file_default: "data/config.json"
+  adjustable_params:
+    - time_limit_sec
+    - selection_zone_height_px
+    - ring_radius_px
+    - spawn_interval_sec
+    - fall_speed_px_per_sec
+    - weights_and_scores
+    - ranking_top_n
+    - osc_host
+    - osc_port
+    - kiosk_auto_return_seconds
+    - audio_initial_percent
+
+acceptance_tests:
+  - id: AT-01
+    name: "画面遷移が最後まで通る"
+    pass_criteria: "TITLE→…→DAILY_RANKING→TITLEに自動復帰できる"
+
+  - id: AT-02
+    name: "3リング途中参加（参加順ロック）"
+    pass_criteria: "プレイ中に最大3人参加でき、Ring1..3が参加順で固定。退出(未検出1.5秒)で枠が空き、次の人が参加できる。"
+
+  - id: AT-03
+    name: "OSC入力固定長パース"
+    pass_criteria: "/mangacatch/players の10floatを受信し、id=1..3の枠だけがリングに反映。空き枠(x=-1,y=-1,id=0)は非表示。"
+
+  - id: AT-04
+    name: "GET判定と多重ヒット"
+    pass_criteria: "リング内＋選択範囲内でGET。複数リング同時ヒット時は最も近いリングに1回だけ加点。"
+
+  - id: AT-05
+    name: "個別スコアと個別内訳リザルト"
+    pass_criteria: "プレイ中に個別スコア表示。リザルトでType別内訳（count/score_sum/rarity_sum）表示。"
+
+  - id: AT-06
+    name: "ランキング（当日Top30）"
+    pass_criteria: "total_score desc → rarity_sum desc → achieved_at asc で並ぶ。起動時ダミー表示。日付変更でリセット。"
+
+  - id: AT-07
+    name: "欠品アセット耐性"
+    pass_criteria: "不足画像があってもplaceholderで継続し、クラッシュしない。"
+
+  - id: AT-08
+    name: "スタッフメニュー"
+    pass_criteria: "スタッフメニューで停止（TITLEへ戻る）と音量変更ができる。"
+
+  - id: AT-09
+    name: "キオスク運用"
+    pass_criteria: "フルスクリーン固定。一定時間操作がない場合にTITLEへ復帰する。"

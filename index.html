@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MangaCatch - Milestone 1</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Game Canvas -->
+        <canvas id="game-canvas"></canvas>
+
+        <!-- UI Layers -->
+        
+        <!-- HUD (Score & Timer) -->
+        <div id="hud" class="ui-layer hidden">
+            <div class="score-display">SCORE: <span id="score-display">0</span></div>
+            <div class="timer-display" id="timer-display">30</div>
+        </div>
+
+        <!-- Title Screen -->
+        <div id="screen-title" class="ui-layer">
+            <h1>MANGA CATCH</h1>
+            <button id="btn-start" class="btn">START GAME</button>
+            <p style="margin-top: 20px; color: #666;">Milestone 1: Mouse Control ver.</p>
+        </div>
+
+        <!-- Tutorial Screen -->
+        <div id="screen-tutorial" class="ui-layer hidden">
+            <h1>HOW TO PLAY</h1>
+            <p style="font-size: 1.5rem; margin-bottom: 2rem;">Move the Ring to the Bottom Zone!</p>
+            <div style="font-size: 5rem;">⬇️</div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="screen-result" class="ui-layer hidden">
+            <h1>RESULT</h1>
+            <table class="result-table">
+                <thead>
+                    <tr>
+                        <th>ITEM</th>
+                        <th>COUNT</th>
+                        <th>SCORE</th>
+                        <th>RARITY SUM</th>
+                    </tr>
+                </thead>
+                <tbody id="result-table-body">
+                    <!-- JS Injected -->
+                </tbody>
+            </table>
+            <button id="btn-ranking-next" class="btn">NEXT (RANKING)</button>
+        </div>
+
+        <!-- Ranking Screen -->
+        <div id="screen-ranking" class="ui-layer hidden">
+            <h1>DAILY RANKING</h1>
+            <table class="result-table">
+                <thead>
+                    <tr>
+                        <th>RANK</th>
+                        <th>SCORE</th>
+                        <th>RARITY</th>
+                        <th>TIME</th>
+                    </tr>
+                </thead>
+                <tbody id="ranking-table-body">
+                    <!-- JS Injected -->
+                </tbody>
+            </table>
+            <button id="btn-title" class="btn">TITLE</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
