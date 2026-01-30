@@ -6,3 +6,4 @@ dist-electron/
 .env*
 _trash_*/
 _trash*/
+*.bundle
