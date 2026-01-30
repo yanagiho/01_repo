@@ -3,26 +3,32 @@ name: Build Windows
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build-win:
     runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+    defaults:
+      run:
+        working-directory: MangaCatch
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: 20
+          cache: npm
+          cache-dependency-path: MangaCatch/package-lock.json
 
       - name: Install deps
         run: npm ci
-        working-directory: MangaCatch
 
       - name: Build (electron-builder)
         run: npm run build
-        working-directory: MangaCatch
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -32,3 +38,4 @@ jobs:
             MangaCatch/dist/**
             MangaCatch/release/**
             MangaCatch/out/**
+          if-no-files-found: warn
