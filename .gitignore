@@ -7,3 +7,17 @@ dist-electron/
 _trash_*/
 _trash*/
 *.bundle
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Node/Vite/Electron
+node_modules/
+dist/
+dist-electron/
+build/
+*.zip
+*.bundle
+.env
+.env.*
