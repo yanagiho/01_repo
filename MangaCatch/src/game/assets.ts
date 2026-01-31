@@ -1,94 +1,92 @@
-cat > src/game/assets.ts <<'EOF'
-export type AssetManifest = {
-  covers: string[];
-  characters: string[];
-  raw: any;
+// src/game/assets.ts
+
+export type AssetEntry = {
+  id: string;
+  file: string; // absolute URL string
 };
 
-function normalizeList(v: any): string[] {
-  if (!v) return [];
-  if (Array.isArray(v)) {
-    return v
-      .map((x) => {
-        if (typeof x === "string") return x;
-        if (x && typeof x === "object")
-          return x.path ?? x.file ?? x.src ?? x.url ?? "";
-        return "";
-      })
-      .filter(Boolean);
-  }
-  if (typeof v === "object") {
-    return Object.values(v)
-      .map((x: any) => {
-        if (typeof x === "string") return x;
-        if (x && typeof x === "object")
-          return x.path ?? x.file ?? x.src ?? x.url ?? "";
-        return "";
-      })
-      .filter(Boolean);
-  }
+export type AssetManifest = {
+  covers: AssetEntry[];
+  characters: AssetEntry[];
+};
+
+function toId(pathFromManifest: string): string {
+  const base = (pathFromManifest.split("/").pop() ?? pathFromManifest).trim();
+  return base.replace(/\.[^.]+$/, "");
+}
+
+/**
+ * "covers/xxx.png" or "characters/yyy.png" or "assets/covers/xxx.png" など
+ * いろいろ来ても最終的に「絶対URL」に揃える
+ */
+function toAbsoluteUrl(pathFromManifest: string): string {
+  const raw = (pathFromManifest ?? "").trim();
+  if (!raw) return "";
+
+  // 先頭の "/" は file:// で事故るので消す
+  const noLeadSlash = raw.replace(/^\/+/, "");
+
+  // assets/ が無ければ付ける
+  const rel = noLeadSlash.startsWith("assets/") ? noLeadSlash : `assets/${noLeadSlash}`;
+
+  // 現在URL基準の絶対URLにする（devでもbuildでも動きやすい）
+  return new URL(rel, window.location.href).toString();
+}
+
+function normalizeStringList(input: unknown): string[] {
+  if (Array.isArray(input)) return input.filter((v): v is string => typeof v === "string");
   return [];
 }
 
-function toAbsoluteUrl(maybeRelativePath: string): string {
-  // expected examples:
-  // - "assets/covers/cover_001.png"
-  // - "/assets/covers/cover_001.png"
-  // - "covers/cover_001.png" (we'll prefix "assets/")
-  const p = (maybeRelativePath || "").trim();
-  if (!p) return "";
+function makeEntries(kind: "covers" | "characters", input: unknown): AssetEntry[] {
+  const list = normalizeStringList(input);
+  const prefix = kind === "covers" ? "covers/" : "characters/";
 
-  const cleaned = p.startsWith("/") ? p.slice(1) : p;
-  const withAssetsPrefix =
-    cleaned.startsWith("assets/") ? cleaned : `assets/${cleaned}`;
-
-  return new URL(withAssetsPrefix, window.location.href).toString();
+  return list.map((p) => {
+    const p2 = p.startsWith(prefix) ? p : `${prefix}${p}`;
+    return { id: toId(p2), file: toAbsoluteUrl(p2) };
+  });
 }
 
+/**
+ * public/assets/asset_manifest.json を読む
+ * 例:
+ * { "covers": ["a.png","b.png"], "characters": ["c.png"] }
+ * ※ covers/ や characters/ を付けてもOK
+ */
 export async function loadAssetManifest(): Promise<AssetManifest> {
-  // public/assets/asset_manifest.json を想定
-  const manifestUrl = new URL("./assets/asset_manifest.json", window.location.href).toString();
+  const url = new URL("assets/asset_manifest.json", window.location.href).toString();
 
-  const res = await fetch(manifestUrl, { cache: "no-store" });
-  if (!res.ok) {
-    throw new Error(`Failed to load manifest: ${res.status} ${res.statusText} (${manifestUrl})`);
+  try {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) {
+      console.warn(`[AssetLoader] manifest not found: ${url} (${res.status})`);
+      return { covers: [], characters: [] };
+    }
+    const raw = await res.json();
+
+    return {
+      covers: makeEntries("covers", (raw as any).covers),
+      characters: makeEntries("characters", (raw as any).characters),
+    };
+  } catch (e) {
+    console.warn("[AssetLoader] failed to load manifest:", e);
+    return { covers: [], characters: [] };
   }
-  const raw = await res.json();
-
-  // いろんな形のmanifestに耐える（syncスクリプトの出力差分吸収）
-  const covers =
-    normalizeList(raw.covers) ||
-    normalizeList(raw.cover) ||
-    normalizeList(raw.backgrounds) ||
-    [];
-  const characters =
-    normalizeList(raw.characters) ||
-    normalizeList(raw.character) ||
-    normalizeList(raw.chara) ||
-    [];
-
-  // covers/characters が相対パスっぽい場合も吸収
-  const normalizePath = (s: string) => {
-    const t = s.replace(/^\.?\//, "");
-    // "covers/xxx.png" の場合は "assets/covers/xxx.png" に寄せる
-    return t.startsWith("assets/") ? t : t;
-  };
-
-  return {
-    covers: covers.map(normalizePath),
-    characters: characters.map(normalizePath),
-    raw,
-  };
 }
 
+export const AssetLoader = {
+  loadManifest: loadAssetManifest,
+  getUrl: toAbsoluteUrl,
+};
+
+// 既存互換（他で使ってても壊れにくいように残す）
 export function coverUrl(pathFromManifest: string): string {
-  // manifestが "covers/xxx.png" なら assets/ を付ける
-  const p = pathFromManifest.startsWith("covers/") ? `assets/${pathFromManifest}` : pathFromManifest;
+  const p = pathFromManifest.startsWith("covers/") ? pathFromManifest : `covers/${pathFromManifest}`;
   return toAbsoluteUrl(p);
 }
 
 export function characterUrl(pathFromManifest: string): string {
-  const p = pathFromManifest.startsWith("characters/") ? `assets/${pathFromManifest}` : pathFromManifest;
+  const p = pathFromManifest.startsWith("characters/") ? pathFromManifest : `characters/${pathFromManifest}`;
   return toAbsoluteUrl(p);
 }
-EOF
