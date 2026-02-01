@@ -71,3 +71,31 @@ export default defineConfig([
   },
 ])
 ```
+
+## Verification - Game MVP
+
+1. **Start the App**:
+   ```bash
+   npm run dev
+   ```
+   Ensure the Electron window opens.
+
+2. **Navigate to Game**:
+   - Click "START GAME" -> "TUTORIAL" (Click) -> "GameScreen".
+
+3. **Controls**:
+   - **Spacebar** or **SHOOT button**: Fire a bullet (Yellow).
+   - **R key** or **Reset button**: Reset score and objects.
+
+4. **Gameplay**:
+   - Blue square = Player.
+   - Red circle = Target (Random position).
+   - Yellow circle = Bullet.
+   - Hit the target to increase Score (+1).
+
+5. **Debugging**:
+   - Open DevTools (Cmd+Option+I / Ctrl+Shift+I).
+   - Verify Console output:
+     - "GameCanvas mounted"
+     - "shoot" (on fire)
+     - "hit" (on collision)
