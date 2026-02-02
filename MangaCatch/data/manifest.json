@@ -1,0 +1,246 @@
+{
+  "game_title": "マンガキャッチ",
+  "version": "draft_v1.2",
+  "items": [
+    {
+      "type_id": "01",
+      "character_name_ja": "七本樫夕芽",
+      "work_title_ja": "粉雪ポルカ",
+      "artist_name_ja": "陸奥A子",
+      "character_name_en": "NANAHONGASHI Yume",
+      "work_title_en": "Konayuki Polka",
+      "artist_name_en": "MUTSU Ako",
+      "data_status": "本データ",
+      "assets": {
+        "cover": {
+          "canonical": "mc_01_cover.png",
+          "current": "書影_1-粉雪ポルカ.png",
+          "needs_replacement": false
+        },
+        "character": {
+          "canonical": "mc_01_character.png",
+          "current": "切り抜き_1-粉雪ポルカ.png",
+          "missing": false,
+          "needs_replacement": false
+        }
+      },
+      "notes": null
+    },
+    {
+      "type_id": "02",
+      "character_name_ja": "ポー",
+      "work_title_ja": "銀曜日のおとぎばなし",
+      "artist_name_ja": "萩岩睦美",
+      "character_name_en": "Poe",
+      "work_title_en": "Ginyoubi no Otogibanashi",
+      "artist_name_en": "HAGIIWA Mutsumi",
+      "data_status": "本データ",
+      "assets": {
+        "cover": {
+          "canonical": "mc_02_cover.png",
+          "current": "書影_2-銀曜日のおとぎばなし書影.png",
+          "needs_replacement": false
+        },
+        "character": {
+          "canonical": "mc_02_character.png",
+          "current": "切り抜き_2-銀曜日のおとぎばなし.png",
+          "missing": false,
+          "needs_replacement": false
+        }
+      },
+      "notes": null
+    },
+    {
+      "type_id": "03",
+      "character_name_ja": "アレクサンドラ",
+      "work_title_ja": "金のアレクサンドラ",
+      "artist_name_ja": "文月今日子",
+      "character_name_en": "Alexandra",
+      "work_title_en": "Golden Alexandra",
+      "artist_name_en": "FUMIZUKI Kyoko",
+      "data_status": "本データ",
+      "assets": {
+        "cover": {
+          "canonical": "mc_03_cover.png",
+          "current": "書影_3-金のアレクサンドラ書影.png",
+          "needs_replacement": false
+        },
+        "character": {
+          "canonical": "mc_03_character.png",
+          "current": "切り抜き_3-金のアレクサンドラ.png",
+          "missing": false,
+          "needs_replacement": false
+        }
+      },
+      "notes": null
+    },
+    {
+      "type_id": "04",
+      "character_name_ja": "白蓮",
+      "work_title_ja": "炭に白蓮",
+      "artist_name_ja": "山田圭子",
+      "character_name_en": "Byakuren",
+      "work_title_en": "Sumi ni Byakuren",
+      "artist_name_en": "YAMADA Keiko",
+      "data_status": "本データ",
+      "assets": {
+        "cover": {
+          "canonical": "mc_04_cover.png",
+          "current": "書影_4-炭に白蓮.png",
+          "needs_replacement": false
+        },
+        "character": {
+          "canonical": "mc_04_character.png",
+          "current": "切り抜き_4-炭に白蓮_白蓮.png",
+          "missing": false,
+          "needs_replacement": false
+        }
+      },
+      "notes": null
+    },
+    {
+      "type_id": "05",
+      "character_name_ja": "冴羽獠＆槇村香",
+      "work_title_ja": "シティーハンター",
+      "artist_name_ja": "北条司",
+      "character_name_en": "SAEBA Ryo & MAKIMURA Kaori",
+      "work_title_en": "City Hunter",
+      "artist_name_en": "HOJO Tsukasa",
+      "data_status": "仮データ",
+      "assets": {
+        "cover": {
+          "canonical": "mc_05_cover.png",
+          "current": "書影_5-冴羽リョウと槇村香仮書影.png",
+          "needs_replacement": true
+        },
+        "character": {
+          "canonical": "mc_05_character.png",
+          "current": null,
+          "missing": true,
+          "needs_replacement": true
+        }
+      },
+      "notes": "要差し替え"
+    },
+    {
+      "type_id": "06",
+      "character_name_ja": "伴省吾",
+      "work_title_ja": "バンビ～ノ！",
+      "artist_name_ja": "せきやてつじ",
+      "character_name_en": "BAN Shogo",
+      "work_title_en": "Bambino!",
+      "artist_name_en": "SEKIYA Tetsuji",
+      "data_status": "本データ",
+      "assets": {
+        "cover": {
+          "canonical": "mc_06_cover.png",
+          "current": "書影_6-バンビ～ノ書影.png",
+          "needs_replacement": false
+        },
+        "character": {
+          "canonical": "mc_06_character.png",
+          "current": "切り抜き_6-伴省吾.png",
+          "missing": false,
+          "needs_replacement": false
+        }
+      },
+      "notes": null
+    },
+    {
+      "type_id": "07",
+      "character_name_ja": "大月良太",
+      "work_title_ja": "まんだら屋の良太",
+      "artist_name_ja": "畑中純",
+      "character_name_en": "OTSUKI Ryota",
+      "work_title_en": "Mandaraya no Ryota",
+      "artist_name_en": "HATANAKTA Jun",
+      "data_status": "本データ",
+      "assets": {
+        "cover": {
+          "canonical": "mc_07_cover.png",
+          "current": "書影_7-ryota書影.png",
+          "needs_replacement": false
+        },
+        "character": {
+          "canonical": "mc_07_character.png",
+          "current": "切り抜き_7-Ryota.png",
+          "missing": false,
+          "needs_replacement": false
+        }
+      },
+      "notes": null
+    },
+    {
+      "type_id": "08",
+      "character_name_ja": "ガタロ",
+      "work_title_ja": "ガタロ",
+      "artist_name_ja": "畑中純",
+      "character_name_en": "Gataro",
+      "work_title_en": "Gataro",
+      "artist_name_en": "HATANAKTA Jun",
+      "data_status": "本データ",
+      "assets": {
+        "cover": {
+          "canonical": "mc_08_cover.png",
+          "current": "書影_8-gataro書影.png",
+          "needs_replacement": false
+        },
+        "character": {
+          "canonical": "mc_08_character.png",
+          "current": "切り抜き_8-gataro-low.png",
+          "missing": false,
+          "needs_replacement": false
+        }
+      },
+      "notes": null
+    },
+    {
+      "type_id": "09",
+      "character_name_ja": "南郷勇一と賢二",
+      "work_title_ja": "ストップ！にいちゃん",
+      "artist_name_ja": "関谷ひさし",
+      "character_name_en": "NANGOU Yuichi & Kenji",
+      "work_title_en": "STOP! Niichan",
+      "artist_name_en": "SEKIYA Hisashi",
+      "data_status": "本データ",
+      "assets": {
+        "cover": {
+          "canonical": "mc_09_cover.png",
+          "current": "書影_9-南郷勇一と賢二.png",
+          "needs_replacement": false
+        },
+        "character": {
+          "canonical": "mc_09_character.png",
+          "current": "切り抜き_9-南郷勇一と賢二.png",
+          "missing": false,
+          "needs_replacement": false
+        }
+      },
+      "notes": null
+    },
+    {
+      "type_id": "10",
+      "character_name_ja": "高峰ルリ",
+      "work_title_ja": "スーパーおじょうさん",
+      "artist_name_ja": "関谷ひさし",
+      "character_name_en": "TAKAMINE Ruri",
+      "work_title_en": "Super Ojosan",
+      "artist_name_en": "SEKIYA Hisashi",
+      "data_status": "本データ",
+      "assets": {
+        "cover": {
+          "canonical": "mc_10_cover.png",
+          "current": "書影_10-高峰ルリ.png",
+          "needs_replacement": false
+        },
+        "character": {
+          "canonical": "mc_10_character.png",
+          "current": "切り抜き_10-高峰ルリ.png",
+          "missing": false,
+          "needs_replacement": false
+        }
+      },
+      "notes": null
+    }
+  ]
+}
