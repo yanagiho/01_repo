@@ -1,6 +1,7 @@
-// electron/preload.ts
 import { contextBridge, ipcRenderer } from "electron";
 
-contextBridge.exposeInMainWorld("api", {
-  quit: () => ipcRenderer.invoke("app:quit"),
+contextBridge.exposeInMainWorld("electronAPI", {
+  onOscData: (callback: (data: number[]) => void) => {
+    ipcRenderer.on("osc-data", (_event, data) => callback(data));
+  },
 });

@@ -1,0 +1,10 @@
+{
+  "time_limit_sec": 30,
+  "selection_zone_height_px": 240,
+  "ring_radius_px": 150,
+  "spawn_interval_sec": 0.6,
+  "fall_speed_px_per_sec": 600,
+  "ranking_top_n": 30,
+  "osc_port": 7000,
+  "audio_initial_percent": 60
+}
