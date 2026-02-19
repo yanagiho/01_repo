@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && electron-builder",
+    "build:web": "tsc -b && vite build",
+    "dist": "npm run build:web && electron-builder",
+    "dist:mac": "npm run build:web && electron-builder --mac",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -16,6 +18,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@types/node": "^25.2.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
@@ -33,5 +36,24 @@
     "vite-plugin-electron": "^0.29.0",
     "vite-plugin-electron-renderer": "^0.14.6",
     "wait-on": "^9.0.3"
+  },
+  "build": {
+    "appId": "com.gade.mangacatch",
+    "productName": "MangaCatch",
+    "directories": {
+      "output": "release"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.games"
+    }
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron",
+      "esbuild"
+    ]
   }
 }

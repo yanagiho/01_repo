@@ -1,11 +1,11 @@
 ﻿type_id,No,キャラクター名,作品名,作家名,英キャラクター名,英作品名,英作家名,データ状況,cover_file_current,character_file_current,missing_character,cover_is_temp,status_note,cover_file_canonical,character_file_canonical
-01,1,七本樫夕芽,粉雪ポルカ,陸奥A子,NANAHONGASHI Yume,Konayuki Polka,MUTSU Ako,本データ,書影_1-粉雪ポルカ.png,切り抜き_1-粉雪ポルカ.png,False,False,,mc_01_cover.png,mc_01_character.png
-02,2,ポー,銀曜日のおとぎばなし,萩岩睦美,Poe,Ginyoubi no Otogibanashi,HAGIIWA Mutsumi,本データ,書影_2-銀曜日のおとぎばなし書影.png,切り抜き_2-銀曜日のおとぎばなし.png,False,False,,mc_02_cover.png,mc_02_character.png
-03,3,アレクサンドラ,金のアレクサンドラ,文月今日子,Alexandra,Golden Alexandra,FUMIZUKI Kyoko,本データ,書影_3-金のアレクサンドラ書影.png,切り抜き_3-金のアレクサンドラ.png,False,False,,mc_03_cover.png,mc_03_character.png
-04,4,白蓮,炭に白蓮,山田圭子,Byakuren,Sumi ni Byakuren,YAMADA Keiko,本データ,書影_4-炭に白蓮.png,切り抜き_4-炭に白蓮_白蓮.png,False,False,,mc_04_cover.png,mc_04_character.png
-05,5,冴羽獠＆槇村香,シティーハンター,北条司,SAEBA Ryo & MAKIMURA Kaori,City Hunter,HOJO Tsukasa,仮データ,書影_5-冴羽リョウと槇村香仮書影.png,,True,True,要差し替え,mc_05_cover.png,mc_05_character.png
-06,6,伴省吾,バンビ～ノ！,せきやてつじ,BAN Shogo,Bambino!,SEKIYA Tetsuji,本データ,書影_6-バンビ～ノ書影.png,切り抜き_6-伴省吾.png,False,False,,mc_06_cover.png,mc_06_character.png
-07,7,大月良太,まんだら屋の良太,畑中純,OTSUKI Ryota,Mandaraya no Ryota,HATANAKTA Jun,本データ,書影_7-ryota書影.png,切り抜き_7-Ryota.png,False,False,,mc_07_cover.png,mc_07_character.png
-08,8,ガタロ,ガタロ,畑中純,Gataro,Gataro,HATANAKTA Jun,本データ,書影_8-gataro書影.png,切り抜き_8-gataro-low.png,False,False,,mc_08_cover.png,mc_08_character.png
-09,9,南郷勇一と賢二,ストップ！にいちゃん,関谷ひさし,NANGOU Yuichi & Kenji,STOP! Niichan,SEKIYA Hisashi,本データ,書影_9-南郷勇一と賢二.png,切り抜き_9-南郷勇一と賢二.png,False,False,,mc_09_cover.png,mc_09_character.png
-10,10,高峰ルリ,スーパーおじょうさん,関谷ひさし,TAKAMINE Ruri,Super Ojosan,SEKIYA Hisashi,本データ,書影_10-高峰ルリ.png,切り抜き_10-高峰ルリ.png,False,False,,mc_10_cover.png,mc_10_character.png
+1,1,七本樫夕芽,粉雪ポルカ,陸奥A子 (MUTSU Ako),NANAHONGASHI Yume,Konayuki Polka,MUTSU Ako,本データ,書影_1-粉雪ポルカ.png,切り抜き_1-粉雪ポルカ.png,False,False,,mc_01_cover.png,mc_01_character.png
+2,2,ポー,銀曜日のおとぎばなし,萩岩睦美 (HAGIIWA Mutsumi),Poe,Ginyoubi no Otogibanashi,HAGIIWA Mutsumi,本データ,書影_2-銀曜日のおとぎばなし書影.png,切り抜き_2-銀曜日のおとぎばなし.png,False,False,,mc_02_cover.png,mc_02_character.png
+3,3,アレクサンドラ,金のアレクサンドラ,文月今日子 (FUMIZUKI Kyoko),Alexandra,Golden Alexandra,FUMIZUKI Kyoko,本データ,書影_3-金のアレクサンドラ書影.png,切り抜き_3-金のアレクサンドラ.png,False,False,,mc_03_cover.png,mc_03_character.png
+4,4,白蓮,炭に白蓮,山田圭子 (YAMADA Keiko),Byakuren,Sumi ni Byakuren,YAMADA Keiko,本データ,書影_4-炭に白蓮.png,切り抜き_4-炭に白蓮_白蓮.png,False,False,,mc_04_cover.png,mc_04_character.png
+5,5,冴羽獠＆槇村香,シティーハンター,北条司 (HOJO Tsukasa),SAEBA Ryo & MAKIMURA Kaori,City Hunter,HOJO Tsukasa,仮データ,書影_5-冴羽リョウと槇村香仮書影.png,切り抜き_6-伴省吾.png,True,True,,mc_05_cover.png,mc_05_character.png
+6,6,伴省吾,バンビ～ノ！,せきやてつじ (SEKIYA Tetsuji),BAN Shogo,Bambino!,SEKIYA Tetsuji,本データ,書影_6-バンビ～ノ書影.png,切り抜き_6-伴省吾.png,False,False,,mc_06_cover.png,mc_06_character.png
+7,7,大月良太,まんだら屋の良太,畑中純 (HATANAKTA Jun),OTSUKI Ryota,Mandaraya no Ryota,HATANAKTA Jun,本データ,書影_7-ryota書影.png,切り抜き_7-Ryota.png,False,False,,mc_07_cover.png,mc_07_character.png
+8,8,ガタロ,ガタロ,畑中純 (HATANAKTA Jun),Gataro,Gataro,HATANAKTA Jun,本データ,書影_8-gataro書影.png,切り抜き_8-gataro-low.png,False,False,,mc_08_cover.png,mc_08_character.png
+9,9,南郷勇一と賢二,ストップ！にいちゃん,関谷ひさし (SEKIYA Hisashi),NANGOU Yuichi & Kenji,STOP! Niichan,SEKIYA Hisashi,本データ,書影_9-南郷勇一と賢二.png,切り抜き_9-南郷勇一と賢二.png,False,False,,mc_09_cover.png,mc_09_character.png
+10,10,高峰ルリ,スーパーおじょうさん,関谷ひさし (SEKIYA Hisashi),TAKAMINE Ruri,Super Ojosan,SEKIYA Hisashi,本データ,書影_10-高峰ルリ.png,切り抜き_10-高峰ルリ.png,False,False,,mc_10_cover.png,mc_10_character.png

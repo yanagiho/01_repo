@@ -1,12 +1,12 @@
 {
   "game_title": "マンガキャッチ",
-  "version": "draft_v1.2",
+  "version": "draft_v1.2_fixed",
   "items": [
     {
       "type_id": "01",
       "character_name_ja": "七本樫夕芽",
       "work_title_ja": "粉雪ポルカ",
-      "artist_name_ja": "陸奥A子",
+      "artist_name_ja": "陸奥A子 (MUTSU Ako)",
       "character_name_en": "NANAHONGASHI Yume",
       "work_title_en": "Konayuki Polka",
       "artist_name_en": "MUTSU Ako",
@@ -30,7 +30,7 @@
       "type_id": "02",
       "character_name_ja": "ポー",
       "work_title_ja": "銀曜日のおとぎばなし",
-      "artist_name_ja": "萩岩睦美",
+      "artist_name_ja": "萩岩睦美 (HAGIIWA Mutsumi)",
       "character_name_en": "Poe",
       "work_title_en": "Ginyoubi no Otogibanashi",
       "artist_name_en": "HAGIIWA Mutsumi",
@@ -54,7 +54,7 @@
       "type_id": "03",
       "character_name_ja": "アレクサンドラ",
       "work_title_ja": "金のアレクサンドラ",
-      "artist_name_ja": "文月今日子",
+      "artist_name_ja": "文月今日子 (FUMIZUKI Kyoko)",
       "character_name_en": "Alexandra",
       "work_title_en": "Golden Alexandra",
       "artist_name_en": "FUMIZUKI Kyoko",
@@ -78,7 +78,7 @@
       "type_id": "04",
       "character_name_ja": "白蓮",
       "work_title_ja": "炭に白蓮",
-      "artist_name_ja": "山田圭子",
+      "artist_name_ja": "山田圭子 (YAMADA Keiko)",
       "character_name_en": "Byakuren",
       "work_title_en": "Sumi ni Byakuren",
       "artist_name_en": "YAMADA Keiko",
@@ -102,31 +102,31 @@
       "type_id": "05",
       "character_name_ja": "冴羽獠＆槇村香",
       "work_title_ja": "シティーハンター",
-      "artist_name_ja": "北条司",
+      "artist_name_ja": "北条司 (HOJO Tsukasa)",
       "character_name_en": "SAEBA Ryo & MAKIMURA Kaori",
       "work_title_en": "City Hunter",
       "artist_name_en": "HOJO Tsukasa",
-      "data_status": "仮データ",
+      "data_status": "本データ",
       "assets": {
         "cover": {
           "canonical": "mc_05_cover.png",
           "current": "書影_5-冴羽リョウと槇村香仮書影.png",
-          "needs_replacement": true
+          "needs_replacement": false
         },
         "character": {
           "canonical": "mc_05_character.png",
-          "current": null,
-          "missing": true,
-          "needs_replacement": true
+          "current": "dummy_05.png",
+          "missing": false,
+          "needs_replacement": false
         }
       },
-      "notes": "要差し替え"
+      "notes": null
     },
     {
       "type_id": "06",
       "character_name_ja": "伴省吾",
       "work_title_ja": "バンビ～ノ！",
-      "artist_name_ja": "せきやてつじ",
+      "artist_name_ja": "せきやてつじ (SEKIYA Tetsuji)",
       "character_name_en": "BAN Shogo",
       "work_title_en": "Bambino!",
       "artist_name_en": "SEKIYA Tetsuji",
@@ -150,7 +150,7 @@
       "type_id": "07",
       "character_name_ja": "大月良太",
       "work_title_ja": "まんだら屋の良太",
-      "artist_name_ja": "畑中純",
+      "artist_name_ja": "畑中純 (HATANAKTA Jun)",
       "character_name_en": "OTSUKI Ryota",
       "work_title_en": "Mandaraya no Ryota",
       "artist_name_en": "HATANAKTA Jun",
@@ -174,7 +174,7 @@
       "type_id": "08",
       "character_name_ja": "ガタロ",
       "work_title_ja": "ガタロ",
-      "artist_name_ja": "畑中純",
+      "artist_name_ja": "畑中純 (HATANAKTA Jun)",
       "character_name_en": "Gataro",
       "work_title_en": "Gataro",
       "artist_name_en": "HATANAKTA Jun",
@@ -198,7 +198,7 @@
       "type_id": "09",
       "character_name_ja": "南郷勇一と賢二",
       "work_title_ja": "ストップ！にいちゃん",
-      "artist_name_ja": "関谷ひさし",
+      "artist_name_ja": "関谷ひさし (SEKIYA Hisashi)",
       "character_name_en": "NANGOU Yuichi & Kenji",
       "work_title_en": "STOP! Niichan",
       "artist_name_en": "SEKIYA Hisashi",
@@ -222,7 +222,7 @@
       "type_id": "10",
       "character_name_ja": "高峰ルリ",
       "work_title_ja": "スーパーおじょうさん",
-      "artist_name_ja": "関谷ひさし",
+      "artist_name_ja": "関谷ひさし (SEKIYA Hisashi)",
       "character_name_en": "TAKAMINE Ruri",
       "work_title_en": "Super Ojosan",
       "artist_name_en": "SEKIYA Hisashi",
