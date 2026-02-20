@@ -21,3 +21,4 @@ build/
 *.bundle
 .env
 .env.*
+MangaCatch/release/

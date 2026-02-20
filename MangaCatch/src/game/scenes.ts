@@ -16,7 +16,7 @@ const SCENE_DURATIONS: Partial<Record<SceneType, number>> = {
 };
 
 export class SceneManager {
-    public currentScene: SceneType = 'BOOT';
+    public currentScene: SceneType = 'TITLE';
     public score: number = 0;
     public stateTimer: number = 0;
 
@@ -31,7 +31,7 @@ export class SceneManager {
     }
 
     public reset() {
-        this.currentScene = 'BOOT';
+        this.currentScene = 'TITLE';
         this.score = 0;
         this.stateTimer = 0;
         this.catchCounts = {};

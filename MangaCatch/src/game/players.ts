@@ -23,7 +23,7 @@ export class PlayerManager {
     this.players['player1'].isActive = true;
   }
 
-  public update(deltaTime: number, inputMgr: InputManager) {
+  public update(_deltaTime: number, inputMgr: InputManager) {
     const p = this.players['player1'];
 
     // 1. 横移動（X座標）

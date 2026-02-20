@@ -10,10 +10,10 @@ export interface FallingItem {
   height: number;
   speed: number;
   rotation: number;
-  imagePath: string; 
+  imagePath: string;
   typeId: string;
   score: number;
-  
+
   // ゆらゆら動くためのパラメータ
   initialX: number;
   time: number;
@@ -25,17 +25,17 @@ export class FallingManager {
   public items: FallingItem[] = [];
   private spawnTimer: number = 0;
   private nextId: number = 0;
-  
+
   // 抽選用ボックス
   private lotteryBox: string[] = [];
 
   // --- 揺れ方のパターン（5種類） ---
   private readonly SWAY_PATTERNS = [
-    { amplitude: 30,  speed: 2.0 }, // 1. 標準
-    { amplitude: 50,  speed: 1.5 }, // 2. ゆったり大きく
-    { amplitude: 80,  speed: 1.0 }, // 3. さらに大きく
+    { amplitude: 30, speed: 2.0 }, // 1. 標準
+    { amplitude: 50, speed: 1.5 }, // 2. ゆったり大きく
+    { amplitude: 80, speed: 1.0 }, // 3. さらに大きく
     { amplitude: 120, speed: 0.8 }, // 4. 最大級の揺れ
-    { amplitude: 20,  speed: 3.0 }, // 5. 小刻みに速く
+    { amplitude: 20, speed: 3.0 }, // 5. 小刻みに速く
   ];
 
   public constructor() {
@@ -63,7 +63,7 @@ export class FallingManager {
 
     // 1. 生成 (Spawn)
     this.spawnTimer += deltaTime;
-    if (this.spawnTimer > 0.8) { 
+    if (this.spawnTimer > 0.8) {
       this.spawnItem();
       this.spawnTimer = 0;
     }
@@ -75,7 +75,7 @@ export class FallingManager {
 
       // 縦移動（落下）
       item.y += item.speed * deltaTime * 60;
-      
+
       // 横移動（ゆらゆら）: 初期位置 + sin(時間 * 速さ) * 幅
       item.x = item.initialX + Math.sin(item.time * item.swaySpeed) * item.swayAmplitude;
     });
@@ -95,14 +95,14 @@ export class FallingManager {
         if (!p.isActive) continue;
         const dx = itemCx - p.x;
         const dy = itemCy - p.y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
+        const dist = Math.sqrt(dx * dx + dy * dy);
 
         // 判定距離を少し広げる (100 -> 120)
         if (dist < 120) {
           isHit = true;
           sceneMgr.addScore(item.score);
           sceneMgr.recordCatch(item.typeId);
-          break; 
+          break;
         }
       }
       return !isHit;
@@ -111,18 +111,18 @@ export class FallingManager {
 
   private spawnItem() {
     const id = this.nextId++;
-    
+
     // 揺れ幅(最大120px)とキャラサイズ増加分を考慮してマージンを広げる
-    const margin = 250; 
+    const margin = 250;
     const initialX = margin + Math.random() * (1920 - margin * 2);
-    
+
     // 抽選ロジック
     const randomIndex = Math.floor(Math.random() * this.lotteryBox.length);
     const selectedId = this.lotteryBox[randomIndex];
-    
+
     const master = CHARACTER_MASTER.find(c => c.id === selectedId);
     const score = master ? master.score : 100;
-    const imagePath = `./assets/characters/${selectedId}.png`; 
+    const imagePath = `./assets/characters/${selectedId}.png`;
 
     // 揺れパターンをランダムに決定
     const patternIdx = Math.floor(Math.random() * this.SWAY_PATTERNS.length);
@@ -130,6 +130,7 @@ export class FallingManager {
 
     this.items.push({
       id,
+      x: initialX,
       initialX: initialX,
       // --- 変更点: サイズ1.5倍化に伴う調整 ---
       y: -250,      // 開始位置を少し上にする (サイズが大きくなったため)

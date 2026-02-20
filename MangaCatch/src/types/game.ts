@@ -78,5 +78,30 @@ export interface FallingCharacter {
 export interface RankingEntry {
     total_score: number;
     rarity_sum: number;
-    achieved_at: number;
+    achieved_at: number; // timestamp
+}
+
+import type { CharacterData } from '../constants/master';
+
+export interface Particle {
+    id: number;
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    life: number;
+    size: number;
+    color: string;
+}
+
+export interface FallingItem {
+    id: number;
+    baseX: number;
+    x: number;
+    y: number;
+    char: CharacterData;
+    time: number;
+    swaySpeed: number;
+    swayAmp: number;
+    speed: number;
 }
