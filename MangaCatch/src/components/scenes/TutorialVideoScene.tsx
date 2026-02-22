@@ -1,3 +1,4 @@
+// MangaCatch/src/components/scenes/TutorialVideoScene.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 function buildVideoCandidates(): string[] {
@@ -19,9 +20,7 @@ function buildVideoCandidates(): string[] {
     return Array.from(new Set(out));
 }
 
-type Props = {
-    onEnded: () => void; // これが呼ばれたら GAME へ
-};
+type Props = { onEnded: () => void };
 
 export const TutorialVideoScene: React.FC<Props> = ({ onEnded }) => {
     const candidates = useMemo(() => buildVideoCandidates(), []);
@@ -29,15 +28,14 @@ export const TutorialVideoScene: React.FC<Props> = ({ onEnded }) => {
     const [status, setStatus] = useState<"loading" | "playing" | "fallback">("loading");
 
     const finishedRef = useRef(false);
-    const videoRef = useRef<HTMLVideoElement | null>(null);
-
     const finishOnce = () => {
         if (finishedRef.current) return;
         finishedRef.current = true;
+        console.log("[TutorialVideo] FINISH");
         onEnded();
     };
 
-    // 「無反応」でも必ず次へ：3.5秒で強制スキップ
+    // 無反応でも必ず進む
     useEffect(() => {
         const t = window.setTimeout(() => {
             console.warn("[TutorialVideo] timeout -> skip");
@@ -47,47 +45,14 @@ export const TutorialVideoScene: React.FC<Props> = ({ onEnded }) => {
         return () => window.clearTimeout(t);
     }, []);
 
-    // 各候補のロード監視：1.2秒でロード開始しないなら次候補へ
-    useEffect(() => {
-        if (!videoRef.current) return;
-
-        setStatus("loading");
-        const v = videoRef.current;
-
-        const guard = window.setTimeout(() => {
-            // loadedmetadata / canplay が来ない＝無反応扱いで次候補へ
-            if (status === "loading") {
-                if (idx + 1 < candidates.length) {
-                    console.warn("[TutorialVideo] no response -> try next", candidates[idx]);
-                    setIdx(idx + 1);
-                } else {
-                    console.warn("[TutorialVideo] all candidates failed -> skip", candidates);
-                    setStatus("fallback");
-                    finishOnce();
-                }
-            }
-        }, 1200);
-
-        return () => window.clearTimeout(guard);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [idx]);
-
     const src = candidates[idx];
 
     return (
         <div
             onPointerDown={finishOnce} // クリックでスキップ
-            style={{
-                position: "absolute",
-                inset: 0,
-                zIndex: 20,
-                background: "#000",
-                cursor: "pointer",
-                userSelect: "none",
-            }}
+            style={{ position: "absolute", inset: 0, zIndex: 20, background: "#000", cursor: "pointer" }}
         >
             <video
-                ref={videoRef}
                 key={src}
                 src={src}
                 autoPlay
@@ -102,7 +67,7 @@ export const TutorialVideoScene: React.FC<Props> = ({ onEnded }) => {
                         console.warn("[TutorialVideo] error -> next", src);
                         setIdx(idx + 1);
                     } else {
-                        console.warn("[TutorialVideo] error all -> skip", candidates);
+                        console.warn("[TutorialVideo] all failed -> skip", candidates);
                         setStatus("fallback");
                         finishOnce();
                     }
@@ -110,7 +75,6 @@ export const TutorialVideoScene: React.FC<Props> = ({ onEnded }) => {
                 style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
             />
 
-            {/* ロード状況表示（止まり原因の可視化） */}
             <div
                 style={{
                     position: "absolute",
