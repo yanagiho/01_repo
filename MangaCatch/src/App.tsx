@@ -1,191 +1,134 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { StarBackground } from './components/StarBackground';
-import { ScreentoneWipe } from './components/ScreentoneWipe';
+import React, { useMemo, useState } from "react";
+import type { Scene, RankingEntry } from "./types/game";
+import { useSensor } from "./hooks/useSensor";
+import { useParticles } from "./hooks/useParticles";
+import { getCharacterById, pickRandomEnabled } from "./constants/master";
 
-// フック
-import { useParticles } from './hooks/useParticles';
-import { useSensor } from './hooks/useSensor';
+import { TitleScene } from "./components/scenes/TitleScene";
+import { TutorialScene } from "./components/scenes/TutorialScene";
+import { GameScene } from "./components/scenes/GameScene";
+import { ResultScene } from "./components/scenes/ResultScene";
+import { RecommendScene } from "./components/scenes/RecommendScene";
+import { PhotoScene } from "./components/scenes/PhotoScene";
+import { RankingScene } from "./components/scenes/RankingScene";
 
-// シーンコンポーネント
-import { TitleScene } from './components/scenes/TitleScene';
-import { TutorialScene } from './components/scenes/TutorialScene';
-import { GameScene } from './components/scenes/GameScene';
-import { ResultScene } from './components/scenes/ResultScene';
-import { RecommendScene } from './components/scenes/RecommendScene';
-import { PhotoScene } from './components/scenes/PhotoScene';
-import { RankingScene } from './components/scenes/RankingScene';
+const RANKING_KEY = () => `mangacatch_ranking_${new Date().toLocaleDateString()}`;
 
-// マネージャー・型
-import { SceneManager, type SceneType } from './game/scenes';
-import type { RankingEntry } from './types/game';
-import { CHARACTER_MAP } from './constants/master';
-import { validateAllAssets } from './game/assetValidator';
-
-// 起動時にアセット検証（欠損があればconsole.warnで報告）
-if (import.meta.env.DEV) {
-  validateAllAssets();
+function loadRanking(): RankingEntry[] {
+  try {
+    const raw = localStorage.getItem(RANKING_KEY());
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed as RankingEntry[];
+  } catch {
+    return [];
+  }
 }
 
-const App: React.FC = () => {
-  const [scene, setScene] = useState<SceneType>('TITLE');
-  const [wipeTrigger, setWipeTrigger] = useState(false);
-  const [pendingScene, setPendingScene] = useState<SceneType | null>(null);
+function saveRanking(entry: RankingEntry) {
+  const list = loadRanking();
+  list.push(entry);
+  list.sort((a, b) => b.score - a.score);
+  const trimmed = list.slice(0, 30);
+  localStorage.setItem(RANKING_KEY(), JSON.stringify(trimmed));
+}
 
-  // センサー＆フォールバック入力
+export default function App() {
   const { playerCount, speedMultiplier, playerX } = useSensor();
-
-  // パーティクル（全シーン共通で手前に表示するためAppで持つ）
   const { particles, createParticles } = useParticles();
 
-  // マネージャーインスタンス
-  const [sceneMgr] = useState(() => new SceneManager());
+  const [scene, setScene] = useState<Scene>("TITLE");
+  const [score, setScore] = useState(0);
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  const [ranking, setRanking] = useState<RankingEntry[]>([]);
 
-  // ランキングデータ（表示用）
-  const [rankingData, setRankingData] = useState<RankingEntry[]>([]);
-
-  // シーン遷移ハンドラ
-  const handleSceneChange = useCallback((nextScene: SceneType) => {
-    if (nextScene === 'RANKING') {
-      const today = new Date().toLocaleDateString();
-      const key = `mangacatch_ranking_${today}`;
-      const raw = localStorage.getItem(key);
-
-      if (raw) {
-        try {
-          const parsed: unknown = JSON.parse(raw);
-          if (Array.isArray(parsed)) {
-            const normalized: RankingEntry[] = parsed.map((entry: any) => {
-              // 旧形式（number[]）
-              if (typeof entry === 'number') {
-                return {
-                  total_score: entry,
-                  rarity_sum: 0,
-                  achieved_at: 0,
-                  bestCharId: null,
-                };
-              }
-
-              // 新形式（{score, bestCharId, achieved_at} 等）
-              const score = typeof entry.total_score === 'number'
-                ? entry.total_score
-                : (typeof entry.score === 'number' ? entry.score : 0);
-
-              return {
-                total_score: score,
-                rarity_sum: 0,
-                achieved_at: typeof entry.achieved_at === 'number' ? entry.achieved_at : 0,
-                bestCharId: typeof entry.bestCharId === 'string' ? entry.bestCharId : null,
-              };
-            });
-
-            setRankingData(normalized);
-          } else {
-            setRankingData([]);
-          }
-        } catch {
-          setRankingData([]);
-        }
-      } else {
-        setRankingData([]);
+  const bestChar = useMemo(() => {
+    let bestId = "";
+    let best = -1;
+    for (const [id, c] of Object.entries(counts)) {
+      if (c > best) {
+        best = c;
+        bestId = id;
       }
     }
-
-    setPendingScene(nextScene);
-    setWipeTrigger(true);
-  }, []);
-
-  // SceneManager購読
-  useEffect(() => {
-    const interval = setInterval(() => {
-      sceneMgr.update(0.016);
-
-      if (sceneMgr.currentScene !== scene) {
-        if (!wipeTrigger && !pendingScene) {
-          handleSceneChange(sceneMgr.currentScene);
-        }
-      }
-    }, 16);
-
-    return () => clearInterval(interval);
-  }, [scene, sceneMgr, wipeTrigger, pendingScene, handleSceneChange]);
-
-  // ワイプ完了時
-  const onWipeMiddle = () => {
-    if (pendingScene) {
-      setScene(pendingScene);
-      sceneMgr.currentScene = pendingScene;
-      setPendingScene(null);
-    }
-  };
-
-  // ゲーム終了時
-  const onGameEnd = (endScore: number, counts: Record<string, number>) => {
-    sceneMgr.score = endScore;
-    sceneMgr.catchCounts = counts;
-  };
+    return (bestId && getCharacterById(bestId)) || pickRandomEnabled();
+  }, [counts]);
 
   return (
-    <div style={{ width: '100vw', height: '100vh', backgroundColor: '#000', color: 'white', position: 'relative', overflow: 'hidden', cursor: 'none' }}>
-      <StarBackground />
+    <div style={{ width: "100vw", height: "100vh", background: "#000", color: "#fff", position: "relative", overflow: "hidden", cursor: "none" }}>
+      {/* 背景 */}
+      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 50% 30%, #081018 0%, #000 60%)" }} />
 
-      <ScreentoneWipe
-        trigger={wipeTrigger}
-        onMiddle={onWipeMiddle}
-        onComplete={() => setWipeTrigger(false)}
-      />
-
-      {/* パーティクル描画 */}
-      {particles.map(p => (
-        <div key={p.id} style={{ position: 'absolute', left: p.x, top: p.y, width: p.size, height: p.size, backgroundColor: p.color, borderRadius: '50%', opacity: p.life, transform: 'translate(-50%, -50%)', zIndex: 20 }} />
+      {/* パーティクル */}
+      {particles.map((p) => (
+        <div
+          key={p.id}
+          style={{
+            position: "absolute",
+            left: p.x,
+            top: p.y,
+            width: p.size,
+            height: p.size,
+            borderRadius: "50%",
+            background: "#00eebb",
+            opacity: p.life,
+            transform: "translate(-50%,-50%)",
+            pointerEvents: "none",
+          }}
+        />
       ))}
 
-      {/* シーンレンダリング */}
-      {scene === 'TITLE' && <TitleScene onStart={() => sceneMgr.triggerStart()} />}
-      {scene === 'TUTORIAL' && <TutorialScene onSkip={() => sceneMgr.currentScene = 'GAME'} />}
-      {scene === 'GAME' && (
+      {scene === "TITLE" && (
+        <TitleScene onStart={() => setScene("TUTORIAL")} />
+      )}
+
+      {scene === "TUTORIAL" && (
+        <TutorialScene onDone={() => setScene("GAME")} />
+      )}
+
+      {scene === "GAME" && (
         <GameScene
-          scene={scene}
           playerX={playerX}
           speedMultiplier={speedMultiplier}
           playerCount={playerCount}
-          onEnd={onGameEnd}
           onCreateParticles={createParticles}
+          onEnd={(s, c) => {
+            setScore(s);
+            setCounts(c);
+            setScene("RESULT");
+          }}
         />
       )}
-      {scene === 'RESULT' && <ResultScene />}
-      {scene === 'RECOMMEND' && <RecommendScene bestChar={sceneMgr.bestCharacter} />}
-      {scene === 'PHOTO' && <PhotoScene bestChar={sceneMgr.bestCharacter} />}
-      {scene === 'RANKING' && <RankingScene ranking={rankingData} />}
 
-      {/* デバッグ表示（常時: シーン・プレイヤー情報） */}
-      <div style={{ position: 'absolute', top: 5, left: 5, fontSize: '10px', color: 'lime', zIndex: 100, pointerEvents: 'none' }}>
-        Scene: {scene} <br />
-        Players: {playerCount} (Speed x{speedMultiplier.toFixed(1)}) <br />
-        Timer: {sceneMgr.stateTimer.toFixed(1)}s (Mgr)
-      </div>
-
-      {/* 開発時デバッグ: マスタ確認 */}
-      {import.meta.env.DEV && scene === 'TITLE' && (
-        <button
-          onClick={() => {
-            console.table(
-              Array.from(CHARACTER_MAP.values()).map(c => ({
-                no: c.no, id: c.id, name: c.name, artist: c.artist,
-                work: c.work, charImg: c.characterImage, cover: c.workImage, attach: c.attachmentFile,
-              }))
-            );
-          }}
-          style={{
-            position: 'absolute', bottom: 10, right: 10, zIndex: 200,
-            padding: '4px 8px', fontSize: '10px', background: '#333', color: '#0f0',
-            border: '1px solid #0f0', cursor: 'pointer'
-          }}
-        >
-          [DEV] マスタ確認
-        </button>
+      {scene === "RESULT" && (
+        <ResultScene score={score} onNext={() => setScene("RECOMMEND")} />
       )}
+
+      {scene === "RECOMMEND" && (
+        <RecommendScene bestChar={bestChar} onNext={() => setScene("PHOTO")} />
+      )}
+
+      {scene === "PHOTO" && (
+        <PhotoScene
+          bestChar={bestChar}
+          onNext={() => {
+            saveRanking({ score, achieved_at: Date.now(), bestCharId: bestChar.id });
+            const list = loadRanking();
+            setRanking(list);
+            setScene("RANKING");
+          }}
+        />
+      )}
+
+      {scene === "RANKING" && (
+        <RankingScene ranking={ranking} onBack={() => setScene("TITLE")} />
+      )}
+
+      {/* デバッグ */}
+      <div style={{ position: "absolute", top: 8, left: 8, fontFamily: "monospace", fontSize: 12, color: "#00eebb", opacity: 0.85 }}>
+        Scene: {scene} / Players: {playerCount} / Speed: x{speedMultiplier.toFixed(2)}
+      </div>
     </div>
   );
-};
-
-export default App;
+}

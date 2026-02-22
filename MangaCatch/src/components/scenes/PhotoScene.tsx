@@ -1,87 +1,57 @@
-import React from 'react';
-import type { CharacterData } from '../../constants/master';
-import { getCoverImagePath, getAttachmentPath } from '../../constants/master';
+import React, { useMemo, useState } from "react";
+import type { CharacterData } from "../../constants/master";
 
-const PLACEHOLDER_COVER = '/assets/ui/placeholder_cover.png';
+const pad3 = (n: number) => String(n).padStart(3, "0");
 
-interface PhotoSceneProps {
-    bestChar: CharacterData | null;
+function coverCandidates(char: CharacterData): string[] {
+    const baseUrl = (import.meta as any)?.env?.BASE_URL ?? "/";
+    const normalize = (s: string) => (s.endsWith("/") ? s : s + "/");
+    const bases = [
+        normalize(baseUrl) + "assets/books/",
+        "./assets/books/",
+        "assets/books/",
+        "../assets/books/",
+        "../../assets/books/",
+    ];
+    const file = char.workImage ?? `cover_${pad3(char.no)}.png`;
+    const names = [file, `cover_${pad3(char.no)}.png`];
+    const urls: string[] = [];
+    for (const b of bases) for (const n of names) urls.push(b + n);
+    return Array.from(new Set(urls));
 }
 
-export const PhotoScene: React.FC<PhotoSceneProps> = ({ bestChar }) => {
-    if (!bestChar) return null;
-
-    const attachmentUrl = getAttachmentPath(bestChar);
+export const PhotoScene: React.FC<{ bestChar: CharacterData; onNext: () => void }> = ({ bestChar, onNext }) => {
+    const candidates = useMemo(() => coverCandidates(bestChar), [bestChar]);
+    const [idx, setIdx] = useState(0);
 
     return (
-        <div
-            style={{
-                position: 'absolute',
-                inset: 0,
-                display: 'flex',
-                padding: '60px',
-                background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.8))',
-                alignItems: 'flex-end',
-                justifyContent: 'space-between'
-            }}
-        >
+        <div style={{ position: "absolute", inset: 0, display: "flex", padding: 48, color: "#fff", gap: 28 }}>
             <img
-                src={getCoverImagePath(bestChar)}
-                alt={`${bestChar.work} 書影`}
-                onError={(e) => {
-                    const img = e.target as HTMLImageElement;
-                    if (img.src !== PLACEHOLDER_COVER) {
-                        console.warn(`[MangaCatch] PhotoScene 書影ロード失敗: ${bestChar.workImage} (id=${bestChar.id})`);
-                        img.src = PLACEHOLDER_COVER;
-                    }
-                }}
-                style={{ height: '75vh', borderRadius: '15px' }}
+                src={candidates[idx]}
+                onError={() => setIdx((i) => Math.min(i + 1, candidates.length - 1))}
+                style={{ height: "80vh", borderRadius: 16, objectFit: "contain", background: "rgba(0,0,0,0.3)" }}
+                alt={bestChar.work}
             />
+            <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 44, color: "#00eebb" }}>{bestChar.work}</div>
+                <div style={{ marginTop: 8, fontSize: 28 }}>{bestChar.artist} 先生</div>
+                <div style={{ marginTop: 14, opacity: 0.85 }}>{bestChar.name}</div>
 
-            <div style={{ width: '45%', textAlign: 'right' }}>
-                <div style={{ fontSize: '6rem', color: '#00eebb' }}>{bestChar.work}</div>
-                <div style={{ fontSize: '4rem' }}>{bestChar.artist} 先生</div>
-
-                {/* 添付PDF（作品閲覧）: 必ず bestChar から引くのでズレない */}
-                {attachmentUrl && (
-                    <a
-                        href={attachmentUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => {
-                            // Electron/ブラウザ両対応。既定動作でもOKだが、明示しておく。
-                            e.preventDefault();
-                            window.open(attachmentUrl, '_blank', 'noopener,noreferrer');
-                        }}
-                        style={{
-                            display: 'inline-block',
-                            marginTop: '28px',
-                            padding: '14px 20px',
-                            fontSize: '1.4rem',
-                            borderRadius: '12px',
-                            border: '2px solid #00eebb',
-                            color: '#00eebb',
-                            textDecoration: 'none'
-                        }}
-                    >
-                        作品PDFを開く
-                    </a>
-                )}
-
-                <img
-                    src="/assets/ui/mangacatch_title_logo.png"
-                    style={{ width: '300px', marginTop: '40px' }}
-                    alt="MangaCatch"
-                />
-
-                {/* 開発時デバッグ */}
-                {import.meta.env.DEV && (
-                    <div style={{ fontSize: '0.8rem', color: '#888', marginTop: '10px', fontFamily: 'monospace', textAlign: 'left' }}>
-                        [DEV] No.{bestChar.no} id={bestChar.id}<br />
-                        cover: {bestChar.workImage}<br />
-                        attach: {bestChar.attachmentFile ?? '(fallback: attach_XXX.pdf)'}
-                    </div>
-                )}
+                <button
+                    onClick={onNext}
+                    style={{
+                        marginTop: 22,
+                        padding: "12px 18px",
+                        fontSize: 16,
+                        borderRadius: 12,
+                        border: "2px solid #00eebb",
+                        background: "transparent",
+                        color: "#00eebb",
+                        cursor: "pointer",
+                    }}
+                >
+                    ランキングへ
+                </button>
             </div>
         </div>
     );

@@ -1,44 +1,33 @@
-import { Component, type ErrorInfo, type ReactNode } from "react";
+import React from "react";
 
-interface Props {
-    children: ReactNode;
-}
+type Props = { children: React.ReactNode };
+type State = { hasError: boolean; message?: string };
 
-interface State {
-    hasError: boolean;
-    error: Error | null;
-}
+export class ErrorBoundary extends React.Component<Props, State> {
+    state: State = { hasError: false };
 
-export class ErrorBoundary extends Component<Props, State> {
-    public state: State = {
-        hasError: false,
-        error: null,
-    };
-
-    public static getDerivedStateFromError(error: Error): State {
-        return { hasError: true, error };
+    static getDerivedStateFromError(err: unknown): State {
+        return { hasError: true, message: err instanceof Error ? err.message : String(err) };
     }
 
-    public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-        console.error("Uncaught error:", error, errorInfo);
+    componentDidCatch(error: unknown) {
+        console.error("[ErrorBoundary] Caught:", error);
     }
 
-    public render() {
+    render() {
         if (this.state.hasError) {
             return (
-                <div style={{
-                    padding: "20px",
-                    backgroundColor: "#330000",
-                    color: "white",
-                    height: "100vh",
-                    overflow: "auto"
-                }}>
-                    <h1>Something went wrong.</h1>
-                    <pre>{this.state.error?.toString()}</pre>
+                <div style={{ color: "#fff", padding: 24, fontFamily: "monospace" }}>
+                    <h2 style={{ margin: 0, marginBottom: 12 }}>アプリがエラーで停止しました</h2>
+                    <div style={{ opacity: 0.8, marginBottom: 8 }}>
+                        DevTools（開発者ツール）の Console に詳細が出ています。
+                    </div>
+                    <pre style={{ whiteSpace: "pre-wrap", background: "#111", padding: 12, borderRadius: 8 }}>
+                        {this.state.message ?? "(no message)"}
+                    </pre>
                 </div>
             );
         }
-
         return this.props.children;
     }
 }
