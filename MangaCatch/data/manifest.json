@@ -1,246 +1,237 @@
 {
-  "game_title": "マンガキャッチ",
-  "version": "draft_v1.2_fixed",
-  "items": [
+  "manifest_version": "1.1",
+  "game_id": "mangacatch",
+  "updated_at": "2026-02-22",
+  "paths": {
+    "characters_dir": "assets/characters/",
+    "books_dir": "assets/books/"
+  },
+  "fallback": {
+    "character_placeholder": "assets/characters/placeholder.png",
+    "book_placeholder": "assets/books/placeholder.png"
+  },
+  "artists": [
     {
-      "type_id": "01",
-      "character_name_ja": "七本樫夕芽",
-      "work_title_ja": "粉雪ポルカ",
-      "artist_name_ja": "陸奥A子 (MUTSU Ako)",
+      "artist_id": "mutsu_ako",
+      "name_ja": "陸奥A子",
+      "name_en": "MUTSU Ako"
+    },
+    {
+      "artist_id": "hagiiwa_mutsumi",
+      "name_ja": "萩岩睦美",
+      "name_en": "HAGIIWA Mutsumi"
+    },
+    {
+      "artist_id": "fumizuki_kyoko",
+      "name_ja": "文月今日子",
+      "name_en": "FUMIZUKI Kyoko"
+    },
+    {
+      "artist_id": "yamada_keiko",
+      "name_ja": "山田圭子",
+      "name_en": "YAMADA Keiko"
+    },
+    {
+      "artist_id": "hojo_tsukasa",
+      "name_ja": "北条司",
+      "name_en": "HOJO Tsukasa"
+    },
+    {
+      "artist_id": "sekiya_tetsuji",
+      "name_ja": "せきやてつじ",
+      "name_en": "SEKIYA Tetsuji"
+    },
+    {
+      "artist_id": "hatanaka_jun",
+      "name_ja": "畑中純",
+      "name_en": "HATANAKA Jun"
+    },
+    {
+      "artist_id": "sekiya_hisashi",
+      "name_ja": "関谷ひさし",
+      "name_en": "SEKIYA Hisashi"
+    }
+  ],
+  "types": [
+    {
+      "type_id": "type01",
+      "display_name": "七本樫夕芽",
+      "artist_id": "mutsu_ako",
+      "character_filename": "chara_001.png",
+      "book_filename": "cover_001.png",
+      "rarity_tier": "common",
+      "rarity_point": 1,
+      "weight": 10,
+      "score": 100,
+      "work_title": "粉雪ポルカ",
+      "work_author_name": "陸奥A子",
+      "recommend_text": "（仮）推薦文（後で差し替え）",
       "character_name_en": "NANAHONGASHI Yume",
       "work_title_en": "Konayuki Polka",
-      "artist_name_en": "MUTSU Ako",
-      "data_status": "本データ",
-      "assets": {
-        "cover": {
-          "canonical": "mc_01_cover.png",
-          "current": "書影_1-粉雪ポルカ.png",
-          "needs_replacement": false
-        },
-        "character": {
-          "canonical": "mc_01_character.png",
-          "current": "切り抜き_1-粉雪ポルカ.png",
-          "missing": false,
-          "needs_replacement": false
-        }
-      },
-      "notes": null
+      "author_name_en": "MUTSU Ako",
+      "data_status": "本データ"
     },
     {
-      "type_id": "02",
-      "character_name_ja": "ポー",
-      "work_title_ja": "銀曜日のおとぎばなし",
-      "artist_name_ja": "萩岩睦美 (HAGIIWA Mutsumi)",
+      "type_id": "type02",
+      "display_name": "ポー",
+      "artist_id": "hagiiwa_mutsumi",
+      "character_filename": "chara_002.png",
+      "book_filename": "cover_002.png",
+      "rarity_tier": "rare",
+      "rarity_point": 2,
+      "weight": 8,
+      "score": 150,
+      "work_title": "銀曜日のおとぎばなし",
+      "work_author_name": "萩岩睦美",
+      "recommend_text": "（仮）推薦文（後で差し替え）",
       "character_name_en": "Poe",
       "work_title_en": "Ginyoubi no Otogibanashi",
-      "artist_name_en": "HAGIIWA Mutsumi",
-      "data_status": "本データ",
-      "assets": {
-        "cover": {
-          "canonical": "mc_02_cover.png",
-          "current": "書影_2-銀曜日のおとぎばなし書影.png",
-          "needs_replacement": false
-        },
-        "character": {
-          "canonical": "mc_02_character.png",
-          "current": "切り抜き_2-銀曜日のおとぎばなし.png",
-          "missing": false,
-          "needs_replacement": false
-        }
-      },
-      "notes": null
+      "author_name_en": "HAGIIWA Mutsumi",
+      "data_status": "本データ"
     },
     {
-      "type_id": "03",
-      "character_name_ja": "アレクサンドラ",
-      "work_title_ja": "金のアレクサンドラ",
-      "artist_name_ja": "文月今日子 (FUMIZUKI Kyoko)",
+      "type_id": "type03",
+      "display_name": "アレクサンドラ",
+      "artist_id": "fumizuki_kyoko",
+      "character_filename": "chara_003.png",
+      "book_filename": "cover_003.png",
+      "rarity_tier": "rare",
+      "rarity_point": 2,
+      "weight": 9,
+      "score": 120,
+      "work_title": "金のアレクサンドラ",
+      "work_author_name": "文月今日子",
+      "recommend_text": "（仮）推薦文（後で差し替え）",
       "character_name_en": "Alexandra",
       "work_title_en": "Golden Alexandra",
-      "artist_name_en": "FUMIZUKI Kyoko",
-      "data_status": "本データ",
-      "assets": {
-        "cover": {
-          "canonical": "mc_03_cover.png",
-          "current": "書影_3-金のアレクサンドラ書影.png",
-          "needs_replacement": false
-        },
-        "character": {
-          "canonical": "mc_03_character.png",
-          "current": "切り抜き_3-金のアレクサンドラ.png",
-          "missing": false,
-          "needs_replacement": false
-        }
-      },
-      "notes": null
+      "author_name_en": "FUMIZUKI Kyoko",
+      "data_status": "本データ"
     },
     {
-      "type_id": "04",
-      "character_name_ja": "白蓮",
-      "work_title_ja": "炭に白蓮",
-      "artist_name_ja": "山田圭子 (YAMADA Keiko)",
+      "type_id": "type04",
+      "display_name": "白蓮",
+      "artist_id": "yamada_keiko",
+      "character_filename": "chara_004.png",
+      "book_filename": "cover_004.png",
+      "rarity_tier": "common",
+      "rarity_point": 1,
+      "weight": 10,
+      "score": 100,
+      "work_title": "炭に白蓮",
+      "work_author_name": "山田圭子",
+      "recommend_text": "（仮）推薦文（後で差し替え）",
       "character_name_en": "Byakuren",
       "work_title_en": "Sumi ni Byakuren",
-      "artist_name_en": "YAMADA Keiko",
-      "data_status": "本データ",
-      "assets": {
-        "cover": {
-          "canonical": "mc_04_cover.png",
-          "current": "書影_4-炭に白蓮.png",
-          "needs_replacement": false
-        },
-        "character": {
-          "canonical": "mc_04_character.png",
-          "current": "切り抜き_4-炭に白蓮_白蓮.png",
-          "missing": false,
-          "needs_replacement": false
-        }
-      },
-      "notes": null
+      "author_name_en": "YAMADA Keiko",
+      "data_status": "本データ"
     },
     {
-      "type_id": "05",
-      "character_name_ja": "冴羽獠＆槇村香",
-      "work_title_ja": "シティーハンター",
-      "artist_name_ja": "北条司 (HOJO Tsukasa)",
+      "type_id": "type05",
+      "display_name": "冴羽獠＆槇村香",
+      "artist_id": "hojo_tsukasa",
+      "character_filename": "chara_005.png",
+      "book_filename": "cover_005.png",
+      "rarity_tier": "super_rare",
+      "rarity_point": 3,
+      "weight": 5,
+      "score": 300,
+      "work_title": "シティーハンター",
+      "work_author_name": "北条司",
+      "recommend_text": "（仮）推薦文（後で差し替え）",
       "character_name_en": "SAEBA Ryo & MAKIMURA Kaori",
       "work_title_en": "City Hunter",
-      "artist_name_en": "HOJO Tsukasa",
-      "data_status": "本データ",
-      "assets": {
-        "cover": {
-          "canonical": "mc_05_cover.png",
-          "current": "書影_5-冴羽リョウと槇村香仮書影.png",
-          "needs_replacement": false
-        },
-        "character": {
-          "canonical": "mc_05_character.png",
-          "current": "dummy_05.png",
-          "missing": false,
-          "needs_replacement": false
-        }
-      },
-      "notes": null
+      "author_name_en": "HOJO Tsukasa",
+      "data_status": "仮データ"
     },
     {
-      "type_id": "06",
-      "character_name_ja": "伴省吾",
-      "work_title_ja": "バンビ～ノ！",
-      "artist_name_ja": "せきやてつじ (SEKIYA Tetsuji)",
+      "type_id": "type06",
+      "display_name": "伴省吾",
+      "artist_id": "sekiya_tetsuji",
+      "character_filename": "chara_006.png",
+      "book_filename": "cover_006.png",
+      "rarity_tier": "rare",
+      "rarity_point": 2,
+      "weight": 8,
+      "score": 150,
+      "work_title": "バンビ～ノ！",
+      "work_author_name": "せきやてつじ",
+      "recommend_text": "（仮）推薦文（後で差し替え）",
       "character_name_en": "BAN Shogo",
       "work_title_en": "Bambino!",
-      "artist_name_en": "SEKIYA Tetsuji",
-      "data_status": "本データ",
-      "assets": {
-        "cover": {
-          "canonical": "mc_06_cover.png",
-          "current": "書影_6-バンビ～ノ書影.png",
-          "needs_replacement": false
-        },
-        "character": {
-          "canonical": "mc_06_character.png",
-          "current": "切り抜き_6-伴省吾.png",
-          "missing": false,
-          "needs_replacement": false
-        }
-      },
-      "notes": null
+      "author_name_en": "SEKIYA Tetsuji",
+      "data_status": "本データ"
     },
     {
-      "type_id": "07",
-      "character_name_ja": "大月良太",
-      "work_title_ja": "まんだら屋の良太",
-      "artist_name_ja": "畑中純 (HATANAKTA Jun)",
-      "character_name_en": "OTSUKI Ryota",
+      "type_id": "type07",
+      "display_name": "大月良太",
+      "artist_id": "hatanaka_jun",
+      "character_filename": "chara_007.png",
+      "book_filename": "cover_007.png",
+      "rarity_tier": "common",
+      "rarity_point": 1,
+      "weight": 10,
+      "score": 100,
+      "work_title": "まんだら屋の良太",
+      "work_author_name": "畑中純",
+      "recommend_text": "（仮）推薦文（後で差し替え）",
+      "character_name_en": "Otsuki Ryota",
       "work_title_en": "Mandaraya no Ryota",
-      "artist_name_en": "HATANAKTA Jun",
-      "data_status": "本データ",
-      "assets": {
-        "cover": {
-          "canonical": "mc_07_cover.png",
-          "current": "書影_7-ryota書影.png",
-          "needs_replacement": false
-        },
-        "character": {
-          "canonical": "mc_07_character.png",
-          "current": "切り抜き_7-Ryota.png",
-          "missing": false,
-          "needs_replacement": false
-        }
-      },
-      "notes": null
+      "author_name_en": "HATANAKA Jun",
+      "data_status": "本データ"
     },
     {
-      "type_id": "08",
-      "character_name_ja": "ガタロ",
-      "work_title_ja": "ガタロ",
-      "artist_name_ja": "畑中純 (HATANAKTA Jun)",
+      "type_id": "type08",
+      "display_name": "ガタロ",
+      "artist_id": "hatanaka_jun",
+      "character_filename": "chara_008.png",
+      "book_filename": "cover_008.png",
+      "rarity_tier": "common",
+      "rarity_point": 1,
+      "weight": 10,
+      "score": 100,
+      "work_title": "ガタロ",
+      "work_author_name": "畑中純",
+      "recommend_text": "（仮）推薦文（後で差し替え）",
       "character_name_en": "Gataro",
       "work_title_en": "Gataro",
-      "artist_name_en": "HATANAKTA Jun",
-      "data_status": "本データ",
-      "assets": {
-        "cover": {
-          "canonical": "mc_08_cover.png",
-          "current": "書影_8-gataro書影.png",
-          "needs_replacement": false
-        },
-        "character": {
-          "canonical": "mc_08_character.png",
-          "current": "切り抜き_8-gataro-low.png",
-          "missing": false,
-          "needs_replacement": false
-        }
-      },
-      "notes": null
+      "author_name_en": "HATANAKA Jun",
+      "data_status": "本データ"
     },
     {
-      "type_id": "09",
-      "character_name_ja": "南郷勇一と賢二",
-      "work_title_ja": "ストップ！にいちゃん",
-      "artist_name_ja": "関谷ひさし (SEKIYA Hisashi)",
-      "character_name_en": "NANGOU Yuichi & Kenji",
-      "work_title_en": "STOP! Niichan",
-      "artist_name_en": "SEKIYA Hisashi",
-      "data_status": "本データ",
-      "assets": {
-        "cover": {
-          "canonical": "mc_09_cover.png",
-          "current": "書影_9-南郷勇一と賢二.png",
-          "needs_replacement": false
-        },
-        "character": {
-          "canonical": "mc_09_character.png",
-          "current": "切り抜き_9-南郷勇一と賢二.png",
-          "missing": false,
-          "needs_replacement": false
-        }
-      },
-      "notes": null
+      "type_id": "type09",
+      "display_name": "南郷勇一と賢二",
+      "artist_id": "sekiya_hisashi",
+      "character_filename": "chara_009.png",
+      "book_filename": "cover_009.png",
+      "rarity_tier": "rare",
+      "rarity_point": 2,
+      "weight": 7,
+      "score": 200,
+      "work_title": "ストップ！にいちゃん",
+      "work_author_name": "関谷ひさし",
+      "recommend_text": "（仮）推薦文（後で差し替え）",
+      "character_name_en": "Nango Yuichi & Kenji",
+      "work_title_en": "Stop! Niichan",
+      "author_name_en": "SEKIYA Hisashi",
+      "data_status": "本データ"
     },
     {
-      "type_id": "10",
-      "character_name_ja": "高峰ルリ",
-      "work_title_ja": "スーパーおじょうさん",
-      "artist_name_ja": "関谷ひさし (SEKIYA Hisashi)",
-      "character_name_en": "TAKAMINE Ruri",
-      "work_title_en": "Super Ojosan",
-      "artist_name_en": "SEKIYA Hisashi",
-      "data_status": "本データ",
-      "assets": {
-        "cover": {
-          "canonical": "mc_10_cover.png",
-          "current": "書影_10-高峰ルリ.png",
-          "needs_replacement": false
-        },
-        "character": {
-          "canonical": "mc_10_character.png",
-          "current": "切り抜き_10-高峰ルリ.png",
-          "missing": false,
-          "needs_replacement": false
-        }
-      },
-      "notes": null
+      "type_id": "type10",
+      "display_name": "高峰ルリ",
+      "artist_id": "sekiya_hisashi",
+      "character_filename": "placeholder.png",
+      "book_filename": "cover_010.png",
+      "rarity_tier": "common",
+      "rarity_point": 1,
+      "weight": 10,
+      "score": 100,
+      "work_title": "スーパーおじょうさん",
+      "work_author_name": "関谷ひさし",
+      "recommend_text": "（仮）推薦文（後で差し替え）",
+      "character_name_en": "Takamine Ruri",
+      "work_title_en": "Super Ojou-san",
+      "author_name_en": "SEKIYA Hisashi",
+      "data_status": "本データ"
     }
   ]
 }
