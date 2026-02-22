@@ -11,18 +11,22 @@ export interface CharacterData {
   rarity: number;        // レア度
   weight: number;        // 出現重み
 
-  // 既存：書影（カバー）ファイル名
+  // 書影（カバー）ファイル名
   workImage?: string;    // 例: "cover_001.png"
 
-  // 追加：キャラ画像ファイル名（ズレ防止のため明示）
+  // キャラ画像ファイル名（ズレ防止のため明示）
   characterImage?: string;   // 例: "chara_001.png"（デフォは `${id}.png`）
 
-  // 追加：添付ファイル（PDF等）のファイル名（必要なら使う）
+  // 添付ファイル（PDF等）のファイル名（ズレ防止のため明示）
+  // ※命名が "attach_001.pdf" でない場合は、必ずここを実ファイル名に合わせてください
   attachmentFile?: string;   // 例: "attach_001.pdf"
 }
 
 /** 拡張子除去 */
 const stripExt = (filename: string) => filename.replace(/\.[^.]+$/, '');
+
+/** 3桁ゼロパディング */
+const pad3 = (n: number) => String(n).padStart(3, '0');
 
 /**
  * いろんな命名から "no" を推定する:
@@ -194,7 +198,7 @@ export const CHARACTER_MASTER: CharacterData[] = [
 const byId = new Map(CHARACTER_MASTER.map((c) => [c.id, c] as const));
 const byNo = new Map(CHARACTER_MASTER.map((c) => [c.no, c] as const));
 
-/** id でルックアップするMap（O(1)アクセス用）。互換エクスポート名。 */
+/** id でルックアップするMap（O(1)アクセス用）。 */
 export const CHARACTER_MAP: Map<string, CharacterData> = byId;
 
 export const getCharacterById = (id: string): CharacterData | undefined => byId.get(id);
@@ -202,7 +206,6 @@ export const getCharacterByNo = (no: number): CharacterData | undefined => byNo.
 
 /**
  * キャラ画像の公開パス。characterImage が未指定なら `${id}.png` を使う。
- * これにより「推測」ではなく「master 定義値優先」になる。
  */
 export const getCharacterImagePath = (char: CharacterData): string => {
   const filename = char.characterImage ?? `${char.id}.png`;
@@ -218,6 +221,18 @@ export const getCoverImagePath = (char: CharacterData): string => {
 };
 
 /**
+ * 添付ファイル（PDF等）の公開パス。
+ * - attachmentFile が設定されていればそれを優先（ズレ防止の本命）
+ * - 未設定の場合だけ "attach_001.pdf" 形式をフォールバックで推測
+ *   ※あなたの実ファイル名が違う場合は、必ず attachmentFile を正しく設定してください
+ */
+export const getAttachmentPath = (char: CharacterData): string | null => {
+  const filename = char.attachmentFile ?? `attach_${pad3(char.no)}.pdf`;
+  if (!filename) return null;
+  return `/assets/attachments/${filename}`;
+};
+
+/**
  * filename が
  * - "chara_001.png"（キャラ画像）
  * - "cover_001.png"（書影）
@@ -228,7 +243,7 @@ export const getCoverImagePath = (char: CharacterData): string => {
 export const getCharacterDataByFilename = (filename: string): CharacterData | undefined => {
   const base = stripExt(filename);
 
-  // まず id 直引き（chara_001.png など）
+  // まず id 直引き（chara_001.png / chara_001 など）
   const direct = byId.get(base);
   if (direct) return direct;
 
@@ -267,7 +282,6 @@ export const assertMasterIntegrity = (): void => {
         console.warn("[MASTER] attachment-no mismatch:", c);
       }
     }
-    // characterImage が未指定なら `${id}.png` を想定
     const charImg = c.characterImage ?? `${c.id}.png`;
     const charNo = extractNoFromFilename(charImg);
     if (charNo != null && charNo !== c.no) {

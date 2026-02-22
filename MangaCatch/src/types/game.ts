@@ -79,6 +79,7 @@ export interface RankingEntry {
     total_score: number;
     rarity_sum: number;
     achieved_at: number; // timestamp
+    bestCharId?: string | null; // ★追加：ズレ防止のキー
 }
 
 import type { CharacterData } from '../constants/master';

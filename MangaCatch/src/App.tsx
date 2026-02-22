@@ -37,7 +37,7 @@ const App: React.FC = () => {
   // パーティクル（全シーン共通で手前に表示するためAppで持つ）
   const { particles, createParticles } = useParticles();
 
-  // マネージャーインスタンス（シングルトンではなく単一インスタンスとして保持する）
+  // マネージャーインスタンス
   const [sceneMgr] = useState(() => new SceneManager());
 
   // ランキングデータ（表示用）
@@ -46,45 +46,59 @@ const App: React.FC = () => {
   // シーン遷移ハンドラ
   const handleSceneChange = useCallback((nextScene: SceneType) => {
     if (nextScene === 'RANKING') {
-      // ランキングデータのロード (LocalStorageから)
       const today = new Date().toLocaleDateString();
       const key = `mangacatch_ranking_${today}`;
       const raw = localStorage.getItem(key);
+
       if (raw) {
         try {
-          const parsed: unknown[] = JSON.parse(raw);
-          // 旧形式（number[]）の場合は id を保持できないため unknownキャラに
-          setRankingData(
-            parsed.map((entry: unknown) => {
+          const parsed: unknown = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            const normalized: RankingEntry[] = parsed.map((entry: any) => {
+              // 旧形式（number[]）
               if (typeof entry === 'number') {
-                // 旧形式: スコアのみ保存されていた
-                return { total_score: entry, rarity_sum: 0, achieved_at: 0, bestCharId: null } as RankingEntry & { bestCharId: null };
+                return {
+                  total_score: entry,
+                  rarity_sum: 0,
+                  achieved_at: 0,
+                  bestCharId: null,
+                };
               }
-              // 新形式: { score, bestCharId, achieved_at } オブジェクト
-              const e = entry as { score?: number; total_score?: number; bestCharId?: string; achieved_at?: number };
+
+              // 新形式（{score, bestCharId, achieved_at} 等）
+              const score = typeof entry.total_score === 'number'
+                ? entry.total_score
+                : (typeof entry.score === 'number' ? entry.score : 0);
+
               return {
-                total_score: e.total_score ?? e.score ?? 0,
+                total_score: score,
                 rarity_sum: 0,
-                achieved_at: e.achieved_at ?? 0,
-                bestCharId: e.bestCharId ?? null,
-              } as RankingEntry & { bestCharId: string | null };
-            })
-          );
+                achieved_at: typeof entry.achieved_at === 'number' ? entry.achieved_at : 0,
+                bestCharId: typeof entry.bestCharId === 'string' ? entry.bestCharId : null,
+              };
+            });
+
+            setRankingData(normalized);
+          } else {
+            setRankingData([]);
+          }
         } catch {
           setRankingData([]);
         }
+      } else {
+        setRankingData([]);
       }
     }
+
     setPendingScene(nextScene);
     setWipeTrigger(true);
   }, []);
 
-  // 初期化 & SceneManager購読
+  // SceneManager購読
   useEffect(() => {
     const interval = setInterval(() => {
       sceneMgr.update(0.016);
 
-      // SceneManagerのシーンとReactのシーンが食い違っていたら同期
       if (sceneMgr.currentScene !== scene) {
         if (!wipeTrigger && !pendingScene) {
           handleSceneChange(sceneMgr.currentScene);
@@ -95,7 +109,7 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [scene, sceneMgr, wipeTrigger, pendingScene, handleSceneChange]);
 
-  // ワイプ完了時の処理
+  // ワイプ完了時
   const onWipeMiddle = () => {
     if (pendingScene) {
       setScene(pendingScene);
@@ -104,7 +118,7 @@ const App: React.FC = () => {
     }
   };
 
-  // ゲーム終了時のコールバック
+  // ゲーム終了時
   const onGameEnd = (endScore: number, counts: Record<string, number>) => {
     sceneMgr.score = endScore;
     sceneMgr.catchCounts = counts;
@@ -149,14 +163,14 @@ const App: React.FC = () => {
         Players: {playerCount} (Speed x{speedMultiplier.toFixed(1)})
       </div>
 
-      {/* 開発時デバッグ: CHARACTER_MAP の確認ボタン */}
+      {/* 開発時デバッグ: マスタ確認 */}
       {import.meta.env.DEV && scene === 'TITLE' && (
         <button
           onClick={() => {
             console.table(
               Array.from(CHARACTER_MAP.values()).map(c => ({
                 no: c.no, id: c.id, name: c.name, artist: c.artist,
-                work: c.work, charImg: c.characterImage, cover: c.workImage,
+                work: c.work, charImg: c.characterImage, cover: c.workImage, attach: c.attachmentFile,
               }))
             );
           }}

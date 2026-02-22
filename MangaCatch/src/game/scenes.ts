@@ -1,5 +1,4 @@
 // src/game/scenes.ts
-// 修正: ここに 'type' を追加しました
 import { CHARACTER_MASTER, getCharacterData, type CharacterData } from '../constants/master';
 
 export type SceneType =
@@ -13,6 +12,12 @@ const SCENE_DURATIONS: Partial<Record<SceneType, number>> = {
     RECOMMEND: 6,  // 推薦画面
     PHOTO: 10,     // 撮影タイム
     RANKING: 8     // ランキング
+};
+
+type StoredRankingEntry = {
+    score: number;
+    bestCharId: string | null;
+    achieved_at: number;
 };
 
 export class SceneManager {
@@ -71,13 +76,13 @@ export class SceneManager {
             case 'TITLE': break;
             case 'TUTORIAL': this.transitionTo('GAME'); break;
             case 'GAME':
-                this.calculateBestCharacter(); // ゲーム終了時に集計
+                this.calculateBestCharacter();
                 this.transitionTo('RESULT');
                 break;
             case 'RESULT': this.transitionTo('RECOMMEND'); break;
             case 'RECOMMEND': this.transitionTo('PHOTO'); break;
             case 'PHOTO':
-                this.saveRanking(); // 撮影終了後にランキング保存
+                this.saveRanking();
                 this.transitionTo('RANKING');
                 break;
             case 'RANKING': this.transitionTo('TITLE'); break;
@@ -102,7 +107,6 @@ export class SceneManager {
         let maxCount = -1;
         let bestId = "";
 
-        // 集計
         Object.keys(this.catchCounts).forEach(id => {
             if (this.catchCounts[id] > maxCount) {
                 maxCount = this.catchCounts[id];
@@ -110,27 +114,52 @@ export class SceneManager {
             }
         });
 
-        // 0個の場合はランダムに1人選出（エラー回避）
         if (bestId === "") {
             bestId = CHARACTER_MASTER[Math.floor(Math.random() * CHARACTER_MASTER.length)].id;
         }
 
+        // bestId は "chara_001" 形式なので、そのまま master で引く
         this.bestCharacter = getCharacterData(bestId) || null;
     }
 
-    // ランキング保存（簡易localStorage版）
+    // ランキング保存（localStorage）
     private saveRanking() {
-        // 日付キーを作成（日次リセット用）
         const today = new Date().toLocaleDateString();
         const key = `mangacatch_ranking_${today}`;
 
         const rawData = localStorage.getItem(key);
-        let ranking: number[] = rawData ? JSON.parse(rawData) : [];
+        let ranking: StoredRankingEntry[] = [];
 
-        ranking.push(this.score);
-        // 降順ソート
-        ranking.sort((a, b) => b - a);
-        // Top30のみ保持
+        if (rawData) {
+            try {
+                const parsed = JSON.parse(rawData);
+                if (Array.isArray(parsed)) {
+                    ranking = parsed.map((e: any) => {
+                        // 旧形式（number[]）
+                        if (typeof e === 'number') {
+                            return { score: e, bestCharId: null, achieved_at: 0 };
+                        }
+                        // 新形式（object）
+                        const score = typeof e.score === 'number'
+                            ? e.score
+                            : (typeof e.total_score === 'number' ? e.total_score : 0);
+                        const bestCharId = typeof e.bestCharId === 'string' ? e.bestCharId : null;
+                        const achieved_at = typeof e.achieved_at === 'number' ? e.achieved_at : 0;
+                        return { score, bestCharId, achieved_at };
+                    });
+                }
+            } catch {
+                ranking = [];
+            }
+        }
+
+        ranking.push({
+            score: this.score,
+            bestCharId: this.bestCharacter?.id ?? null,
+            achieved_at: Date.now(),
+        });
+
+        ranking.sort((a, b) => b.score - a.score);
         ranking = ranking.slice(0, 30);
 
         localStorage.setItem(key, JSON.stringify(ranking));
