@@ -1,6 +1,10 @@
 import React, { useEffect } from 'react';
 import { useGameLoop } from '../../hooks/useGameLoop';
 import type { SceneType } from '../../game/scenes';
+import { getCharacterImagePath } from '../../constants/master';
+
+// プレースホルダーへのフォールバック（画像読み込み失敗時）
+const PLACEHOLDER_CHARA = '/assets/ui/placeholder_chara.png';
 
 interface GameSceneProps {
     scene: SceneType; // useGameLoopに渡すため
@@ -41,7 +45,16 @@ export const GameScene: React.FC<GameSceneProps> = ({
                 {items.map(item => (
                     <img
                         key={item.id}
-                        src={`/assets/characters/${item.char.id}.png`}
+                        // characterImage フィールドを使った明示指定（推測禁止）
+                        src={getCharacterImagePath(item.char)}
+                        alt={`${item.char.name}（${item.char.work}）`}
+                        onError={(e) => {
+                            const img = e.target as HTMLImageElement;
+                            if (img.src !== PLACEHOLDER_CHARA) {
+                                console.warn(`[MangaCatch] 画像ロード失敗: ${img.src} → プレースホルダーに切り替え (id=${item.char.id})`);
+                                img.src = PLACEHOLDER_CHARA;
+                            }
+                        }}
                         style={{
                             position: 'absolute',
                             left: item.x,
@@ -74,6 +87,22 @@ export const GameScene: React.FC<GameSceneProps> = ({
                     <div style={{ width: `${(timer / 30) * 100}%`, height: '100%', background: timer < 5 ? 'red' : '#00eebb' }} />
                 </div>
             </div>
+
+            {/* 開発時デバッグ表示 */}
+            {import.meta.env.DEV && (
+                <div style={{
+                    position: 'absolute', bottom: 0, left: 0, zIndex: 999,
+                    background: 'rgba(0,0,0,0.7)', color: '#0f0', fontSize: '10px',
+                    padding: '4px 8px', fontFamily: 'monospace', maxHeight: '120px',
+                    overflowY: 'auto', pointerEvents: 'none'
+                }}>
+                    {items.slice(0, 5).map(item => (
+                        <div key={item.id}>
+                            [No.{item.char.no}] id={item.char.id} | {item.char.name} | img={item.char.characterImage}
+                        </div>
+                    ))}
+                </div>
+            )}
         </>
     );
 };
