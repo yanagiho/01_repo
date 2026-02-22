@@ -1,3 +1,4 @@
+// js/game.js
 import { AssetManager } from "./assets.js";
 import { InputManager } from "./input.js";
 import { ScoreManager } from "./score.js";
@@ -9,23 +10,19 @@ export class Game {
         this.canvas = document.getElementById("game-canvas");
         this.ctx = this.canvas.getContext("2d");
 
-        // Systems
         this.assets = new AssetManager();
         this.input = new InputManager();
         this.score = new ScoreManager();
         this.ranking = new RankingManager();
         this.mechanics = null;
 
-        // State
         this.state = "BOOT"; // BOOT, TITLE, TUTORIAL, COUNTDOWN, PLAY, RESULT, RANKING
         this.lastFrameTime = 0;
 
-        // Game specific
-        this.playTime = 30; // seconds
+        this.playTime = 30;
         this.timeLeft = this.playTime;
-        this.catchZone = { y_start: 0.75, y_end: 1.0 }; // Bottom 25%
+        this.catchZone = { y_start: 0.75, y_end: 1.0 };
 
-        // UI references
         this.ui = {
             title: document.getElementById("screen-title"),
             tutorial: document.getElementById("screen-tutorial"),
@@ -38,8 +35,6 @@ export class Game {
             rankingTable: document.getElementById("ranking-table-body"),
         };
 
-        // Play State
-        this.items = [];
         this.feedbackEffects = [];
 
         this.init();
@@ -49,19 +44,15 @@ export class Game {
         this.resize();
         window.addEventListener("resize", () => this.resize());
 
-        // Load assets
         await this.assets.loadManifest();
         await this.assets.preloadImages();
 
-        // Init mechanics
         this.mechanics = new GameMechanics(this.assets.getManifest());
 
-        // Bind UI events
-        document.getElementById("btn-start")?.addEventListener("click", () => this.startTutorial());
-        document.getElementById("btn-ranking-next")?.addEventListener("click", () => this.showRanking());
-        document.getElementById("btn-title")?.addEventListener("click", () => this.toTitle());
+        document.getElementById("btn-start").addEventListener("click", () => this.startTutorial());
+        document.getElementById("btn-ranking-next").addEventListener("click", () => this.showRanking());
+        document.getElementById("btn-title").addEventListener("click", () => this.toTitle());
 
-        // Start loop
         this.state = "TITLE";
         this.toggleUI("title");
         requestAnimationFrame((t) => this.loop(t));
@@ -85,7 +76,6 @@ export class Game {
     update(dt) {
         if (this.state === "PLAY") this.updatePlay(dt);
 
-        // feedback update
         this.feedbackEffects = this.feedbackEffects.filter((e) => {
             e.life -= dt;
             e.y -= 100 * dt;
@@ -109,15 +99,13 @@ export class Game {
     }
 
     onItemGet(player, item) {
-        // 1) score
         this.score.addScore(player.id, item);
         this.ui.score.textContent = this.score.totalScore;
 
-        // 2) visual feedback
         const xPx = player.x * this.canvas.width;
         const yPx = player.y * this.canvas.height;
 
-        // ★ここが核心：filenameではなく type object を渡す
+        // ★ここが核心：filenameではなく item（type object）を渡す
         const img = this.assets.getCharacterImage(item);
 
         this.feedbackEffects.push({
@@ -128,26 +116,21 @@ export class Game {
             image: img,
         });
 
-        // デバッグ：ズレの検証ができるログ
-        // （画像が違うと言う場合、ここに出ている type_id と実画像が一致しているかで切り分けできます）
-        console.log("[CATCH]", {
-            type_id: item.type_id,
-            display_name: item.display_name,
-            author: item.work_author_name,
-            character_filename: item.character_filename,
-        });
+        // デバッグ（壊れてる2件の特定が一発でできます）
+        if (item._charMissing) {
+            console.warn("[CATCH] missing char image:", item.type_id, item.display_name, item._charCandidates);
+        }
     }
 
     draw() {
-        // clear
         this.ctx.fillStyle = "#0f0f13";
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // catch zone
         const zoneY = this.catchZone.y_start * this.canvas.height;
-        this.ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
+        this.ctx.fillStyle = "rgba(255,255,255,0.05)";
         this.ctx.fillRect(0, zoneY, this.canvas.width, this.canvas.height - zoneY);
-        this.ctx.strokeStyle = "rgba(59, 130, 246, 0.5)";
+
+        this.ctx.strokeStyle = "rgba(59,130,246,0.5)";
         this.ctx.setLineDash([10, 10]);
         this.ctx.beginPath();
         this.ctx.moveTo(0, zoneY);
@@ -155,17 +138,17 @@ export class Game {
         this.ctx.stroke();
         this.ctx.setLineDash([]);
 
-        this.ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+        this.ctx.fillStyle = "rgba(255,255,255,0.2)";
         this.ctx.font = "20px sans-serif";
         this.ctx.textAlign = "center";
         this.ctx.fillText("CATCH ZONE", this.canvas.width / 2, zoneY + 30);
 
-        // player ring
         if (this.state === "PLAY" || this.state === "TUTORIAL" || this.state === "COUNTDOWN") {
             const players = this.input.getPlayers();
             players.forEach((p) => {
                 const x = p.x * this.canvas.width;
                 const y = p.y * this.canvas.height;
+
                 this.ctx.beginPath();
                 this.ctx.arc(x, y, 40, 0, Math.PI * 2);
                 this.ctx.strokeStyle = "#f43f5e";
@@ -178,7 +161,6 @@ export class Game {
             });
         }
 
-        // feedback effects
         this.feedbackEffects.forEach((e) => {
             if (e.image) {
                 const size = 100;
@@ -213,16 +195,13 @@ export class Game {
 
     endGame() {
         this.state = "RESULT";
-
         const summary = this.score.getSummary();
         this.ui.resultTable.innerHTML = "";
 
         summary.history.forEach((item) => {
             const row = document.createElement("tr");
-            // 先生名も同じ item.data から出るので「ズレ」ない
             row.innerHTML = `
         <td>${item.data.display_name}</td>
-        <td>${item.data.work_author_name || ""}</td>
         <td>${item.count}</td>
         <td>${item.scoreSum}</td>
         <td>${item.raritySum} pts</td>
@@ -234,7 +213,6 @@ export class Game {
         totalRow.style.fontWeight = "bold";
         totalRow.innerHTML = `
       <td>TOTAL</td>
-      <td>-</td>
       <td>-</td>
       <td>${summary.totalScore}</td>
       <td>${summary.raritySum} pts</td>
