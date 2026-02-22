@@ -214,24 +214,6 @@
       "work_title_en": "Stop! Niichan",
       "author_name_en": "SEKIYA Hisashi",
       "data_status": "本データ"
-    },
-    {
-      "type_id": "type10",
-      "display_name": "高峰ルリ",
-      "artist_id": "sekiya_hisashi",
-      "character_filename": "placeholder.png",
-      "book_filename": "cover_010.png",
-      "rarity_tier": "common",
-      "rarity_point": 1,
-      "weight": 10,
-      "score": 100,
-      "work_title": "スーパーおじょうさん",
-      "work_author_name": "関谷ひさし",
-      "recommend_text": "（仮）推薦文（後で差し替え）",
-      "character_name_en": "Takamine Ruri",
-      "work_title_en": "Super Ojou-san",
-      "author_name_en": "SEKIYA Hisashi",
-      "data_status": "本データ"
     }
   ]
 }

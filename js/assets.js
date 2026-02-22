@@ -5,18 +5,44 @@ export class AssetManager {
         this.loadedCount = 0;
         this.totalAssets = 0;
 
-        // Hardcoded fallback paths as per spec
+        // fallback paths in manifest
         this.fallbackCharacter = "assets/characters/placeholder.png";
         this.fallbackBook = "assets/books/placeholder.png";
 
-        // 読み込み要求済み（無限にloadImageしない保険）
+        // 生成プレースホルダ（ファイルが無くても必ず出せる）
+        this._generatedCharPlaceholder = this._makeSvgPlaceholder("NO CHAR");
+        this._generatedBookPlaceholder = this._makeSvgPlaceholder("NO BOOK");
+
         this._requested = new Set();
+    }
+
+    _makeSvgPlaceholder(label) {
+        const svg = encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256">
+        <rect width="100%" height="100%" fill="#222"/>
+        <rect x="12" y="12" width="232" height="232" fill="none" stroke="#555" stroke-width="4"/>
+        <text x="50%" y="50%" fill="#aaa" font-size="22" font-family="monospace"
+          text-anchor="middle" dominant-baseline="middle">${label}</text>
+      </svg>
+    `);
+        const img = new Image();
+        img.src = `data:image/svg+xml;charset=utf-8,${svg}`;
+        return img;
     }
 
     async loadManifest() {
         try {
             const response = await fetch("data/manifest.json");
             this.manifest = await response.json();
+
+            // fallback を manifest 優先に
+            if (this.manifest?.fallback?.character_placeholder) {
+                this.fallbackCharacter = this.manifest.fallback.character_placeholder;
+            }
+            if (this.manifest?.fallback?.book_placeholder) {
+                this.fallbackBook = this.manifest.fallback.book_placeholder;
+            }
+
             console.log("Manifest loaded:", this.manifest);
             return this.manifest;
         } catch (e) {
@@ -30,84 +56,104 @@ export class AssetManager {
     }
 
     _typeNoFromTypeId(typeId) {
-        // "type01" / "type1" / "type001" などを 1 にする
         const m = String(typeId || "").match(/(\d+)/);
-        if (!m) return null;
-        return Number(m[1]);
+        return m ? Number(m[1]) : null;
     }
 
-    _normalizeCharacterFilename(filename, typeObj) {
-        // 1) typeObj があるなら、type_idから決め打ち（最も安全）
-        if (typeObj && typeObj.type_id) {
-            const no = this._typeNoFromTypeId(typeObj.type_id);
-            if (no != null) return `chara_${this._pad3(no)}.png`;
+    _candidateCharacterPaths(typeObjOrFilename) {
+        const charsDir = this.manifest?.paths?.characters_dir || "assets/characters/";
+
+        // type object
+        if (typeObjOrFilename && typeof typeObjOrFilename === "object") {
+            const t = typeObjOrFilename;
+            const no = this._typeNoFromTypeId(t.type_id);
+
+            const list = [];
+            if (no != null) list.push(`${charsDir}chara_${this._pad3(no)}.png`);
+            if (t.character_filename) list.push(`${charsDir}${t.character_filename}`);
+
+            // 旧命名が残ってても拾う
+            if (no != null) list.push(`${charsDir}type${String(no).padStart(2, "0")}.png`);
+            if (no != null) list.push(`${charsDir}type${String(no).padStart(2, "0")}.webp`);
+
+            // 最後に fallback
+            list.push(this.fallbackCharacter);
+
+            // 重複排除
+            return Array.from(new Set(list));
         }
 
-        const f = String(filename || "");
-        if (!f) return "placeholder.png";
+        // filename string
+        const filename = String(typeObjOrFilename || "");
+        const list = [];
 
-        // 2) すでに chara_XXX.png ならそれを使う
-        if (/^chara_\d{3}\.(png|webp)$/i.test(f)) return f;
+        // 直接指定
+        if (filename) list.push(`${charsDir}${filename}`);
 
-        // 3) chara_9.png のような場合を補正
-        const mCh = f.match(/^chara_(\d+)\.(png|webp)$/i);
-        if (mCh) return `chara_${this._pad3(Number(mCh[1]))}.png`;
+        // type01.png -> chara_001.png
+        const mType = filename.match(/^type_?(\d+)\.(png|webp)$/i);
+        if (mType) {
+            const no = Number(mType[1]);
+            list.push(`${charsDir}chara_${this._pad3(no)}.png`);
+        }
 
-        // 4) type01.png -> chara_001.png
-        const mType = f.match(/^type_?(\d+)\.(png|webp)$/i);
-        if (mType) return `chara_${this._pad3(Number(mType[1]))}.png`;
+        // chara_1.png -> chara_001.png
+        const mCh = filename.match(/^chara_(\d+)\.(png|webp)$/i);
+        if (mCh) {
+            const no = Number(mCh[1]);
+            list.push(`${charsDir}chara_${this._pad3(no)}.png`);
+        }
 
-        // 5) その他はそのまま
-        return f;
+        list.push(this.fallbackCharacter);
+        return Array.from(new Set(list));
     }
 
-    _normalizeBookFilename(filename, typeObj) {
-        // 1) typeObj があるなら、type_idから cover_XXX.png を作る
-        if (typeObj && typeObj.type_id) {
-            const no = this._typeNoFromTypeId(typeObj.type_id);
-            if (no != null) return `cover_${this._pad3(no)}.png`;
+    _candidateBookPaths(typeObjOrFilename) {
+        const booksDir = this.manifest?.paths?.books_dir || "assets/books/";
+
+        if (typeObjOrFilename && typeof typeObjOrFilename === "object") {
+            const t = typeObjOrFilename;
+            const no = this._typeNoFromTypeId(t.type_id);
+
+            const list = [];
+            if (no != null) list.push(`${booksDir}cover_${this._pad3(no)}.png`);
+            if (t.book_filename) list.push(`${booksDir}${t.book_filename}`);
+
+            // 旧命名が残ってても拾う
+            if (no != null) list.push(`${booksDir}type${String(no).padStart(2, "0")}.png`);
+
+            list.push(this.fallbackBook);
+            return Array.from(new Set(list));
         }
 
-        const f = String(filename || "");
-        if (!f) return "placeholder.png";
+        const filename = String(typeObjOrFilename || "");
+        const list = [];
+        if (filename) list.push(`${booksDir}${filename}`);
 
-        if (/^cover_\d{3}\.(png|webp)$/i.test(f)) return f;
+        const mType = filename.match(/^type_?(\d+)\.(png|webp)$/i);
+        if (mType) {
+            const no = Number(mType[1]);
+            list.push(`${booksDir}cover_${this._pad3(no)}.png`);
+        }
 
-        const mCover = f.match(/^cover_(\d+)\.(png|webp)$/i);
-        if (mCover) return `cover_${this._pad3(Number(mCover[1]))}.png`;
-
-        const mType = f.match(/^type_?(\d+)\.(png|webp)$/i);
-        if (mType) return `cover_${this._pad3(Number(mType[1]))}.png`;
-
-        return f;
+        list.push(this.fallbackBook);
+        return Array.from(new Set(list));
     }
 
     async preloadImages() {
         if (!this.manifest) return;
 
         const types = this.manifest.types || [];
-
-        // Collect all paths to load
         const pathsToLoad = new Set();
 
-        // Add placeholders first
+        // fallback を最優先でロード
         pathsToLoad.add(this.fallbackCharacter);
         pathsToLoad.add(this.fallbackBook);
 
-        types.forEach((type) => {
-            const charsDir = this.manifest.paths.characters_dir;
-            const booksDir = this.manifest.paths.books_dir;
-
-            // そのままの指定 + 正規化した指定 の両方をロード（保険）
-            const charA = `${charsDir}${type.character_filename || "placeholder.png"}`;
-            const charB = `${charsDir}${this._normalizeCharacterFilename(type.character_filename, type)}`;
-            pathsToLoad.add(charA);
-            pathsToLoad.add(charB);
-
-            const bookA = `${booksDir}${type.book_filename || "placeholder.png"}`;
-            const bookB = `${booksDir}${this._normalizeBookFilename(type.book_filename, type)}`;
-            pathsToLoad.add(bookA);
-            pathsToLoad.add(bookB);
+        // 各 type から候補パスを集める（= 壊れててもズレない）
+        types.forEach((t) => {
+            this._candidateCharacterPaths(t).forEach((p) => pathsToLoad.add(p));
+            this._candidateBookPaths(t).forEach((p) => pathsToLoad.add(p));
         });
 
         this.totalAssets = pathsToLoad.size;
@@ -115,7 +161,7 @@ export class AssetManager {
         const promises = Array.from(pathsToLoad).map((path) => this.loadImage(path));
         await Promise.allSettled(promises);
 
-        console.log(`Assets loading finished.\nLoaded: ${this.loadedCount}/${this.totalAssets}`);
+        console.log(`Assets loading finished. Loaded: ${this.loadedCount}/${this.totalAssets}`);
     }
 
     loadImage(path) {
@@ -130,8 +176,8 @@ export class AssetManager {
             };
 
             img.onerror = () => {
-                console.warn(`Failed to load image: ${path}. Using placeholder logic on retrieval.`);
-                // Even on error, resolve to allow the game to continue
+                console.warn(`Failed to load image: ${path}`);
+                // 失敗でも loadedCount は進める。Mapには入れない（候補探索でfallbackへ落ちる）
                 this.loadedCount++;
                 resolve(null);
             };
@@ -139,62 +185,37 @@ export class AssetManager {
     }
 
     _kickLoadIfNeeded(path) {
-        if (this._requested.has(path)) return;
+        if (!path || this._requested.has(path)) return;
         this._requested.add(path);
-        // await しない（次フレーム以降に読み込み完了してMapに入る）
         this.loadImage(path).catch(() => { });
     }
 
-    /**
-     * filenameOrType:
-     *  - 文字列（"chara_001.png" / "type01.png" など）
-     *  - typeオブジェクト（manifestのtypes要素）
-     */
-    getCharacterImage(filenameOrType) {
-        const typeObj = (filenameOrType && typeof filenameOrType === "object") ? filenameOrType : null;
-        const filename = (typeof filenameOrType === "string") ? filenameOrType : (typeObj ? typeObj.character_filename : "");
-
-        const charsDir = this.manifest?.paths?.characters_dir || "assets/characters/";
-
-        const normalized = this._normalizeCharacterFilename(filename, typeObj);
-        const candidates = [
-            `${charsDir}${normalized}`,
-            `${charsDir}${filename}`,
-            this.fallbackCharacter
-        ].filter(Boolean);
+    getCharacterImage(typeObjOrFilename) {
+        const candidates = this._candidateCharacterPaths(typeObjOrFilename);
 
         for (const path of candidates) {
             if (this.images.has(path)) return this.images.get(path);
         }
 
-        // 未ロードなら裏で読み込み開始（次フレームで反映される）
-        const tryPath = candidates[0];
-        if (tryPath && tryPath !== this.fallbackCharacter) this._kickLoadIfNeeded(tryPath);
+        // 未ロードなら最有力候補を裏でロード
+        const first = candidates[0];
+        if (first && first !== this.fallbackCharacter) this._kickLoadIfNeeded(first);
 
-        return this.images.get(this.fallbackCharacter) || null;
+        // fallbackファイルが無い/未ロードでも必ず返す
+        return this.images.get(this.fallbackCharacter) || this._generatedCharPlaceholder;
     }
 
-    getBookImage(filenameOrType) {
-        const typeObj = (filenameOrType && typeof filenameOrType === "object") ? filenameOrType : null;
-        const filename = (typeof filenameOrType === "string") ? filenameOrType : (typeObj ? typeObj.book_filename : "");
-
-        const booksDir = this.manifest?.paths?.books_dir || "assets/books/";
-
-        const normalized = this._normalizeBookFilename(filename, typeObj);
-        const candidates = [
-            `${booksDir}${normalized}`,
-            `${booksDir}${filename}`,
-            this.fallbackBook
-        ].filter(Boolean);
+    getBookImage(typeObjOrFilename) {
+        const candidates = this._candidateBookPaths(typeObjOrFilename);
 
         for (const path of candidates) {
             if (this.images.has(path)) return this.images.get(path);
         }
 
-        const tryPath = candidates[0];
-        if (tryPath && tryPath !== this.fallbackBook) this._kickLoadIfNeeded(tryPath);
+        const first = candidates[0];
+        if (first && first !== this.fallbackBook) this._kickLoadIfNeeded(first);
 
-        return this.images.get(this.fallbackBook) || null;
+        return this.images.get(this.fallbackBook) || this._generatedBookPlaceholder;
     }
 
     getManifest() {
