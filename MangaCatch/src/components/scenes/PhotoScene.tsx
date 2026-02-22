@@ -17,7 +17,6 @@ export const PhotoScene: React.FC<{ bestChar: CharacterData | null; score: numbe
 
     return (
         <div style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'flex', gap: 28, padding: 48, color: '#fff' }}>
-            {/* 書影 */}
             <div style={{ width: '38%', minWidth: 320, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <CoverImage
                     char={bestChar}
@@ -32,9 +31,9 @@ export const PhotoScene: React.FC<{ bestChar: CharacterData | null; score: numbe
                 />
             </div>
 
-            {/* 情報 */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
                 <div style={{ fontFamily: 'monospace', opacity: 0.85 }}>{nowText}</div>
+
                 <div style={{ marginTop: 10, fontSize: 56, color: '#00eebb', lineHeight: 1.05 }}>{bestChar.work}</div>
                 <div style={{ marginTop: 6, fontSize: 22, opacity: 0.9 }}>{bestChar.workEn}</div>
 

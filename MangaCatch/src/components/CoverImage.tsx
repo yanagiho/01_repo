@@ -11,11 +11,16 @@ const PLACEHOLDER_SVG = encodeURIComponent(`
 `);
 const PLACEHOLDER = `data:image/svg+xml;charset=utf-8,${PLACEHOLDER_SVG}`;
 
+function uniq<T>(arr: T[]): T[] {
+    return Array.from(new Set(arr));
+}
+
 function baseDirsBooks(): string[] {
     const baseUrl = (import.meta as any)?.env?.BASE_URL ?? './';
     const norm = (s: string) => (s.endsWith('/') ? s : s + '/');
 
-    const roots = [
+    // book/cover の置き場所が揺れても拾えるように候補を複数持つ
+    return uniq([
         norm(baseUrl) + 'assets/books/',
         norm(baseUrl) + 'assets/covers/',
         './assets/books/',
@@ -26,17 +31,20 @@ function baseDirsBooks(): string[] {
         '../assets/covers/',
         '../../assets/books/',
         '../../assets/covers/',
-    ];
-
-    return Array.from(new Set(roots));
+    ]);
 }
 
 function candidatesForCover(char: CharacterData): string[] {
     const dirs = baseDirsBooks();
-    const names = Array.from(new Set([char.workImage]));
+    const names = uniq([char.workImage, `cover_${String(char.no).padStart(3, '0')}.png`]).filter(Boolean);
+
     const urls: string[] = [];
-    for (const d of dirs) for (const n of names) urls.push(d + n);
-    return urls;
+    for (const d of dirs) {
+        for (const n of names) {
+            urls.push(d + n);
+        }
+    }
+    return uniq(urls);
 }
 
 export const CoverImage: React.FC<{ char: CharacterData; style?: React.CSSProperties }> = ({ char, style }) => {
