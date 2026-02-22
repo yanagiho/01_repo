@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { StarBackground } from "./components/StarBackground";
 import { ScreentoneWipe } from "./components/ScreentoneWipe";
 
@@ -30,8 +30,7 @@ function loadRankingToday(): RankingEntry[] {
 }
 
 const App: React.FC = () => {
-  // センサーはあなたの現状版をそのまま使う
-  const { playerCount, speedMultiplier, playerX } = useSensor();
+  const { playerCount, speedMultiplier, playerX } = useSensor(); // ←あなたの現状版を使用
   const { particles, createParticles } = useParticles();
 
   const [sceneMgr] = useState(() => new SceneManager());
@@ -42,12 +41,17 @@ const App: React.FC = () => {
 
   const [rankingData, setRankingData] = useState<RankingEntry[]>([]);
 
+  // ★遷移ロック（二重発火防止）
+  const transitioningRef = useRef(false);
+
   const bestChar = (() => {
     const id = (sceneMgr as any).bestCharId as string | null;
     return id ? getCharacterById(id) ?? null : null;
   })();
 
   const startWipeTo = useCallback((next: SceneType) => {
+    if (transitioningRef.current) return; // ★二重発火防止
+    transitioningRef.current = true;
     setPendingScene(next);
     setWipeTrigger(true);
   }, []);
@@ -56,8 +60,9 @@ const App: React.FC = () => {
     const interval = window.setInterval(() => {
       sceneMgr.update(0.016);
 
+      // SceneManager側が進めた場合の追従
       if (sceneMgr.currentScene !== scene) {
-        if (!wipeTrigger && !pendingScene) {
+        if (!transitioningRef.current && !wipeTrigger && !pendingScene) {
           startWipeTo(sceneMgr.currentScene);
         }
       }
@@ -79,25 +84,16 @@ const App: React.FC = () => {
     setPendingScene(null);
   };
 
+  const onWipeComplete = () => {
+    setWipeTrigger(false);
+    transitioningRef.current = false; // ★ロック解除
+  };
+
   return (
-    <div
-      style={{
-        width: "100vw",
-        height: "100vh",
-        backgroundColor: "#000",
-        color: "#fff",
-        position: "relative",
-        overflow: "hidden",
-        cursor: "none",
-      }}
-    >
+    <div style={{ width: "100vw", height: "100vh", backgroundColor: "#000", color: "#fff", position: "relative", overflow: "hidden", cursor: "none" }}>
       <StarBackground />
 
-      <ScreentoneWipe
-        trigger={wipeTrigger}
-        onMiddle={onWipeMiddle}
-        onComplete={() => setWipeTrigger(false)}
-      />
+      <ScreentoneWipe trigger={wipeTrigger} onMiddle={onWipeMiddle} onComplete={onWipeComplete} />
 
       {/* particles */}
       {particles.map((p) => (
@@ -123,9 +119,9 @@ const App: React.FC = () => {
       {scene === "TITLE" && (
         <TitleScene
           onStart={() => {
-            console.log("[App] START pressed");
+            // ここが「クリックで進む」トリガー
             sceneMgr.triggerStart(); // TITLE → TUTORIAL_VIDEO
-            if (!wipeTrigger && !pendingScene) startWipeTo("TUTORIAL_VIDEO");
+            startWipeTo("TUTORIAL_VIDEO");
           }}
         />
       )}
@@ -134,7 +130,7 @@ const App: React.FC = () => {
         <TutorialVideoScene
           onEnded={() => {
             sceneMgr.finishTutorialVideo(); // → GAME
-            if (!wipeTrigger && !pendingScene) startWipeTo("GAME");
+            startWipeTo("GAME");
           }}
         />
       )}
@@ -148,7 +144,7 @@ const App: React.FC = () => {
           onCreateParticles={createParticles}
           onEnd={(score, counts) => {
             sceneMgr.finishGame(score, counts);
-            if (!wipeTrigger && !pendingScene) startWipeTo("RESULT");
+            startWipeTo("RESULT");
           }}
         />
       )}
@@ -158,19 +154,9 @@ const App: React.FC = () => {
       {scene === "PHOTO" && <PhotoScene bestChar={bestChar} score={sceneMgr.score} />}
       {scene === "RANKING" && <RankingScene ranking={rankingData} />}
 
-      {/* debug */}
-      <div
-        style={{
-          position: "absolute",
-          top: 6,
-          left: 6,
-          fontSize: 10,
-          color: "lime",
-          zIndex: 200,
-          fontFamily: "monospace",
-        }}
-      >
-        Scene: {scene}
+      {/* debug（止まった場所が特定できる） */}
+      <div style={{ position: "absolute", top: 6, left: 6, fontSize: 10, color: "lime", zIndex: 200, fontFamily: "monospace" }}>
+        scene(UI): {scene} / sceneMgr: {sceneMgr.currentScene}
       </div>
     </div>
   );
