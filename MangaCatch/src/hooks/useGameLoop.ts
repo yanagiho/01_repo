@@ -19,6 +19,18 @@ export const useGameLoop = (
     const nextId = useRef(0);
     const laneTimers = useRef([0, 0, 0, 0, 0]);
 
+    // 最新の値をループ内で参照するためのref
+    const playerXRef = useRef(playerX);
+    const speedMultiplierRef = useRef(speedMultiplier);
+
+    useEffect(() => {
+        playerXRef.current = playerX;
+    }, [playerX]);
+
+    useEffect(() => {
+        speedMultiplierRef.current = speedMultiplier;
+    }, [speedMultiplier]);
+
     // ゲーム開始時のリセット
     const resetGame = useCallback(() => {
         setItems([]);
@@ -41,12 +53,14 @@ export const useGameLoop = (
     useEffect(() => {
         if (scene !== "GAME") return;
 
+        console.log("Game loop started");
+
         const interval = setInterval(() => {
             // タイマー減算
             setTimer(t => Math.max(0, t - 0.016));
 
-            // 倍率適用
-            const currentMultiplier = speedMultiplier;
+            // 倍率適用 (refから取得)
+            const currentMultiplier = speedMultiplierRef.current;
 
             // レーンタイマーの減算
             const tick = 1 * currentMultiplier;
@@ -80,8 +94,8 @@ export const useGameLoop = (
                 const newX = item.baseX + Math.sin(newTime * item.swaySpeed) * item.swayAmp;
                 const pY = window.innerHeight - 80;
 
-                // 当たり判定
-                if (newY > pY - 80 && newY < pY + 20 && Math.abs(newX - playerX) < 110) {
+                // 当たり判定 (refから現在のplayerXを取得)
+                if (newY > pY - 80 && newY < pY + 20 && Math.abs(newX - playerXRef.current) < 110) {
                     setScore(s => s + item.char.score);
                     catchCount.current[item.char.id] = (catchCount.current[item.char.id] || 0) + 1;
                     setIsHit(true);
@@ -97,8 +111,11 @@ export const useGameLoop = (
 
         }, 16);
 
-        return () => clearInterval(interval);
-    }, [scene, playerX, speedMultiplier, onCatch]);
+        return () => {
+            console.log("Game loop cleared");
+            clearInterval(interval);
+        };
+    }, [scene, onCatch]); // playerX と speedMultiplier を依存配列から削除
 
     return { items, score, timer, isHit, catchCount, resetGame };
 };

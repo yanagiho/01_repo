@@ -1,10 +1,7 @@
 import React, { useEffect } from 'react';
 import { useGameLoop } from '../../hooks/useGameLoop';
 import type { SceneType } from '../../game/scenes';
-import { getCharacterImagePath } from '../../constants/master';
-
-// プレースホルダーへのフォールバック（画像読み込み失敗時）
-const PLACEHOLDER_CHARA = '/assets/ui/placeholder_chara.png';
+import { CharacterImage } from '../CharacterImage';
 
 interface GameSceneProps {
     scene: SceneType; // useGameLoopに渡すため
@@ -12,6 +9,7 @@ interface GameSceneProps {
     speedMultiplier: number;
     playerCount: number;
     onEnd: (score: number, catchCounts: Record<string, number>) => void;
+
     // エフェクト用コールバック
     onCreateParticles: (x: number, y: number) => void;
 }
@@ -20,10 +18,10 @@ export const GameScene: React.FC<GameSceneProps> = ({
     scene,
     playerX,
     speedMultiplier,
+    playerCount,
     onEnd,
-    onCreateParticles
+    onCreateParticles,
 }) => {
-    // GameLoopフックを使用
     const { items, score, timer, isHit, catchCount } = useGameLoop(
         scene,
         playerX,
@@ -34,75 +32,82 @@ export const GameScene: React.FC<GameSceneProps> = ({
     // タイマー終了監視
     useEffect(() => {
         if (scene === 'GAME' && timer <= 0) {
-            onEnd(score, catchCount.current);
+            onEnd(score, catchCount.current as Record<string, number>);
         }
-    }, [scene, timer, onEnd, score]);
+    }, [scene, timer, onEnd, score, catchCount]);
+
+    // 画面下のカゴ（画像が無くても動くようにdivで表現）
+    const basketW = 220;
+    const basketH = 90;
+    const basketY = window.innerHeight - 80;
 
     return (
-        <>
-            {/* ゲームメイン描画 */}
-            <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
-                {items.map(item => (
-                    <img
-                        key={item.id}
-                        // characterImage フィールドを使った明示指定（推測禁止）
-                        src={getCharacterImagePath(item.char)}
-                        alt={`${item.char.name}（${item.char.work}）`}
-                        onError={(e) => {
-                            const img = e.target as HTMLImageElement;
-                            if (img.src !== PLACEHOLDER_CHARA) {
-                                console.warn(`[MangaCatch] 画像ロード失敗: ${img.src} → プレースホルダーに切り替え (id=${item.char.id})`);
-                                img.src = PLACEHOLDER_CHARA;
-                            }
-                        }}
-                        style={{
-                            position: 'absolute',
-                            left: item.x,
-                            top: item.y,
-                            width: '225px', // 150 * 1.5
-                            height: '225px',
-                            transform: 'translateX(-50%)' // 中心基準
-                        }}
-                    />
-                ))}
+        <div style={{ position: 'absolute', inset: 0 }}>
+            {/* 落下キャラ */}
+            {items.map((item) => (
+                <CharacterImage
+                    key={item.id}
+                    char={item.char}
+                    style={{
+                        position: 'absolute',
+                        left: item.x,
+                        top: item.y,
+                        width: 170,
+                        height: 170,
+                        transform: 'translate(-50%, -50%)',
+                        objectFit: 'contain',
+                        filter: 'drop-shadow(0 10px 10px rgba(0,0,0,0.6))',
+                        pointerEvents: 'none',
+                    }}
+                />
+            ))}
 
-                {/* プレイヤー（カゴ） */}
-                <div style={{
+            {/* プレイヤー（カゴ） */}
+            <div
+                style={{
                     position: 'absolute',
                     left: playerX,
-                    bottom: '80px',
-                    width: '180px',
-                    height: '90px',
-                    transform: 'translateX(-50%)',
-                    filter: isHit ? 'brightness(3) drop-shadow(0 0 20px white)' : 'none'
-                }}>
-                    <div style={{ width: '100%', height: '100%', border: '5px solid cyan', borderTop: 'none', borderRadius: '0 0 100px 100px', boxShadow: '0 5px 20px cyan' }} />
-                </div>
+                    top: basketY,
+                    width: basketW,
+                    height: basketH,
+                    transform: 'translate(-50%, -50%)',
+                    borderRadius: 18,
+                    border: '3px solid rgba(0,238,187,0.9)',
+                    background: 'rgba(0,0,0,0.25)',
+                    boxShadow: isHit ? '0 0 35px rgba(0,238,187,0.9)' : '0 0 10px rgba(0,0,0,0.4)',
+                    transition: 'box-shadow 120ms linear',
+                }}
+            >
+                {/* ヒット時フラッシュ */}
+                {isHit && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            inset: -8,
+                            borderRadius: 22,
+                            border: '2px solid rgba(255,255,255,0.8)',
+                        }}
+                    />
+                )}
             </div>
 
-            {/* UIレイヤー */}
-            <div style={{ position: 'absolute', inset: 0, zIndex: 10, pointerEvents: 'none' }}>
-                <div style={{ position: 'absolute', top: '20px', right: '30px', fontSize: '2.5rem', fontWeight: 'bold' }}>SCORE: {score}</div>
-                <div style={{ position: 'absolute', top: '30px', left: '50%', transform: 'translateX(-50%)', width: '500px', height: '35px', background: 'rgba(255,255,255,0.2)', borderRadius: '20px', overflow: 'hidden' }}>
-                    <div style={{ width: `${(timer / 30) * 100}%`, height: '100%', background: timer < 5 ? 'red' : '#00eebb' }} />
-                </div>
+            {/* UI */}
+            <div
+                style={{
+                    position: 'absolute',
+                    left: 20,
+                    top: 16,
+                    fontFamily: 'monospace',
+                    fontSize: 20,
+                    color: '#00eebb',
+                    textShadow: '0 2px 8px rgba(0,0,0,0.9)',
+                    zIndex: 100,
+                }}
+            >
+                <div>SCORE: {score}</div>
+                <div>TIME: {Math.max(0, timer).toFixed(1)}</div>
+                <div>PLAYERS: {playerCount} / SPEED x{speedMultiplier.toFixed(2)}</div>
             </div>
-
-            {/* 開発時デバッグ表示 */}
-            {import.meta.env.DEV && (
-                <div style={{
-                    position: 'absolute', bottom: 0, left: 0, zIndex: 999,
-                    background: 'rgba(0,0,0,0.7)', color: '#0f0', fontSize: '10px',
-                    padding: '4px 8px', fontFamily: 'monospace', maxHeight: '120px',
-                    overflowY: 'auto', pointerEvents: 'none'
-                }}>
-                    {items.slice(0, 5).map(item => (
-                        <div key={item.id}>
-                            [No.{item.char.no}] id={item.char.id} | {item.char.name} | img={item.char.characterImage}
-                        </div>
-                    ))}
-                </div>
-            )}
-        </>
+        </div>
     );
 };

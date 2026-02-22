@@ -158,9 +158,10 @@ const App: React.FC = () => {
       {scene === 'RANKING' && <RankingScene ranking={rankingData} />}
 
       {/* デバッグ表示（常時: シーン・プレイヤー情報） */}
-      <div style={{ position: 'absolute', top: 5, left: 5, fontSize: '10px', color: 'lime', zIndex: 100 }}>
+      <div style={{ position: 'absolute', top: 5, left: 5, fontSize: '10px', color: 'lime', zIndex: 100, pointerEvents: 'none' }}>
         Scene: {scene} <br />
-        Players: {playerCount} (Speed x{speedMultiplier.toFixed(1)})
+        Players: {playerCount} (Speed x{speedMultiplier.toFixed(1)}) <br />
+        Timer: {sceneMgr.stateTimer.toFixed(1)}s (Mgr)
       </div>
 
       {/* 開発時デバッグ: マスタ確認 */}
