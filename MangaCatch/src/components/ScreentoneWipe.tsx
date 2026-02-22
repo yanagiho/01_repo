@@ -1,148 +1,52 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 
-interface ScreentoneWipeProps {
+export const ScreentoneWipe: React.FC<{
     trigger: boolean;
-    onMiddle?: () => void;
-    onComplete?: () => void;
-}
-
-export const ScreentoneWipe: React.FC<ScreentoneWipeProps> = ({ trigger, onMiddle, onComplete }) => {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [isActive, setIsActive] = useState(false);
-
-    // コールバックを最新の状態で保持しつつ、useEffectの再発火を防ぐ
-    const onMiddleRef = useRef(onMiddle);
-    const onCompleteRef = useRef(onComplete);
-    useEffect(() => { onMiddleRef.current = onMiddle; }, [onMiddle]);
-    useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
+    onMiddle: () => void;
+    onComplete: () => void;
+}> = ({ trigger, onMiddle, onComplete }) => {
+    const [phase, setPhase] = useState<'idle' | 'in' | 'out'>('idle');
 
     useEffect(() => {
         if (!trigger) return;
-        if (isActive) return;
 
-        setIsActive(true);
-        const startTime = performance.now();
-        const expandDuration = 600; // 0.6秒で広がる
-        const holdDuration = 200;   // 0.2秒キープ（シーン遷移のチラつき防止）
-        const shrinkDuration = 600; // 0.6秒で閉じる
-        const totalDuration = expandDuration + holdDuration + shrinkDuration;
+        setPhase('in');
 
-        let animationFrameId: number;
-        let middleTriggered = false;
+        const t1 = window.setTimeout(() => {
+            onMiddle();
+            setPhase('out');
+        }, 260);
 
-        const animate = (time: number) => {
-            const elapsed = time - startTime;
-            const canvas = canvasRef.current;
-            const ctx = canvas?.getContext('2d');
+        const t2 = window.setTimeout(() => {
+            setPhase('idle');
+            onComplete();
+        }, 520);
 
-            if (canvas && ctx) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                let progress = 0;
-
-                if (elapsed < expandDuration) {
-                    // 拡大フェーズ
-                    progress = elapsed / expandDuration;
-                    progress = progress * progress; // ease-in
-                } else if (elapsed < expandDuration + holdDuration) {
-                    // ホールドフェーズ（真っ白）
-                    progress = 1.0;
-                } else {
-                    // 縮小フェーズ
-                    const shrinkElapsed = elapsed - (expandDuration + holdDuration);
-                    progress = 1.0 - (shrinkElapsed / shrinkDuration);
-                    progress = progress * (2 - progress); // ease-out
-                }
-
-                progress = Math.max(0, Math.min(1, progress));
-
-                ctx.fillStyle = 'white';
-                // 画面サイズに応じて円のサイズを調整
-                const cols = 12; // 横方向の円の数（少なめにして個々の円を大きくする）
-                const cellSize = Math.max(canvas.width, canvas.height) / cols;
-                const rows = Math.ceil(canvas.height / cellSize) + 1; // 縦もカバー
-                const colsPlus = Math.ceil(canvas.width / cellSize) + 1;
-
-                // 完全に埋めるために半径を大きめに設定 (sqrt(2) * cellSize / 2 よりも大きく)
-                const maxRadius = (cellSize / 2) * 1.8;
-
-                for (let y = 0; y < rows; y++) {
-                    for (let x = 0; x < colsPlus; x++) {
-                        const cx = x * cellSize;
-                        const cy = y * cellSize;
-
-                        // 市松模様のように少しずらすと隙間なく埋まりやすい？
-                        // 今回は単純配置で半径を大きくして埋める
-                        const r = maxRadius * progress;
-
-                        if (r > 0.5) {
-                            ctx.beginPath();
-                            ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                            ctx.fill();
-                        }
-                    }
-                }
-            }
-
-            // ミドルポイント処理 (ホールド期間の開始時に発火)
-            if (elapsed >= expandDuration && !middleTriggered) {
-                middleTriggered = true;
-                if (onMiddleRef.current) onMiddleRef.current();
-            }
-
-            // 終了判定
-            if (elapsed < totalDuration) {
-                animationFrameId = requestAnimationFrame(animate);
-            } else {
-                setIsActive(false);
-                if (onCompleteRef.current) onCompleteRef.current();
-            }
+        return () => {
+            window.clearTimeout(t1);
+            window.clearTimeout(t2);
         };
+    }, [trigger, onMiddle, onComplete]);
 
-        animationFrameId = requestAnimationFrame(animate);
+    if (phase === 'idle') return null;
 
-        return () => cancelAnimationFrame(animationFrameId);
-    }, [trigger]); // isActive を依存配列から削除 (ループ防止)
-
-    // リサイズ対応 & HiDPI対応
-    useEffect(() => {
-        const handleResize = () => {
-            const canvas = canvasRef.current;
-            if (canvas) {
-                const dpr = window.devicePixelRatio || 1;
-                // キャンバスの解像度を設定 (Retina対応)
-                canvas.width = window.innerWidth * dpr;
-                canvas.height = window.innerHeight * dpr;
-
-                // 表示サイズはCSSで100%にするため、ここではスタイルと合わせる必要はないが
-                // コンテキストのスケールを合わせる
-                const ctx = canvas.getContext('2d');
-                if (ctx) ctx.scale(dpr, dpr);
-
-                // スタイル上のサイズも明示しておくと安全
-                canvas.style.width = `${window.innerWidth}px`;
-                canvas.style.height = `${window.innerHeight}px`;
-            }
-        };
-
-        handleResize(); // 初回実行
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []); // 初回のみ設定
-
-    if (!isActive) return null;
+    const opacity = phase === 'in' ? 1 : 0;
+    const scale = phase === 'in' ? 1 : 1.05;
 
     return (
-        <canvas
-            ref={canvasRef}
+        <div
             style={{
-                position: 'fixed', // absolute -> fixed に変更してスクロール等の影響を受けないように
-                top: 0,
-                left: 0,
-                width: '100vw',
-                height: '100vh',
-                zIndex: 9999,
-                pointerEvents: 'none'
+                position: 'absolute',
+                inset: 0,
+                pointerEvents: 'none',
+                zIndex: 999,
+                opacity,
+                transform: `scale(${scale})`,
+                transition: 'opacity 240ms linear, transform 240ms linear',
+                backgroundColor: 'rgba(0,0,0,0.95)',
+                backgroundImage:
+                    'radial-gradient(circle at 10px 10px, rgba(255,255,255,0.28) 2px, rgba(0,0,0,0) 2.4px)',
+                backgroundSize: '20px 20px',
             }}
         />
     );

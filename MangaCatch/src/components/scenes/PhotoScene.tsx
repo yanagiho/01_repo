@@ -1,57 +1,54 @@
-import React, { useMemo, useState } from "react";
-import type { CharacterData } from "../../constants/master";
+import React, { useMemo } from 'react';
+import type { CharacterData } from '../../constants/master';
+import { CoverImage } from '../CoverImage';
 
-const pad3 = (n: number) => String(n).padStart(3, "0");
+export const PhotoScene: React.FC<{ bestChar: CharacterData | null; score: number }> = ({ bestChar, score }) => {
+    const nowText = useMemo(() => {
+        const d = new Date();
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mi = String(d.getMinutes()).padStart(2, '0');
+        return `${yyyy}/${mm}/${dd} ${hh}:${mi}`;
+    }, []);
 
-function coverCandidates(char: CharacterData): string[] {
-    const baseUrl = (import.meta as any)?.env?.BASE_URL ?? "/";
-    const normalize = (s: string) => (s.endsWith("/") ? s : s + "/");
-    const bases = [
-        normalize(baseUrl) + "assets/books/",
-        "./assets/books/",
-        "assets/books/",
-        "../assets/books/",
-        "../../assets/books/",
-    ];
-    const file = char.workImage ?? `cover_${pad3(char.no)}.png`;
-    const names = [file, `cover_${pad3(char.no)}.png`];
-    const urls: string[] = [];
-    for (const b of bases) for (const n of names) urls.push(b + n);
-    return Array.from(new Set(urls));
-}
-
-export const PhotoScene: React.FC<{ bestChar: CharacterData; onNext: () => void }> = ({ bestChar, onNext }) => {
-    const candidates = useMemo(() => coverCandidates(bestChar), [bestChar]);
-    const [idx, setIdx] = useState(0);
+    if (!bestChar) return null;
 
     return (
-        <div style={{ position: "absolute", inset: 0, display: "flex", padding: 48, color: "#fff", gap: 28 }}>
-            <img
-                src={candidates[idx]}
-                onError={() => setIdx((i) => Math.min(i + 1, candidates.length - 1))}
-                style={{ height: "80vh", borderRadius: 16, objectFit: "contain", background: "rgba(0,0,0,0.3)" }}
-                alt={bestChar.work}
-            />
-            <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 44, color: "#00eebb" }}>{bestChar.work}</div>
-                <div style={{ marginTop: 8, fontSize: 28 }}>{bestChar.artist} 先生</div>
-                <div style={{ marginTop: 14, opacity: 0.85 }}>{bestChar.name}</div>
-
-                <button
-                    onClick={onNext}
+        <div style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'flex', gap: 28, padding: 48, color: '#fff' }}>
+            {/* 書影 */}
+            <div style={{ width: '38%', minWidth: 320, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CoverImage
+                    char={bestChar}
                     style={{
-                        marginTop: 22,
-                        padding: "12px 18px",
-                        fontSize: 16,
-                        borderRadius: 12,
-                        border: "2px solid #00eebb",
-                        background: "transparent",
-                        color: "#00eebb",
-                        cursor: "pointer",
+                        width: '100%',
+                        maxHeight: '82vh',
+                        objectFit: 'contain',
+                        borderRadius: 16,
+                        background: 'rgba(0,0,0,0.25)',
+                        boxShadow: '0 14px 30px rgba(0,0,0,0.55)',
                     }}
-                >
-                    ランキングへ
-                </button>
+                />
+            </div>
+
+            {/* 情報 */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+                <div style={{ fontFamily: 'monospace', opacity: 0.85 }}>{nowText}</div>
+                <div style={{ marginTop: 10, fontSize: 56, color: '#00eebb', lineHeight: 1.05 }}>{bestChar.work}</div>
+                <div style={{ marginTop: 6, fontSize: 22, opacity: 0.9 }}>{bestChar.workEn}</div>
+
+                <div style={{ marginTop: 12, fontSize: 28 }}>
+                    {bestChar.artist} <span style={{ opacity: 0.75 }}>({bestChar.artistEn})</span>
+                </div>
+
+                <div style={{ marginTop: 18, fontSize: 34 }}>
+                    SCORE: <span style={{ color: '#00eebb' }}>{score}</span>
+                </div>
+
+                <div style={{ marginTop: 20, opacity: 0.65, fontSize: 14 }}>
+                    ※この画面は自動で次へ進みます
+                </div>
             </div>
         </div>
     );

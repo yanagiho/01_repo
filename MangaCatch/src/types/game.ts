@@ -1,13 +1,13 @@
-import type { CharacterData } from "../constants/master";
+import type { CharacterData } from '../constants/master';
 
-export type Scene =
-    | "TITLE"
-    | "TUTORIAL"
-    | "GAME"
-    | "RESULT"
-    | "RECOMMEND"
-    | "PHOTO"
-    | "RANKING";
+export type SceneType =
+    | 'TITLE'
+    | 'TUTORIAL_VIDEO'
+    | 'GAME'
+    | 'RESULT'
+    | 'RECOMMEND'
+    | 'PHOTO'
+    | 'RANKING';
 
 export interface Particle {
     id: number;
@@ -33,6 +33,6 @@ export interface FallingItem {
 
 export interface RankingEntry {
     score: number;
-    achieved_at: number;
     bestCharId: string;
+    achieved_at: number; // epoch ms
 }

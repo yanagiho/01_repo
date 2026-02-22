@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import type { FallingItem } from "../types/game";
-import { getEnabledCharacters, type CharacterData } from "../constants/master";
+import { useState, useEffect, useRef, useCallback } from 'react';
+import type { FallingItem } from '../types/game';
+import { getEnabledCharacters } from '../constants/master';
 
 export const useGameLoop = (
     scene: string,
@@ -13,9 +13,7 @@ export const useGameLoop = (
     const [timer, setTimer] = useState(30);
     const [isHit, setIsHit] = useState(false);
 
-    // キャッチカウント（リザルト集計用）
     const catchCount = useRef<Record<string, number>>({});
-
     const nextId = useRef(0);
     const laneTimers = useRef<number[]>([0, 0, 0, 0, 0]);
 
@@ -30,27 +28,23 @@ export const useGameLoop = (
     }, []);
 
     useEffect(() => {
-        if (scene === "GAME") resetGame();
+        if (scene === 'GAME') resetGame();
     }, [scene, resetGame]);
 
     useEffect(() => {
-        if (scene !== "GAME") return;
+        if (scene !== 'GAME') return;
 
         const interval = setInterval(() => {
-            // タイマー減算
             setTimer((t) => Math.max(0, t - 0.016));
 
-            const currentMultiplier = speedMultiplier;
+            const m = Math.max(0.7, Math.min(2.0, speedMultiplier || 1.0));
+            laneTimers.current = laneTimers.current.map((lt) => Math.max(0, lt - 1 * m));
 
-            // レーンタイマーの減算
-            const tick = 1 * currentMultiplier;
-            laneTimers.current = laneTimers.current.map((lt) => Math.max(0, lt - tick));
-
-            // スポーン（enabledのみ）
-            if (Math.random() < 0.12 * currentMultiplier) {
+            // spawn（enabledのみ）
+            if (Math.random() < 0.12 * m) {
                 const laneIndex = Math.floor(Math.random() * 5);
                 if (laneTimers.current[laneIndex] <= 0) {
-                    const pool: CharacterData[] = getEnabledCharacters();
+                    const pool = getEnabledCharacters();
                     const char = pool[Math.floor(Math.random() * pool.length)];
 
                     setItems((prev) => [
@@ -68,26 +62,27 @@ export const useGameLoop = (
                         },
                     ]);
 
-                    // クールダウン
-                    laneTimers.current[laneIndex] = 45 / currentMultiplier;
+                    laneTimers.current[laneIndex] = 45 / m;
                 }
             }
 
-            // 移動 & 当たり判定
+            // move + hit
             setItems((prev) =>
                 prev
                     .map((item) => {
                         const newTime = item.time + 0.016;
-                        const newY = item.y + item.speed * currentMultiplier;
+                        const newY = item.y + item.speed * m;
                         const newX = item.baseX + Math.sin(newTime * item.swaySpeed) * item.swayAmp;
-                        const pY = window.innerHeight - 80;
 
-                        // 当たり判定
-                        if (newY > pY - 80 && newY < pY + 20 && Math.abs(newX - playerX) < 110) {
+                        const basketY = window.innerHeight - 80;
+                        const hit =
+                            newY > basketY - 80 &&
+                            newY < basketY + 20 &&
+                            Math.abs(newX - playerX) < 110;
+
+                        if (hit) {
                             setScore((s) => s + item.char.score);
-
-                            const id = item.char.id;
-                            catchCount.current[id] = (catchCount.current[id] || 0) + 1;
+                            catchCount.current[item.char.id] = (catchCount.current[item.char.id] || 0) + 1;
 
                             setIsHit(true);
                             setTimeout(() => setIsHit(false), 100);
@@ -98,7 +93,7 @@ export const useGameLoop = (
 
                         return { ...item, y: newY, x: newX, time: newTime };
                     })
-                    .filter((i): i is FallingItem => i !== null && i.y < window.innerHeight + 150)
+                    .filter((i): i is FallingItem => i !== null && i.y < window.innerHeight + 200)
             );
         }, 16);
 
