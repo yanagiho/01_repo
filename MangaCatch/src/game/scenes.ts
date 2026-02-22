@@ -1,34 +1,31 @@
-// src/game/scenes.ts
-import { CHARACTER_MASTER, getCharacterData, type CharacterData } from '../constants/master';
+import { getCharacterById, getEnabledCharacters, type CharacterData } from "../constants/master";
 
 export type SceneType =
-    | 'BOOT' | 'TITLE' | 'TUTORIAL' | 'GAME' | 'RESULT' | 'RECOMMEND' | 'PHOTO' | 'RANKING';
+    | "BOOT"
+    | "TITLE"
+    | "TUTORIAL"
+    | "GAME"
+    | "RESULT"
+    | "RECOMMEND"
+    | "PHOTO"
+    | "RANKING";
 
 const SCENE_DURATIONS: Partial<Record<SceneType, number>> = {
     BOOT: 1,
     TUTORIAL: 5,
-    GAME: 30,      // 30秒プレイ
-    RESULT: 5,     // リザルト表示
-    RECOMMEND: 6,  // 推薦画面
-    PHOTO: 10,     // 撮影タイム
-    RANKING: 8     // ランキング
-};
-
-type StoredRankingEntry = {
-    score: number;
-    bestCharId: string | null;
-    achieved_at: number;
+    GAME: 30,
+    RESULT: 5,
+    RECOMMEND: 6,
+    PHOTO: 10,
+    RANKING: 8,
 };
 
 export class SceneManager {
-    public currentScene: SceneType = 'TITLE';
+    public currentScene: SceneType = "TITLE";
     public score: number = 0;
     public stateTimer: number = 0;
 
-    // 取得履歴 { "chara_001": 5, "chara_002": 1 ... }
     public catchCounts: Record<string, number> = {};
-
-    // 今回のベストキャラ（推薦用）
     public bestCharacter: CharacterData | null = null;
 
     public constructor() {
@@ -36,7 +33,7 @@ export class SceneManager {
     }
 
     public reset() {
-        this.currentScene = 'TITLE';
+        this.currentScene = "TITLE";
         this.score = 0;
         this.stateTimer = 0;
         this.catchCounts = {};
@@ -44,22 +41,7 @@ export class SceneManager {
     }
 
     public triggerStart() {
-        if (this.currentScene === 'TITLE') {
-            this.transitionTo('TUTORIAL');
-        }
-    }
-
-    // スコア加算
-    public addScore(points: number) {
-        this.score += points;
-    }
-
-    // キャッチ記録
-    public recordCatch(charId: string) {
-        if (!this.catchCounts[charId]) {
-            this.catchCounts[charId] = 0;
-        }
-        this.catchCounts[charId]++;
+        if (this.currentScene === "TITLE") this.transitionTo("TUTORIAL");
     }
 
     public update(deltaTime: number) {
@@ -72,21 +54,34 @@ export class SceneManager {
 
     private nextScene() {
         switch (this.currentScene) {
-            case 'BOOT': this.transitionTo('TITLE'); break;
-            case 'TITLE': break;
-            case 'TUTORIAL': this.transitionTo('GAME'); break;
-            case 'GAME':
+            case "BOOT":
+                this.transitionTo("TITLE");
+                break;
+            case "TITLE":
+                break;
+            case "TUTORIAL":
+                this.transitionTo("GAME");
+                break;
+            case "GAME":
                 this.calculateBestCharacter();
-                this.transitionTo('RESULT');
+                this.transitionTo("RESULT");
                 break;
-            case 'RESULT': this.transitionTo('RECOMMEND'); break;
-            case 'RECOMMEND': this.transitionTo('PHOTO'); break;
-            case 'PHOTO':
+            case "RESULT":
+                this.transitionTo("RECOMMEND");
+                break;
+            case "RECOMMEND":
+                this.transitionTo("PHOTO");
+                break;
+            case "PHOTO":
                 this.saveRanking();
-                this.transitionTo('RANKING');
+                this.transitionTo("RANKING");
                 break;
-            case 'RANKING': this.transitionTo('TITLE'); break;
-            default: this.transitionTo('TITLE'); break;
+            case "RANKING":
+                this.transitionTo("TITLE");
+                break;
+            default:
+                this.transitionTo("TITLE");
+                break;
         }
     }
 
@@ -94,72 +89,44 @@ export class SceneManager {
         this.currentScene = next;
         this.stateTimer = 0;
 
-        if (next === 'GAME') {
+        if (next === "GAME") {
             this.score = 0;
             this.catchCounts = {};
             this.bestCharacter = null;
         }
+
         console.log(`Scene: ${next}`);
     }
 
-    // 一番多く取ったキャラを計算
     private calculateBestCharacter() {
         let maxCount = -1;
         let bestId = "";
 
-        Object.keys(this.catchCounts).forEach(id => {
+        Object.keys(this.catchCounts).forEach((id) => {
             if (this.catchCounts[id] > maxCount) {
                 maxCount = this.catchCounts[id];
                 bestId = id;
             }
         });
 
+        // 0個なら enabled の中から選ぶ（No.10を除外）
         if (bestId === "") {
-            bestId = CHARACTER_MASTER[Math.floor(Math.random() * CHARACTER_MASTER.length)].id;
+            const pool = getEnabledCharacters();
+            bestId = pool[Math.floor(Math.random() * pool.length)].id;
         }
 
-        // bestId は "chara_001" 形式なので、そのまま master で引く
-        this.bestCharacter = getCharacterData(bestId) || null;
+        this.bestCharacter = getCharacterById(bestId) || null;
     }
 
-    // ランキング保存（localStorage）
     private saveRanking() {
         const today = new Date().toLocaleDateString();
         const key = `mangacatch_ranking_${today}`;
 
         const rawData = localStorage.getItem(key);
-        let ranking: StoredRankingEntry[] = [];
+        let ranking: number[] = rawData ? JSON.parse(rawData) : [];
 
-        if (rawData) {
-            try {
-                const parsed = JSON.parse(rawData);
-                if (Array.isArray(parsed)) {
-                    ranking = parsed.map((e: any) => {
-                        // 旧形式（number[]）
-                        if (typeof e === 'number') {
-                            return { score: e, bestCharId: null, achieved_at: 0 };
-                        }
-                        // 新形式（object）
-                        const score = typeof e.score === 'number'
-                            ? e.score
-                            : (typeof e.total_score === 'number' ? e.total_score : 0);
-                        const bestCharId = typeof e.bestCharId === 'string' ? e.bestCharId : null;
-                        const achieved_at = typeof e.achieved_at === 'number' ? e.achieved_at : 0;
-                        return { score, bestCharId, achieved_at };
-                    });
-                }
-            } catch {
-                ranking = [];
-            }
-        }
-
-        ranking.push({
-            score: this.score,
-            bestCharId: this.bestCharacter?.id ?? null,
-            achieved_at: Date.now(),
-        });
-
-        ranking.sort((a, b) => b.score - a.score);
+        ranking.push(this.score);
+        ranking.sort((a, b) => b - a);
         ranking = ranking.slice(0, 30);
 
         localStorage.setItem(key, JSON.stringify(ranking));

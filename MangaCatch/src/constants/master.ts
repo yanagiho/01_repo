@@ -1,56 +1,21 @@
-// MangaCatch/src/constants/master.ts
-
 export interface CharacterData {
-  id: string;            // 例: "chara_001"（主キー）
-  no: number;            // 例: 1（管理番号・表示/ソート用）
-  artist: string;        // 作家名
-  work: string;          // 作品名
-  name: string;          // キャラクター名
-  credit: string;        // クレジット表記
-  score: number;         // 点数
-  rarity: number;        // レア度
-  weight: number;        // 出現重み
+  id: string;            // "chara_001"
+  no: number;            // 1..10
+  artist: string;
+  work: string;
+  name: string;
+  credit: string;
+  score: number;
+  rarity: number;
+  weight: number;
 
-  // 書影（カバー）ファイル名
-  workImage?: string;    // 例: "cover_001.png"
+  workImage?: string;         // cover_001.png
+  characterImage?: string;    // chara_001.png
+  attachmentFile?: string;
 
-  // キャラ画像ファイル名（ズレ防止のため明示）
-  characterImage?: string;   // 例: "chara_001.png"（デフォは `${id}.png`）
-
-  // 添付ファイル（PDF等）のファイル名（ズレ防止のため明示）
-  // ※命名が "attach_001.pdf" でない場合は、必ずここを実ファイル名に合わせてください
-  attachmentFile?: string;   // 例: "attach_001.pdf"
+  enabled?: boolean;          // ★追加：出現させないものを明示
 }
 
-/** 拡張子除去 */
-const stripExt = (filename: string) => filename.replace(/\.[^.]+$/, '');
-
-/** 3桁ゼロパディング */
-const pad3 = (n: number) => String(n).padStart(3, '0');
-
-/**
- * いろんな命名から "no" を推定する:
- * - cover_001.png / chara_001.png / attach_001.pdf -> 1
- * - type01.png -> 1
- * - chara_010 -> 10
- */
-export const extractNoFromFilename = (filename: string): number | null => {
-  const base = stripExt(filename);
-
-  // 3桁末尾（_001 など）
-  const m3 = base.match(/(\d{3})$/);
-  if (m3) return Number(m3[1]);
-
-  // type01 / type1
-  const mt = base.match(/type\s*0*(\d{1,3})$/i);
-  if (mt) return Number(mt[1]);
-
-  // 最後の連続数字（保険）
-  const mAny = base.match(/(\d+)(?!.*\d)/);
-  return mAny ? Number(mAny[1]) : null;
-};
-
-// CSVデータに基づく正式マスタ定義
 export const CHARACTER_MASTER: CharacterData[] = [
   {
     no: 1,
@@ -65,6 +30,7 @@ export const CHARACTER_MASTER: CharacterData[] = [
     workImage: "cover_001.png",
     characterImage: "chara_001.png",
     attachmentFile: "attach_001.pdf",
+    enabled: true,
   },
   {
     no: 2,
@@ -79,6 +45,7 @@ export const CHARACTER_MASTER: CharacterData[] = [
     workImage: "cover_002.png",
     characterImage: "chara_002.png",
     attachmentFile: "attach_002.pdf",
+    enabled: true,
   },
   {
     no: 3,
@@ -93,6 +60,7 @@ export const CHARACTER_MASTER: CharacterData[] = [
     workImage: "cover_003.png",
     characterImage: "chara_003.png",
     attachmentFile: "attach_003.pdf",
+    enabled: true,
   },
   {
     no: 4,
@@ -107,6 +75,7 @@ export const CHARACTER_MASTER: CharacterData[] = [
     workImage: "cover_004.png",
     characterImage: "chara_004.png",
     attachmentFile: "attach_004.pdf",
+    enabled: true,
   },
   {
     no: 5,
@@ -119,9 +88,9 @@ export const CHARACTER_MASTER: CharacterData[] = [
     rarity: 3,
     weight: 5,
     workImage: "cover_005.png",
-    // キャラ画像が未確定なら placeholder にする（ズレよりマシ）
-    characterImage: "placeholder.png",
+    characterImage: "chara_005.png",
     attachmentFile: "attach_005.pdf",
+    enabled: true,
   },
   {
     no: 6,
@@ -136,6 +105,7 @@ export const CHARACTER_MASTER: CharacterData[] = [
     workImage: "cover_006.png",
     characterImage: "chara_006.png",
     attachmentFile: "attach_006.pdf",
+    enabled: true,
   },
   {
     no: 7,
@@ -150,6 +120,7 @@ export const CHARACTER_MASTER: CharacterData[] = [
     workImage: "cover_007.png",
     characterImage: "chara_007.png",
     attachmentFile: "attach_007.pdf",
+    enabled: true,
   },
   {
     no: 8,
@@ -164,6 +135,7 @@ export const CHARACTER_MASTER: CharacterData[] = [
     workImage: "cover_008.png",
     characterImage: "chara_008.png",
     attachmentFile: "attach_008.pdf",
+    enabled: true,
   },
   {
     no: 9,
@@ -178,6 +150,7 @@ export const CHARACTER_MASTER: CharacterData[] = [
     workImage: "cover_009.png",
     characterImage: "chara_009.png",
     attachmentFile: "attach_009.pdf",
+    enabled: true,
   },
   {
     no: 10,
@@ -192,100 +165,26 @@ export const CHARACTER_MASTER: CharacterData[] = [
     workImage: "cover_010.png",
     characterImage: "chara_010.png",
     attachmentFile: "attach_010.pdf",
+    enabled: false, // ★あなたの characters に chara_010.png が無いので出現させない
   },
 ];
 
-const byId = new Map(CHARACTER_MASTER.map((c) => [c.id, c] as const));
-const byNo = new Map(CHARACTER_MASTER.map((c) => [c.no, c] as const));
+export const CHARACTER_MAP: Map<string, CharacterData> = new Map(
+  CHARACTER_MASTER.map((c) => [c.id, c] as const)
+);
 
-/** id でルックアップするMap（O(1)アクセス用）。 */
-export const CHARACTER_MAP: Map<string, CharacterData> = byId;
-
-export const getCharacterById = (id: string): CharacterData | undefined => byId.get(id);
-export const getCharacterByNo = (no: number): CharacterData | undefined => byNo.get(no);
-
-/**
- * キャラ画像の公開パス。characterImage が未指定なら `${id}.png` を使う。
- */
-export const getCharacterImagePath = (char: CharacterData): string => {
-  const filename = char.characterImage ?? `${char.id}.png`;
-  return `/assets/characters/${filename}`;
+export const getCharacterById = (id: string): CharacterData | undefined => {
+  return CHARACTER_MAP.get(id);
 };
 
 /**
- * 書影画像の公開パス。workImage が未指定なら placeholder を返す。
+ * id / filename（拡張子ありなし）どちらでも引ける互換関数
  */
-export const getCoverImagePath = (char: CharacterData): string => {
-  if (!char.workImage) return '/assets/ui/placeholder_cover.png';
-  return `/assets/covers/${char.workImage}`;
+export const getCharacterData = (filenameOrId: string): CharacterData | undefined => {
+  const key = filenameOrId.replace(".png", "");
+  return CHARACTER_MASTER.find((c) => c.id === key);
 };
 
-/**
- * 添付ファイル（PDF等）の公開パス。
- * - attachmentFile が設定されていればそれを優先（ズレ防止の本命）
- * - 未設定の場合だけ "attach_001.pdf" 形式をフォールバックで推測
- *   ※あなたの実ファイル名が違う場合は、必ず attachmentFile を正しく設定してください
- */
-export const getAttachmentPath = (char: CharacterData): string | null => {
-  const filename = char.attachmentFile ?? `attach_${pad3(char.no)}.pdf`;
-  if (!filename) return null;
-  return `/assets/attachments/${filename}`;
-};
-
-/**
- * filename が
- * - "chara_001.png"（キャラ画像）
- * - "cover_001.png"（書影）
- * - "attach_001.pdf"（添付）
- * - "type01.png"（旧命名）
- * のどれでも、正しい CharacterData に解決する（＝ズレを根本で止める）
- */
-export const getCharacterDataByFilename = (filename: string): CharacterData | undefined => {
-  const base = stripExt(filename);
-
-  // まず id 直引き（chara_001.png / chara_001 など）
-  const direct = byId.get(base);
-  if (direct) return direct;
-
-  // 次に no 推定（cover_001 / attach_001 / type01 など）
-  const no = extractNoFromFilename(filename);
-  if (no != null) return byNo.get(no);
-
-  return undefined;
-};
-
-/**
- * 互換用：従来名のまま残す（中身は強化版へ）
- */
-export const getCharacterData = (filename: string): CharacterData | undefined => {
-  return getCharacterDataByFilename(filename);
-};
-
-/**
- * （任意）デバッグ用：命名と master の整合をチェック
- */
-export const assertMasterIntegrity = (): void => {
-  for (const c of CHARACTER_MASTER) {
-    const idNo = extractNoFromFilename(c.id);
-    if (idNo != null && idNo !== c.no) {
-      console.warn("[MASTER] id-no mismatch:", c);
-    }
-    if (c.workImage) {
-      const coverNo = extractNoFromFilename(c.workImage);
-      if (coverNo != null && coverNo !== c.no) {
-        console.warn("[MASTER] cover-no mismatch:", c);
-      }
-    }
-    if (c.attachmentFile) {
-      const attNo = extractNoFromFilename(c.attachmentFile);
-      if (attNo != null && attNo !== c.no) {
-        console.warn("[MASTER] attachment-no mismatch:", c);
-      }
-    }
-    const charImg = c.characterImage ?? `${c.id}.png`;
-    const charNo = extractNoFromFilename(charImg);
-    if (charNo != null && charNo !== c.no) {
-      console.warn("[MASTER] character-no mismatch:", c);
-    }
-  }
+export const getEnabledCharacters = (): CharacterData[] => {
+  return CHARACTER_MASTER.filter((c) => c.enabled !== false);
 };

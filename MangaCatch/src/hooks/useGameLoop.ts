@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import type { FallingItem } from '../types/game';
-import { CHARACTER_MASTER } from '../constants/master';
+import { useState, useEffect, useRef, useCallback } from "react";
+import type { FallingItem } from "../types/game";
+import { getEnabledCharacters, type CharacterData } from "../constants/master";
 
 export const useGameLoop = (
     scene: string,
@@ -17,21 +17,8 @@ export const useGameLoop = (
     const catchCount = useRef<Record<string, number>>({});
 
     const nextId = useRef(0);
-    const laneTimers = useRef([0, 0, 0, 0, 0]);
+    const laneTimers = useRef<number[]>([0, 0, 0, 0, 0]);
 
-    // 最新の値をループ内で参照するためのref
-    const playerXRef = useRef(playerX);
-    const speedMultiplierRef = useRef(speedMultiplier);
-
-    useEffect(() => {
-        playerXRef.current = playerX;
-    }, [playerX]);
-
-    useEffect(() => {
-        speedMultiplierRef.current = speedMultiplier;
-    }, [speedMultiplier]);
-
-    // ゲーム開始時のリセット
     const resetGame = useCallback(() => {
         setItems([]);
         setScore(0);
@@ -42,80 +29,81 @@ export const useGameLoop = (
         nextId.current = 0;
     }, []);
 
-    // シーンがGAMEになったらリセット
     useEffect(() => {
-        if (scene === 'GAME') {
-            resetGame();
-        }
+        if (scene === "GAME") resetGame();
     }, [scene, resetGame]);
 
-    // ゲームループ
     useEffect(() => {
         if (scene !== "GAME") return;
 
-        console.log("Game loop started");
-
         const interval = setInterval(() => {
             // タイマー減算
-            setTimer(t => Math.max(0, t - 0.016));
+            setTimer((t) => Math.max(0, t - 0.016));
 
-            // 倍率適用 (refから取得)
-            const currentMultiplier = speedMultiplierRef.current;
+            const currentMultiplier = speedMultiplier;
 
             // レーンタイマーの減算
             const tick = 1 * currentMultiplier;
-            laneTimers.current = laneTimers.current.map(lt => Math.max(0, lt - tick));
+            laneTimers.current = laneTimers.current.map((lt) => Math.max(0, lt - tick));
 
-            // スポーンロジック
+            // スポーン（enabledのみ）
             if (Math.random() < 0.12 * currentMultiplier) {
                 const laneIndex = Math.floor(Math.random() * 5);
                 if (laneTimers.current[laneIndex] <= 0) {
-                    const char = CHARACTER_MASTER[Math.floor(Math.random() * CHARACTER_MASTER.length)];
-                    setItems(prev => [...prev, {
-                        id: nextId.current++,
-                        baseX: (window.innerWidth / 5 * laneIndex) + (window.innerWidth / 10),
-                        x: 0,
-                        y: -250,
-                        char,
-                        time: 0,
-                        swaySpeed: 2.2,
-                        swayAmp: 50,
-                        speed: 7.5
-                    }]);
+                    const pool: CharacterData[] = getEnabledCharacters();
+                    const char = pool[Math.floor(Math.random() * pool.length)];
+
+                    setItems((prev) => [
+                        ...prev,
+                        {
+                            id: nextId.current++,
+                            baseX: (window.innerWidth / 5) * laneIndex + window.innerWidth / 10,
+                            x: 0,
+                            y: -250,
+                            char,
+                            time: 0,
+                            swaySpeed: 2.2,
+                            swayAmp: 50,
+                            speed: 7.5,
+                        },
+                    ]);
+
                     // クールダウン
                     laneTimers.current[laneIndex] = 45 / currentMultiplier;
                 }
             }
 
             // 移動 & 当たり判定
-            setItems(prev => prev.map(item => {
-                const newTime = item.time + 0.016;
-                const newY = item.y + (item.speed * currentMultiplier);
-                const newX = item.baseX + Math.sin(newTime * item.swaySpeed) * item.swayAmp;
-                const pY = window.innerHeight - 80;
+            setItems((prev) =>
+                prev
+                    .map((item) => {
+                        const newTime = item.time + 0.016;
+                        const newY = item.y + item.speed * currentMultiplier;
+                        const newX = item.baseX + Math.sin(newTime * item.swaySpeed) * item.swayAmp;
+                        const pY = window.innerHeight - 80;
 
-                // 当たり判定 (refから現在のplayerXを取得)
-                if (newY > pY - 80 && newY < pY + 20 && Math.abs(newX - playerXRef.current) < 110) {
-                    setScore(s => s + item.char.score);
-                    catchCount.current[item.char.id] = (catchCount.current[item.char.id] || 0) + 1;
-                    setIsHit(true);
-                    setTimeout(() => setIsHit(false), 100);
+                        // 当たり判定
+                        if (newY > pY - 80 && newY < pY + 20 && Math.abs(newX - playerX) < 110) {
+                            setScore((s) => s + item.char.score);
 
-                    // コールバック呼び出し (副作用)
-                    onCatch(newX, newY + 50);
+                            const id = item.char.id;
+                            catchCount.current[id] = (catchCount.current[id] || 0) + 1;
 
-                    return null;
-                }
-                return { ...item, y: newY, x: newX, time: newTime };
-            }).filter((i): i is FallingItem => i !== null && i.y < window.innerHeight + 150));
+                            setIsHit(true);
+                            setTimeout(() => setIsHit(false), 100);
 
+                            onCatch(newX, newY + 50);
+                            return null;
+                        }
+
+                        return { ...item, y: newY, x: newX, time: newTime };
+                    })
+                    .filter((i): i is FallingItem => i !== null && i.y < window.innerHeight + 150)
+            );
         }, 16);
 
-        return () => {
-            console.log("Game loop cleared");
-            clearInterval(interval);
-        };
-    }, [scene, onCatch]); // playerX と speedMultiplier を依存配列から削除
+        return () => clearInterval(interval);
+    }, [scene, playerX, speedMultiplier, onCatch]);
 
     return { items, score, timer, isHit, catchCount, resetGame };
 };
