@@ -187,3 +187,8 @@ export const getEnabledCharacters = () => CHARACTER_MASTER.filter((c) => c.enabl
 
 export const getCharacterById = (id: string) =>
   CHARACTER_MASTER.find((c) => c.id === id) ?? null;
+
+export const getCharacterImagePath = (char: CharacterData) =>
+  `./assets/characters/${char.characterImage}`;
+export const getCoverImagePath = (char: CharacterData) =>
+  `./assets/covers/${char.workImage}`;

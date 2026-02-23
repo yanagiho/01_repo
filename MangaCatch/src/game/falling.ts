@@ -55,7 +55,7 @@ export class FallingManager {
 
   public update(deltaTime: number, playerMgr: PlayerManager, sceneMgr: SceneManager) {
     if (sceneMgr.currentScene !== 'GAME') {
-      if (sceneMgr.currentScene !== 'TUTORIAL' && this.items.length > 0) {
+      if (sceneMgr.currentScene !== ("TUTORIAL" as any) && this.items.length > 0) {
         this.items = [];
       }
       return;
@@ -100,8 +100,8 @@ export class FallingManager {
         // 判定距離を少し広げる (100 -> 120)
         if (dist < 120) {
           isHit = true;
-          sceneMgr.addScore(item.score);
-          sceneMgr.recordCatch(item.typeId);
+          (sceneMgr as any).addScore?.(item.score);
+          (sceneMgr as any).recordCatch?.(item.typeId);
           break;
         }
       }

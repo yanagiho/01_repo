@@ -58,7 +58,7 @@ export const CoverImage: React.FC<{
             src={src}
             alt={(char as any).work ?? "cover"}
             draggable={false}
-            style={{ userSelect: "none", WebkitUserDrag: "none", ...style }}
+            style={{ userSelect: "none", ...style } as React.CSSProperties}
             onError={() => {
                 if (idx + 1 < candidates.length) setIdx(idx + 1);
                 else {

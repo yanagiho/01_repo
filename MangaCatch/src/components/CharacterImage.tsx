@@ -54,7 +54,7 @@ export const CharacterImage: React.FC<{
             src={src}
             alt={(char as any).name ?? "character"}
             draggable={false}
-            style={{ userSelect: "none", WebkitUserDrag: "none", ...style }}
+            style={{ userSelect: "none", ...style } as React.CSSProperties}
             onError={() => {
                 if (idx + 1 < candidates.length) setIdx(idx + 1);
                 else console.warn("[CharacterImage] not found", { id: (char as any).id, tried: candidates });

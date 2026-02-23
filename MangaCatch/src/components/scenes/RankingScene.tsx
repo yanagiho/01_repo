@@ -12,7 +12,10 @@ function fmtTime(ms: number) {
     return `${hh}:${mi}`;
 }
 
-export const RankingScene: React.FC<{ ranking: RankingEntry[] }> = ({ ranking }) => {
+export const RankingScene: React.FC<{ ranking: RankingEntry[]; highlightAchievedAt?: number }> = ({
+    ranking,
+    highlightAchievedAt,
+}) => {
     const top = ranking.slice(0, 10);
 
     return (
@@ -34,6 +37,8 @@ export const RankingScene: React.FC<{ ranking: RankingEntry[] }> = ({ ranking })
                                 alignItems: "center",
                                 padding: "14px 10px",
                                 borderBottom: "1px solid rgba(255,255,255,0.08)",
+                                backgroundColor: highlightAchievedAt === r.achieved_at ? "rgba(0, 238, 187, 0.15)" : "transparent",
+                                borderRadius: highlightAchievedAt === r.achieved_at ? "12px" : "0px",
                             }}
                         >
                             <div style={{ fontFamily: "monospace", fontSize: 26, color: "#00eebb" }}>#{idx + 1}</div>

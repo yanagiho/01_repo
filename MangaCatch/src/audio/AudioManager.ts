@@ -17,10 +17,10 @@ class AudioAsset {
     private idx = 0;
     private el: HTMLAudioElement;
 
-    constructor(private candidates: string[], private loop: boolean, private volume: number) {
+    constructor(private candidates: string[], _loop: boolean, _volume: number) {
         this.el = new Audio();
-        this.el.loop = loop;
-        this.el.volume = volume;
+        this.el.loop = _loop;
+        this.el.volume = _volume;
         this.el.preload = "auto";
         this.setSrc(0);
         this.el.addEventListener("error", () => this.tryNext());
