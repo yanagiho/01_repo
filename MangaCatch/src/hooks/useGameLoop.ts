@@ -28,6 +28,23 @@ export const useGameLoop = (
     const nextId = useRef(0);
     const laneTimers = useRef<number[]>([0, 0, 0, 0, 0]);
 
+    // ★「毎フレーム変わる値」は ref に逃がして interval を安定化
+    const playerXRef = useRef(playerX);
+    const speedRef = useRef(speedMultiplier);
+    const onCatchRef = useRef(onCatchFx);
+
+    useEffect(() => {
+        playerXRef.current = playerX;
+    }, [playerX]);
+
+    useEffect(() => {
+        speedRef.current = speedMultiplier;
+    }, [speedMultiplier]);
+
+    useEffect(() => {
+        onCatchRef.current = onCatchFx;
+    }, [onCatchFx]);
+
     const resetGame = useCallback(() => {
         setItems([]);
         setScore(0);
@@ -38,17 +55,20 @@ export const useGameLoop = (
         nextId.current = 0;
     }, []);
 
-    useEffect(() => {
-        if (scene === "GAME") resetGame();
-    }, [scene, resetGame]);
-
+    // ★sceneの変化だけで開始/停止（props関数に依存しない）
     useEffect(() => {
         if (scene !== "GAME") return;
 
+        resetGame();
+
         const interval = window.setInterval(() => {
+            // speed clamp
+            const m = Math.max(0.7, Math.min(2.0, speedRef.current || 1.0));
+
+            // timer
             setTimer((t) => Math.max(0, t - 0.016));
 
-            const m = Math.max(0.7, Math.min(2.0, speedMultiplier || 1.0));
+            // lane cooldown
             laneTimers.current = laneTimers.current.map((lt) => Math.max(0, lt - 1 * m));
 
             // spawn
@@ -89,7 +109,7 @@ export const useGameLoop = (
                         const hit =
                             newY > basketY - 80 &&
                             newY < basketY + 20 &&
-                            Math.abs(newX - playerX) < 110;
+                            Math.abs(newX - playerXRef.current) < 110;
 
                         if (hit) {
                             setScore((s) => s + item.char.score);
@@ -98,7 +118,7 @@ export const useGameLoop = (
                             setIsHit(true);
                             setTimeout(() => setIsHit(false), 100);
 
-                            onCatchFx(newX, newY + 50);
+                            onCatchRef.current(newX, newY + 50);
                             return null;
                         }
 
@@ -109,7 +129,7 @@ export const useGameLoop = (
         }, 16);
 
         return () => window.clearInterval(interval);
-    }, [scene, playerX, speedMultiplier, onCatchFx]);
+    }, [scene, resetGame]);
 
     return { items, score, timer, isHit, catchCount, resetGame };
 };
