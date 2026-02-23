@@ -1,43 +1,49 @@
-import React, { useMemo } from 'react';
+// MangaCatch/src/components/StarBackground.tsx
+import React from "react";
 
 export const StarBackground: React.FC = () => {
-  const stars = useMemo(() => {
-    const arr: { x: number; y: number; s: number; o: number }[] = [];
-    for (let i = 0; i < 180; i++) {
-      arr.push({
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        s: 1 + Math.random() * 2,
-        o: 0.25 + Math.random() * 0.75,
-      });
-    }
-    return arr;
-  }, []);
-
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 0 }}>
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 0 }}>
+      <style>{`
+        @keyframes starScrollA { from { background-position: 0px 0px; } to { background-position: 0px 800px; } }
+        @keyframes starScrollB { from { background-position: 0px 0px; } to { background-position: 0px 1400px; } }
+      `}</style>
+
+      {/* ベース（暗め宇宙） */}
       <div
         style={{
-          position: 'absolute',
+          position: "absolute",
           inset: 0,
-          background: 'radial-gradient(circle at 50% 30%, #081018 0%, #000 60%)',
+          background: "radial-gradient(circle at 50% 30%, #081018 0%, #000 60%)",
         }}
       />
-      {stars.map((st, i) => (
-        <div
-          key={i}
-          style={{
-            position: 'absolute',
-            left: `${st.x}%`,
-            top: `${st.y}%`,
-            width: st.s,
-            height: st.s,
-            borderRadius: 999,
-            background: 'white',
-            opacity: st.o,
-          }}
-        />
-      ))}
+
+      {/* 星層A（小粒） */}
+      <div
+        style={{
+          position: "absolute",
+          inset: -200,
+          backgroundImage:
+            "radial-gradient(circle at 10px 10px, rgba(255,255,255,0.55) 1px, rgba(0,0,0,0) 1.6px)",
+          backgroundSize: "26px 26px",
+          opacity: 0.55,
+          animation: "starScrollA 18s linear infinite",
+        }}
+      />
+
+      {/* 星層B（大粒） */}
+      <div
+        style={{
+          position: "absolute",
+          inset: -300,
+          backgroundImage:
+            "radial-gradient(circle at 16px 16px, rgba(255,255,255,0.7) 1.6px, rgba(0,0,0,0) 2.3px)",
+          backgroundSize: "58px 58px",
+          opacity: 0.35,
+          animation: "starScrollB 30s linear infinite",
+          mixBlendMode: "screen",
+        }}
+      />
     </div>
   );
 };

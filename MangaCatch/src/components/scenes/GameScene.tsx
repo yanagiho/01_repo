@@ -19,8 +19,10 @@ export const GameScene: React.FC<{
 
     const total = 30;
     const ratio = Math.max(0, Math.min(1, timer / total));
-
     const basketY = window.innerHeight - 80;
+
+    // バーは画面幅の1/3
+    const barW = Math.floor(window.innerWidth / 3);
 
     return (
         <div style={{ position: "absolute", inset: 0, zIndex: 10 }}>
@@ -30,9 +32,49 @@ export const GameScene: React.FC<{
                 <div style={{ fontSize: 14, opacity: 0.9 }}>PLAYERS: {playerCount} / SPEED x{speedMultiplier.toFixed(2)}</div>
             </div>
 
-            {/* タイマーバー */}
-            <div style={{ position: "absolute", left: 20, right: 20, top: 62, height: 14, borderRadius: 10, border: "1px solid rgba(0,238,187,0.8)", background: "rgba(0,0,0,0.35)", zIndex: 20 }}>
-                <div style={{ width: `${ratio * 100}%`, height: "100%", borderRadius: 10, background: "rgba(0,238,187,0.85)", transition: "width 120ms linear" }} />
+            {/* タイマーバー（幅 1/3、上部中央） */}
+            <div
+                style={{
+                    position: "absolute",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    top: 18,
+                    width: barW,
+                    height: 14,
+                    borderRadius: 10,
+                    border: "1px solid rgba(0,238,187,0.8)",
+                    background: "rgba(0,0,0,0.35)",
+                    zIndex: 20,
+                }}
+            >
+                <div
+                    style={{
+                        width: `${ratio * 100}%`,
+                        height: "100%",
+                        borderRadius: 10,
+                        background: "rgba(0,238,187,0.85)",
+                        transition: "width 120ms linear",
+                    }}
+                />
+            </div>
+
+            {/* 残り時間（下部に表示） */}
+            <div
+                style={{
+                    position: "absolute",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    bottom: 22,
+                    fontFamily: "monospace",
+                    fontSize: 18,
+                    color: "#00eebb",
+                    opacity: 0.95,
+                    zIndex: 20,
+                    textShadow: "0 2px 8px rgba(0,0,0,0.7)",
+                    pointerEvents: "none",
+                }}
+            >
+                TIME: {timer.toFixed(1)}
             </div>
 
             {/* 落下 */}

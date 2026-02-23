@@ -9,38 +9,49 @@ export const ResultScene: React.FC<{ score: number; counts: Record<string, numbe
             .map(([id, cnt]) => {
                 const c = getCharacterById(id);
                 if (!c) return null;
-                return {
-                    id,
-                    cnt,
-                    c,
-                    subtotal: cnt * c.score,
-                };
+                return { id, cnt, c, subtotal: cnt * c.score };
             })
             .filter(Boolean) as { id: string; cnt: number; c: any; subtotal: number }[];
 
         list.sort((a, b) => b.subtotal - a.subtotal);
-        return list;
+        return list.slice(0, 8);
     }, [counts]);
 
     return (
         <div style={{ position: "absolute", inset: 0, zIndex: 10, padding: 28, color: "#fff" }}>
-            <div style={{ fontSize: 42, color: "#00eebb" }}>RESULT</div>
-            <div style={{ marginTop: 8, fontSize: 26, fontFamily: "monospace" }}>SCORE: {score}</div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                <div style={{ fontSize: 44, color: "#00eebb" }}>RESULT</div>
+                <div style={{ fontSize: 34, fontFamily: "monospace" }}>
+                    SCORE: <span style={{ color: "#00eebb" }}>{score}</span>
+                </div>
+            </div>
 
-            <div style={{ marginTop: 18, background: "rgba(0,0,0,0.35)", borderRadius: 16, padding: 14, maxWidth: 980 }}>
+            <div style={{ marginTop: 18, background: "rgba(0,0,0,0.38)", borderRadius: 18, padding: 16, maxWidth: 1100 }}>
                 {rows.length === 0 && <div style={{ opacity: 0.8 }}>キャッチがありません</div>}
 
                 {rows.map((r) => (
-                    <div key={r.id} style={{ display: "flex", gap: 12, alignItems: "center", padding: "10px 6px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                        <CoverImage char={r.c} style={{ width: 64, height: 90, objectFit: "contain", borderRadius: 8, background: "rgba(0,0,0,0.25)" }} />
-                        <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 16, color: "#00eebb" }}>{r.c.work}</div>
-                            <div style={{ fontSize: 12, opacity: 0.85 }}>
+                    <div
+                        key={r.id}
+                        style={{
+                            display: "grid",
+                            gridTemplateColumns: "86px 1fr 90px 140px",
+                            gap: 14,
+                            alignItems: "center",
+                            padding: "12px 8px",
+                            borderBottom: "1px solid rgba(255,255,255,0.08)",
+                        }}
+                    >
+                        <CoverImage char={r.c} style={{ width: 72, height: 96, objectFit: "contain", borderRadius: 10, background: "rgba(0,0,0,0.25)" }} />
+
+                        <div>
+                            <div style={{ fontSize: 18, color: "#00eebb" }}>{r.c.work}</div>
+                            <div style={{ fontSize: 13, opacity: 0.85 }}>
                                 {r.c.artist} <span style={{ opacity: 0.7 }}>({r.c.artistEn})</span>
                             </div>
                         </div>
-                        <div style={{ width: 80, textAlign: "right", fontFamily: "monospace" }}>x{r.cnt}</div>
-                        <div style={{ width: 120, textAlign: "right", fontFamily: "monospace", color: "#00eebb" }}>{r.subtotal}</div>
+
+                        <div style={{ textAlign: "right", fontFamily: "monospace", fontSize: 18 }}>x{r.cnt}</div>
+                        <div style={{ textAlign: "right", fontFamily: "monospace", fontSize: 18, color: "#00eebb" }}>{r.subtotal}</div>
                     </div>
                 ))}
             </div>

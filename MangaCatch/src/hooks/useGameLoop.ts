@@ -13,6 +13,10 @@ function pickWeighted(pool: CharacterData[]): CharacterData {
     return pool[pool.length - 1];
 }
 
+function rand(min: number, max: number) {
+    return min + Math.random() * (max - min);
+}
+
 export const useGameLoop = (
     scene: string,
     playerX: number,
@@ -28,7 +32,7 @@ export const useGameLoop = (
     const nextId = useRef(0);
     const laneTimers = useRef<number[]>([0, 0, 0, 0, 0]);
 
-    // ★「毎フレーム変わる値」は ref に逃がして interval を安定化
+    // ★propsで変わる値はrefへ（interval安定化）
     const playerXRef = useRef(playerX);
     const speedRef = useRef(speedMultiplier);
     const onCatchRef = useRef(onCatchFx);
@@ -55,14 +59,12 @@ export const useGameLoop = (
         nextId.current = 0;
     }, []);
 
-    // ★sceneの変化だけで開始/停止（props関数に依存しない）
     useEffect(() => {
         if (scene !== "GAME") return;
 
         resetGame();
 
         const interval = window.setInterval(() => {
-            // speed clamp
             const m = Math.max(0.7, Math.min(2.0, speedRef.current || 1.0));
 
             // timer
@@ -78,6 +80,11 @@ export const useGameLoop = (
                     const pool = getEnabledCharacters();
                     const char = pickWeighted(pool);
 
+                    // ★揺れのバリエーションを大きく（幅も速度も個体差）
+                    const swayAmp = rand(18, 160) * (Math.random() < 0.25 ? 1.35 : 1.0); // たまに大きく
+                    const swaySpeed = rand(1.2, 4.2);
+                    const fallSpeed = rand(6.8, 9.6);
+
                     setItems((prev) => [
                         ...prev,
                         {
@@ -87,9 +94,9 @@ export const useGameLoop = (
                             y: -250,
                             char,
                             time: 0,
-                            swaySpeed: 2.2,
-                            swayAmp: 50,
-                            speed: 7.5,
+                            swaySpeed,
+                            swayAmp,
+                            speed: fallSpeed,
                         },
                     ]);
 

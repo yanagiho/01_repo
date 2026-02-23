@@ -7,7 +7,6 @@ function baseUrl(): string {
 }
 function assetUrl(path: string): string {
     const p = path.replace(/^\//, "");
-    // file:// でも dev(http) でも動くように候補を作る
     if (typeof window !== "undefined" && window.location?.protocol === "file:") {
         return "./" + p;
     }
@@ -34,31 +33,17 @@ class AudioAsset {
     }
 
     private tryNext() {
-        if (this.idx + 1 < this.candidates.length) {
-            this.setSrc(this.idx + 1);
-        } else {
-            console.warn("[AudioAsset] failed all candidates:", this.candidates);
-        }
+        if (this.idx + 1 < this.candidates.length) this.setSrc(this.idx + 1);
+        else console.warn("[AudioAsset] failed all candidates:", this.candidates);
     }
 
     async play() {
-        try {
-            await this.el.play();
-        } catch { }
+        try { await this.el.play(); } catch { }
     }
-    pause() {
-        this.el.pause();
-    }
-    stop() {
-        this.el.pause();
-        try { this.el.currentTime = 0; } catch { }
-    }
-    setVolume(v: number) {
-        this.el.volume = v;
-    }
-    get element() {
-        return this.el;
-    }
+    pause() { this.el.pause(); }
+    stop() { this.el.pause(); try { this.el.currentTime = 0; } catch { } }
+    setVolume(v: number) { this.el.volume = v; }
+    get element() { return this.el; }
 }
 
 export class AudioManager {
@@ -81,20 +66,16 @@ export class AudioManager {
     private currentBgm: BgmKind | null = null;
 
     private constructor() {
-        const uiCandidates = Array.from(
-            new Set([
-                assetUrl("assets/audio/bgm_ui_loop.mp3"),
-                "./assets/audio/bgm_ui_loop.mp3",
-                "assets/audio/bgm_ui_loop.mp3",
-            ])
-        );
-        const gameCandidates = Array.from(
-            new Set([
-                assetUrl("assets/audio/bgm_game_loop.mp3"),
-                "./assets/audio/bgm_game_loop.mp3",
-                "assets/audio/bgm_game_loop.mp3",
-            ])
-        );
+        const uiCandidates = Array.from(new Set([
+            assetUrl("assets/audio/bgm_ui_loop.mp3"),
+            "./assets/audio/bgm_ui_loop.mp3",
+            "assets/audio/bgm_ui_loop.mp3",
+        ]));
+        const gameCandidates = Array.from(new Set([
+            assetUrl("assets/audio/bgm_game_loop.mp3"),
+            "./assets/audio/bgm_game_loop.mp3",
+            "assets/audio/bgm_game_loop.mp3",
+        ]));
 
         this.bgmUi = new AudioAsset(uiCandidates, true, 0.55);
         this.bgmGame = new AudioAsset(gameCandidates, true, 0.55);
@@ -106,30 +87,23 @@ export class AudioManager {
         this.seClickBase.volume = 0.8;
         this.seCatchBase.volume = 0.9;
 
-        const jCandidates = Array.from(
-            new Set([
-                assetUrl("assets/audio/jingle_game_end.mp3"),
-                "./assets/audio/jingle_game_end.mp3",
-                "assets/audio/jingle_game_end.mp3",
-            ])
-        );
+        const jCandidates = Array.from(new Set([
+            assetUrl("assets/audio/jingle_game_end.mp3"),
+            "./assets/audio/jingle_game_end.mp3",
+            "assets/audio/jingle_game_end.mp3",
+        ]));
         this.jingleEnd = new AudioAsset(jCandidates, false, 0.85);
     }
 
-    isUnlocked() {
-        return this.unlocked;
-    }
+    isUnlocked() { return this.unlocked; }
 
-    // タイトルクリック（ユーザ操作）内で呼ぶ
     async unlock() {
         if (this.unlocked) return;
         this.unlocked = true;
 
-        // 無音再生でアンロック（環境によって必要）
         try {
             const a = new Audio();
-            a.src =
-                "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=";
+            a.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=";
             await a.play().catch(() => { });
             a.pause();
         } catch { }
@@ -171,12 +145,22 @@ export class AudioManager {
         this.currentBgm = null;
     }
 
+    // ★要件：ゲームBGM停止→ジングル→一呼吸→UI BGM
     async playJingleGameEndThenUi() {
         if (!this.unlocked) return;
+
+        // 1) まずBGM停止
         this.bgmGame.stop();
+        this.currentBgm = null;
+
+        // 2) ジングル
         await this.jingleEnd.play();
+
+        // 3) ジングル終了→0.7秒→UI BGM
         this.jingleEnd.element.onended = () => {
-            this.playBgm("ui");
+            window.setTimeout(() => {
+                this.playBgm("ui");
+            }, 700);
         };
     }
 }
