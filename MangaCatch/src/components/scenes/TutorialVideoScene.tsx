@@ -10,10 +10,10 @@ function buildCandidates(): string[] {
     // dev(http) と file:// の両方で当たるように候補を複数
     return Array.from(
         new Set([
-            baseUrl() + "assets/video/tutorial.mp4",
-            "/assets/video/tutorial.mp4",
-            "./assets/video/tutorial.mp4",
-            "assets/video/tutorial.mp4",
+            baseUrl() + "assets/videos/tutorial.mp4",
+            "/assets/videos/tutorial.mp4",
+            "./assets/videos/tutorial.mp4",
+            "assets/videos/tutorial.mp4",
         ])
     );
 }
