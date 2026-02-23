@@ -1,7 +1,7 @@
 // MangaCatch/src/constants/master.ts
 export interface CharacterData {
   no: number;
-  id: string; // chara_001
+  id: string; // "chara_001"
   name: string;
   work: string;
   artist: string;
@@ -14,7 +14,6 @@ export interface CharacterData {
   rarity: number;
   weight: number;
 
-  // ★ここが肝：キャラ画像と書影を絶対に分ける
   characterImage: string; // chara_001.png
   workImage: string;      // cover_001.png
 
@@ -126,7 +125,7 @@ export const CHARACTER_MASTER: CharacterData[] = [
     artist: "畑中純",
     nameEn: "OTSUKI Ryota",
     workEn: "Mandaraya no Ryota",
-    artistEn: "HATANAKTA Jun",
+    artistEn: "HATANAKA Jun",
     score: 100,
     rarity: 1,
     weight: 10,
@@ -142,7 +141,7 @@ export const CHARACTER_MASTER: CharacterData[] = [
     artist: "畑中純",
     nameEn: "Gataro",
     workEn: "Gataro",
-    artistEn: "HATANAKTA Jun",
+    artistEn: "HATANAKA Jun",
     score: 100,
     rarity: 1,
     weight: 10,
@@ -180,10 +179,11 @@ export const CHARACTER_MASTER: CharacterData[] = [
     weight: 10,
     characterImage: "chara_010.png",
     workImage: "cover_010.png",
-    enabled: false, // ←chara_010.png があるなら true に
+    enabled: true, // ★ここが重要：10番を使う
   },
 ];
 
 export const getEnabledCharacters = () => CHARACTER_MASTER.filter((c) => c.enabled);
 
-export const getCharacterById = (id: string) => CHARACTER_MASTER.find((c) => c.id === id) ?? null;
+export const getCharacterById = (id: string) =>
+  CHARACTER_MASTER.find((c) => c.id === id) ?? null;
