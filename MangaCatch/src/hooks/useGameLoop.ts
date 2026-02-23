@@ -1,12 +1,23 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import type { FallingItem } from '../types/game';
-import { getEnabledCharacters } from '../constants/master';
+// MangaCatch/src/hooks/useGameLoop.ts
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { FallingItem } from "../types/game";
+import { getEnabledCharacters, type CharacterData } from "../constants/master";
+
+function pickWeighted(pool: CharacterData[]): CharacterData {
+    const total = pool.reduce((s, c) => s + (c.weight || 1), 0);
+    let r = Math.random() * total;
+    for (const c of pool) {
+        r -= c.weight || 1;
+        if (r <= 0) return c;
+    }
+    return pool[pool.length - 1];
+}
 
 export const useGameLoop = (
     scene: string,
     playerX: number,
     speedMultiplier: number,
-    onCatch: (x: number, y: number) => void
+    onCatchFx: (x: number, y: number) => void
 ) => {
     const [items, setItems] = useState<FallingItem[]>([]);
     const [score, setScore] = useState(0);
@@ -28,30 +39,30 @@ export const useGameLoop = (
     }, []);
 
     useEffect(() => {
-        if (scene === 'GAME') resetGame();
+        if (scene === "GAME") resetGame();
     }, [scene, resetGame]);
 
     useEffect(() => {
-        if (scene !== 'GAME') return;
+        if (scene !== "GAME") return;
 
-        const interval = setInterval(() => {
+        const interval = window.setInterval(() => {
             setTimer((t) => Math.max(0, t - 0.016));
 
             const m = Math.max(0.7, Math.min(2.0, speedMultiplier || 1.0));
             laneTimers.current = laneTimers.current.map((lt) => Math.max(0, lt - 1 * m));
 
-            // spawn（enabledのみ）
+            // spawn
             if (Math.random() < 0.12 * m) {
-                const laneIndex = Math.floor(Math.random() * 5);
-                if (laneTimers.current[laneIndex] <= 0) {
+                const lane = Math.floor(Math.random() * 5);
+                if (laneTimers.current[lane] <= 0) {
                     const pool = getEnabledCharacters();
-                    const char = pool[Math.floor(Math.random() * pool.length)];
+                    const char = pickWeighted(pool);
 
                     setItems((prev) => [
                         ...prev,
                         {
                             id: nextId.current++,
-                            baseX: (window.innerWidth / 5) * laneIndex + window.innerWidth / 10,
+                            baseX: (window.innerWidth / 5) * lane + window.innerWidth / 10,
                             x: 0,
                             y: -250,
                             char,
@@ -62,7 +73,7 @@ export const useGameLoop = (
                         },
                     ]);
 
-                    laneTimers.current[laneIndex] = 45 / m;
+                    laneTimers.current[lane] = 45 / m;
                 }
             }
 
@@ -87,7 +98,7 @@ export const useGameLoop = (
                             setIsHit(true);
                             setTimeout(() => setIsHit(false), 100);
 
-                            onCatch(newX, newY + 50);
+                            onCatchFx(newX, newY + 50);
                             return null;
                         }
 
@@ -97,8 +108,8 @@ export const useGameLoop = (
             );
         }, 16);
 
-        return () => clearInterval(interval);
-    }, [scene, playerX, speedMultiplier, onCatch]);
+        return () => window.clearInterval(interval);
+    }, [scene, playerX, speedMultiplier, onCatchFx]);
 
     return { items, score, timer, isHit, catchCount, resetGame };
 };

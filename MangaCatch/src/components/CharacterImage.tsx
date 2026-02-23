@@ -1,13 +1,13 @@
-// MangaCatch/src/components/CoverImage.tsx
+// MangaCatch/src/components/CharacterImage.tsx
 import React, { useMemo, useState } from "react";
 import type { CharacterData } from "../constants/master";
 
 const PLACEHOLDER =
     "data:image/svg+xml;charset=utf-8," +
-    encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="420" height="600">
+    encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256">
   <rect width="100%" height="100%" fill="#222"/>
   <text x="50%" y="50%" fill="#aaa" font-size="18" font-family="monospace"
-    text-anchor="middle" dominant-baseline="middle">NO COVER</text>
+    text-anchor="middle" dominant-baseline="middle">NO CHAR</text>
 </svg>`);
 
 function normBase(s: string) {
@@ -18,19 +18,16 @@ function baseDirs(): string[] {
     const base = normBase(b);
     return Array.from(
         new Set([
-            base + "assets/books/",
-            base + "assets/covers/",
-            "./assets/books/",
-            "./assets/covers/",
-            "assets/books/",
-            "assets/covers/",
-            "../assets/books/",
-            "../assets/covers/",
+            base + "assets/characters/",
+            "./assets/characters/",
+            "assets/characters/",
+            "../assets/characters/",
+            "../../assets/characters/",
         ])
     );
 }
 
-export const CoverImage: React.FC<{ char: CharacterData; style?: React.CSSProperties }> = ({
+export const CharacterImage: React.FC<{ char: CharacterData; style?: React.CSSProperties }> = ({
     char,
     style,
 }) => {
@@ -38,8 +35,9 @@ export const CoverImage: React.FC<{ char: CharacterData; style?: React.CSSProper
         const dirs = baseDirs();
         const names = Array.from(
             new Set([
-                char.workImage, // cover_001.png
-                `cover_${String(char.no).padStart(3, "0")}.png`,
+                char.characterImage,                     // chara_001.png
+                `chara_${String(char.no).padStart(3, "0")}.png`,
+                `${char.id}.png`,
             ])
         );
         const urls: string[] = [];
@@ -53,12 +51,12 @@ export const CoverImage: React.FC<{ char: CharacterData; style?: React.CSSProper
     return (
         <img
             src={src}
-            alt={char.work}
+            alt={char.name}
             draggable={false}
             style={{ userSelect: "none", WebkitUserDrag: "none", ...style }}
             onError={() => {
                 if (idx + 1 < candidates.length) setIdx(idx + 1);
-                else console.warn("[CoverImage] not found", { work: char.work, tried: candidates });
+                else console.warn("[CharacterImage] not found", { id: char.id, tried: candidates });
             }}
         />
     );

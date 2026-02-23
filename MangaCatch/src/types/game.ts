@@ -1,13 +1,14 @@
-import type { CharacterData } from '../constants/master';
+// MangaCatch/src/types/game.ts
+import type { CharacterData } from "../constants/master";
 
 export type SceneType =
-    | 'TITLE'
-    | 'TUTORIAL_VIDEO'
-    | 'GAME'
-    | 'RESULT'
-    | 'RECOMMEND'
-    | 'PHOTO'
-    | 'RANKING';
+    | "TITLE"
+    | "TUTORIAL_VIDEO"
+    | "GAME"
+    | "RESULT"
+    | "RECOMMEND"
+    | "PHOTO"
+    | "RANKING";
 
 export interface Particle {
     id: number;
@@ -15,7 +16,7 @@ export interface Particle {
     y: number;
     vx: number;
     vy: number;
-    life: number; // 0..1
+    life: number;
     size: number;
 }
 
@@ -34,5 +35,5 @@ export interface FallingItem {
 export interface RankingEntry {
     score: number;
     bestCharId: string;
-    achieved_at: number; // epoch ms
+    achieved_at: number;
 }
