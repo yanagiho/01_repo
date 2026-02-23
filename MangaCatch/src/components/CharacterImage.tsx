@@ -4,59 +4,68 @@ import type { CharacterData } from "../constants/master";
 
 const PLACEHOLDER =
     "data:image/svg+xml;charset=utf-8," +
-    encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256">
+    encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320">
   <rect width="100%" height="100%" fill="#222"/>
+  <rect x="10" y="10" width="300" height="300" fill="none" stroke="#666" stroke-width="4" stroke-dasharray="8 8"/>
   <text x="50%" y="50%" fill="#aaa" font-size="18" font-family="monospace"
     text-anchor="middle" dominant-baseline="middle">NO CHAR</text>
 </svg>`);
 
-function normBase(s: string) {
-    return s.endsWith("/") ? s : s + "/";
+function baseUrl(): string {
+    const b = (import.meta as any)?.env?.BASE_URL ?? "/";
+    return b.endsWith("/") ? b : b + "/";
 }
-function baseDirs(): string[] {
-    const b = (import.meta as any)?.env?.BASE_URL ?? "./";
-    const base = normBase(b);
-    return Array.from(
+
+function extractNo3(char: CharacterData): string {
+    // id: "chara_001" / "chara_010" から 001/010 を取る
+    const m = String((char as any).id ?? "").match(/(\d{1,3})$/);
+    if (m) return m[1].padStart(3, "0");
+    // fallback: no フィールドがあればそれを使う
+    const n = Number((char as any).no ?? 0);
+    return String(n).padStart(3, "0");
+}
+
+function buildCandidates(char: CharacterData): string[] {
+    const no3 = extractNo3(char);
+    const filename = `chara_${no3}.png`;
+
+    // public 配下は /assets/... で見える。file:// 対策で ./ も入れる
+    const roots = Array.from(
         new Set([
-            base + "assets/characters/",
+            baseUrl() + "assets/characters/",
+            "/assets/characters/",
             "./assets/characters/",
             "assets/characters/",
-            "../assets/characters/",
-            "../../assets/characters/",
         ])
     );
+
+    return roots.map((r) => r + filename);
 }
 
-export const CharacterImage: React.FC<{ char: CharacterData; style?: React.CSSProperties }> = ({
-    char,
-    style,
-}) => {
-    const candidates = useMemo(() => {
-        const dirs = baseDirs();
-        const names = Array.from(
-            new Set([
-                char.characterImage,                     // chara_001.png
-                `chara_${String(char.no).padStart(3, "0")}.png`,
-                `${char.id}.png`,
-            ])
-        );
-        const urls: string[] = [];
-        for (const d of dirs) for (const n of names) urls.push(d + n);
-        return urls;
-    }, [char]);
-
+export const CharacterImage: React.FC<{
+    char: CharacterData;
+    style?: React.CSSProperties;
+}> = ({ char, style }) => {
+    const candidates = useMemo(() => buildCandidates(char), [char]);
     const [idx, setIdx] = useState(0);
+
     const src = candidates[idx] ?? PLACEHOLDER;
 
     return (
         <img
             src={src}
-            alt={char.name}
+            alt={(char as any).name ?? "character"}
             draggable={false}
             style={{ userSelect: "none", WebkitUserDrag: "none", ...style }}
             onError={() => {
                 if (idx + 1 < candidates.length) setIdx(idx + 1);
-                else console.warn("[CharacterImage] not found", { id: char.id, tried: candidates });
+                else {
+                    console.warn("[CharacterImage] not found", {
+                        id: (char as any).id,
+                        tried: candidates,
+                    });
+                }
             }}
         />
     );

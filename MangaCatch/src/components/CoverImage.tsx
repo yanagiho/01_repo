@@ -4,61 +4,69 @@ import type { CharacterData } from "../constants/master";
 
 const PLACEHOLDER =
     "data:image/svg+xml;charset=utf-8," +
-    encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="420" height="600">
+    encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="600">
   <rect width="100%" height="100%" fill="#222"/>
+  <rect x="12" y="12" width="396" height="576" fill="none" stroke="#666" stroke-width="4" stroke-dasharray="10 10"/>
   <text x="50%" y="50%" fill="#aaa" font-size="18" font-family="monospace"
     text-anchor="middle" dominant-baseline="middle">NO COVER</text>
 </svg>`);
 
-function normBase(s: string) {
-    return s.endsWith("/") ? s : s + "/";
+function baseUrl(): string {
+    const b = (import.meta as any)?.env?.BASE_URL ?? "/";
+    return b.endsWith("/") ? b : b + "/";
 }
-function baseDirs(): string[] {
-    const b = (import.meta as any)?.env?.BASE_URL ?? "./";
-    const base = normBase(b);
-    return Array.from(
+
+function extractNo3(char: CharacterData): string {
+    const m = String((char as any).id ?? "").match(/(\d{1,3})$/);
+    if (m) return m[1].padStart(3, "0");
+    const n = Number((char as any).no ?? 0);
+    return String(n).padStart(3, "0");
+}
+
+function buildCandidates(char: CharacterData): string[] {
+    const no3 = extractNo3(char);
+    const filename = `cover_${no3}.png`;
+
+    const roots = Array.from(
         new Set([
-            base + "assets/books/",
-            base + "assets/covers/",
+            baseUrl() + "assets/books/",
+            baseUrl() + "assets/covers/",
+            "/assets/books/",
+            "/assets/covers/",
             "./assets/books/",
             "./assets/covers/",
             "assets/books/",
             "assets/covers/",
-            "../assets/books/",
-            "../assets/covers/",
         ])
     );
+
+    return roots.map((r) => r + filename);
 }
 
-export const CoverImage: React.FC<{ char: CharacterData; style?: React.CSSProperties }> = ({
-    char,
-    style,
-}) => {
-    const candidates = useMemo(() => {
-        const dirs = baseDirs();
-        const names = Array.from(
-            new Set([
-                char.workImage, // cover_001.png
-                `cover_${String(char.no).padStart(3, "0")}.png`,
-            ])
-        );
-        const urls: string[] = [];
-        for (const d of dirs) for (const n of names) urls.push(d + n);
-        return urls;
-    }, [char]);
-
+export const CoverImage: React.FC<{
+    char: CharacterData;
+    style?: React.CSSProperties;
+}> = ({ char, style }) => {
+    const candidates = useMemo(() => buildCandidates(char), [char]);
     const [idx, setIdx] = useState(0);
+
     const src = candidates[idx] ?? PLACEHOLDER;
 
     return (
         <img
             src={src}
-            alt={char.work}
+            alt={(char as any).work ?? "cover"}
             draggable={false}
             style={{ userSelect: "none", WebkitUserDrag: "none", ...style }}
             onError={() => {
                 if (idx + 1 < candidates.length) setIdx(idx + 1);
-                else console.warn("[CoverImage] not found", { work: char.work, tried: candidates });
+                else {
+                    console.warn("[CoverImage] not found", {
+                        id: (char as any).id,
+                        tried: candidates,
+                    });
+                }
             }}
         />
     );
