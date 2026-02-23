@@ -11,7 +11,12 @@ export const GameScene: React.FC<{
     onEnd: (score: number, counts: Record<string, number>) => void;
     onCatchFx: (x: number, y: number) => void;
 }> = ({ scene, playerX, speedMultiplier, playerCount, onEnd, onCatchFx }) => {
-    const { items, score, timer, isHit, catchCount } = useGameLoop(scene, playerX, speedMultiplier, onCatchFx);
+    const { items, score, timer, isHit, catchCount } = useGameLoop(
+        scene,
+        playerX,
+        speedMultiplier,
+        onCatchFx
+    );
 
     useEffect(() => {
         if (scene === "GAME" && timer <= 0) onEnd(score, catchCount.current);
@@ -27,12 +32,23 @@ export const GameScene: React.FC<{
     return (
         <div style={{ position: "absolute", inset: 0, zIndex: 10 }}>
             {/* HUD */}
-            <div style={{ position: "absolute", left: 20, top: 16, zIndex: 20, fontFamily: "monospace", color: "#00eebb" }}>
+            <div
+                style={{
+                    position: "absolute",
+                    left: 20,
+                    top: 16,
+                    zIndex: 20,
+                    fontFamily: "monospace",
+                    color: "#00eebb",
+                }}
+            >
                 <div style={{ fontSize: 18 }}>SCORE: {score}</div>
-                <div style={{ fontSize: 14, opacity: 0.9 }}>PLAYERS: {playerCount} / SPEED x{speedMultiplier.toFixed(2)}</div>
+                <div style={{ fontSize: 14, opacity: 0.9 }}>
+                    PLAYERS: {playerCount} / SPEED x{speedMultiplier.toFixed(2)}
+                </div>
             </div>
 
-            {/* タイマーバー（幅 1/3、上部中央） */}
+            {/* タイマーバー（上部中央：幅1/3） */}
             <div
                 style={{
                     position: "absolute",
@@ -58,23 +74,24 @@ export const GameScene: React.FC<{
                 />
             </div>
 
-            {/* 残り時間（下部に表示） */}
+            {/* ★残り時間：バーの下に大きく */}
             <div
                 style={{
                     position: "absolute",
                     left: "50%",
                     transform: "translateX(-50%)",
-                    bottom: 22,
+                    top: 40,
                     fontFamily: "monospace",
-                    fontSize: 18,
+                    fontSize: 34,
+                    fontWeight: 700,
                     color: "#00eebb",
                     opacity: 0.95,
                     zIndex: 20,
-                    textShadow: "0 2px 8px rgba(0,0,0,0.7)",
+                    textShadow: "0 3px 10px rgba(0,0,0,0.75)",
                     pointerEvents: "none",
                 }}
             >
-                TIME: {timer.toFixed(1)}
+                {timer.toFixed(1)}
             </div>
 
             {/* 落下 */}
@@ -108,7 +125,9 @@ export const GameScene: React.FC<{
                     borderRadius: 18,
                     border: "3px solid rgba(0,238,187,0.9)",
                     background: "rgba(0,0,0,0.25)",
-                    boxShadow: isHit ? "0 0 35px rgba(0,238,187,0.9)" : "0 0 10px rgba(0,0,0,0.4)",
+                    boxShadow: isHit
+                        ? "0 0 35px rgba(0,238,187,0.9)"
+                        : "0 0 10px rgba(0,0,0,0.4)",
                     transition: "box-shadow 120ms linear",
                 }}
             />

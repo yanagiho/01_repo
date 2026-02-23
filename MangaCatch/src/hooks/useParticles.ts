@@ -6,33 +6,33 @@ export const useParticles = () => {
     const [particles, setParticles] = useState<Particle[]>([]);
     const nextId = useRef(0);
 
-    // ★大きく・派手に（数/速度/サイズ増）
+    // ★「倍くらい」：数とサイズをさらに増やす
     const createParticles = useCallback((x: number, y: number) => {
         const burst: Particle[] = [];
 
-        // 小粒（多数）
-        for (let i = 0; i < 26; i++) {
+        // 小粒（大量）
+        for (let i = 0; i < 52; i++) {
             burst.push({
                 id: nextId.current++,
                 x,
                 y,
-                vx: (Math.random() - 0.5) * 520,
-                vy: (Math.random() - 0.85) * 520,
+                vx: (Math.random() - 0.5) * 760,
+                vy: (Math.random() - 0.9) * 760,
                 life: 1,
-                size: 4 + Math.random() * 8,
+                size: 6 + Math.random() * 12,
             });
         }
 
-        // 中〜大粒（少数）
-        for (let i = 0; i < 8; i++) {
+        // 大粒（目立つ）
+        for (let i = 0; i < 14; i++) {
             burst.push({
                 id: nextId.current++,
                 x,
                 y,
-                vx: (Math.random() - 0.5) * 380,
-                vy: (Math.random() - 0.85) * 380,
+                vx: (Math.random() - 0.5) * 540,
+                vy: (Math.random() - 0.9) * 540,
                 life: 1,
-                size: 10 + Math.random() * 14,
+                size: 16 + Math.random() * 22,
             });
         }
 
@@ -48,8 +48,8 @@ export const useParticles = () => {
                         ...p,
                         x: p.x + p.vx * 0.016,
                         y: p.y + p.vy * 0.016,
-                        vy: p.vy + 520 * 0.016,
-                        life: p.life - 0.035,
+                        vy: p.vy + 650 * 0.016,
+                        life: p.life - 0.03,
                     }))
                     .filter((p) => p.life > 0)
             );

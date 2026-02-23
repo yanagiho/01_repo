@@ -1,13 +1,33 @@
 // MangaCatch/src/components/scenes/TutorialVideoScene.tsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+
+function baseUrl(): string {
+    const b = (import.meta as any)?.env?.BASE_URL ?? "/";
+    return b.endsWith("/") ? b : b + "/";
+}
+
+function buildCandidates(): string[] {
+    // dev(http) と file:// の両方で当たるように候補を複数
+    return Array.from(
+        new Set([
+            baseUrl() + "assets/video/tutorial.mp4",
+            "/assets/video/tutorial.mp4",
+            "./assets/video/tutorial.mp4",
+            "assets/video/tutorial.mp4",
+        ])
+    );
+}
 
 export const TutorialVideoScene: React.FC<{
     onEnded: () => void;
     onUserSkip?: () => void;
 }> = ({ onEnded, onUserSkip }) => {
+    const candidates = useMemo(() => buildCandidates(), []);
+    const [idx, setIdx] = useState(0);
+    const [status, setStatus] = useState<"loading" | "playing" | "error">("loading");
+
     const doneRef = useRef(false);
     const videoRef = useRef<HTMLVideoElement | null>(null);
-    const [status, setStatus] = useState<"loading" | "playing" | "fallback">("loading");
 
     const finishOnce = () => {
         if (doneRef.current) return;
@@ -15,17 +35,16 @@ export const TutorialVideoScene: React.FC<{
         onEnded();
     };
 
-    // 最終保険：何があっても進む
+    // 最終保険：止まらない
     useEffect(() => {
         const t = window.setTimeout(() => {
             console.warn("[TutorialVideo] failsafe -> go GAME");
-            setStatus("fallback");
             finishOnce();
-        }, 6500);
+        }, 9000);
         return () => window.clearTimeout(t);
     }, []);
 
-    // 読み込めたら play を強制（Electronで必要な場合がある）
+    // 読めたら play を強制
     const tryPlay = async () => {
         const v = videoRef.current;
         if (!v) return;
@@ -33,12 +52,13 @@ export const TutorialVideoScene: React.FC<{
             await v.play();
             setStatus("playing");
         } catch {
-            // autoplay規制等で失敗→タップで再生できるが、無人筐体前提ならスキップ優先
-            console.warn("[TutorialVideo] play() rejected -> fallback");
-            setStatus("fallback");
-            finishOnce();
+            // autoplay失敗等
+            console.warn("[TutorialVideo] play() rejected");
+            // ここで止めず、タップでスキップできるようにする
         }
     };
+
+    const src = candidates[idx];
 
     return (
         <div
@@ -46,11 +66,18 @@ export const TutorialVideoScene: React.FC<{
                 onUserSkip?.();
                 finishOnce();
             }}
-            style={{ position: "absolute", inset: 0, zIndex: 20, background: "#000", cursor: "pointer" }}
+            style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 20,
+                background: "#000",
+                cursor: "pointer",
+            }}
         >
             <video
                 ref={videoRef}
-                src={"assets/video/tutorial.mp4"}
+                key={src}
+                src={src}
                 autoPlay
                 muted
                 playsInline
@@ -65,14 +92,30 @@ export const TutorialVideoScene: React.FC<{
                 }}
                 onEnded={finishOnce}
                 onError={() => {
-                    console.warn("[TutorialVideo] error -> go GAME");
-                    setStatus("fallback");
-                    finishOnce();
+                    if (idx + 1 < candidates.length) {
+                        console.warn("[TutorialVideo] error -> next", src);
+                        setIdx(idx + 1);
+                        setStatus("loading");
+                    } else {
+                        console.warn("[TutorialVideo] all candidates failed", candidates);
+                        setStatus("error");
+                        // 2秒見せてから進む
+                        setTimeout(finishOnce, 2000);
+                    }
                 }}
                 style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
             />
 
-            <div style={{ position: "absolute", left: 16, bottom: 14, fontFamily: "monospace", fontSize: 12, opacity: 0.75 }}>
+            <div
+                style={{
+                    position: "absolute",
+                    left: 16,
+                    bottom: 14,
+                    fontFamily: "monospace",
+                    fontSize: 12,
+                    opacity: 0.75,
+                }}
+            >
                 tutorial video ({status}) / tap to skip
             </div>
         </div>

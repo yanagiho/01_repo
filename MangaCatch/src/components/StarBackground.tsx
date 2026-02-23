@@ -1,49 +1,93 @@
 // MangaCatch/src/components/StarBackground.tsx
-import React from "react";
+import React, { useEffect, useRef } from "react";
+
+type Star = { x: number; y: number; r: number; a: number; v: number };
 
 export const StarBackground: React.FC = () => {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const starsRef = useRef<Star[]>([]);
+  const rafRef = useRef<number>(0);
+
+  const initStars = (w: number, h: number) => {
+    const n = Math.floor((w * h) / 12000); // 密度調整
+    const stars: Star[] = [];
+    for (let i = 0; i < n; i++) {
+      stars.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: 0.6 + Math.random() * 1.9,
+        a: 0.25 + Math.random() * 0.75,
+        v: 10 + Math.random() * 40, // px/sec
+      });
+    }
+    starsRef.current = stars;
+  };
+
+  useEffect(() => {
+    const canvas = canvasRef.current!;
+    const ctx = canvas.getContext("2d")!;
+    let last = performance.now();
+
+    const resize = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      canvas.width = Math.floor(w * devicePixelRatio);
+      canvas.height = Math.floor(h * devicePixelRatio);
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+      ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+      initStars(w, h);
+    };
+
+    const tick = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+
+      // 背景
+      const grad = ctx.createRadialGradient(w * 0.5, h * 0.25, 0, w * 0.5, h * 0.25, Math.max(w, h));
+      grad.addColorStop(0, "#081018");
+      grad.addColorStop(0.6, "#000000");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      // 星
+      ctx.fillStyle = "#ffffff";
+      for (const s of starsRef.current) {
+        s.y += s.v * dt;
+        if (s.y > h + 10) {
+          s.y = -10;
+          s.x = Math.random() * w;
+          s.v = 10 + Math.random() * 40;
+          s.a = 0.25 + Math.random() * 0.75;
+          s.r = 0.6 + Math.random() * 1.9;
+        }
+        ctx.globalAlpha = s.a;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    resize();
+    window.addEventListener("resize", resize);
+    rafRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      window.removeEventListener("resize", resize);
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
   return (
-    <div style={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 0 }}>
-      <style>{`
-        @keyframes starScrollA { from { background-position: 0px 0px; } to { background-position: 0px 800px; } }
-        @keyframes starScrollB { from { background-position: 0px 0px; } to { background-position: 0px 1400px; } }
-      `}</style>
-
-      {/* ベース（暗め宇宙） */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "radial-gradient(circle at 50% 30%, #081018 0%, #000 60%)",
-        }}
-      />
-
-      {/* 星層A（小粒） */}
-      <div
-        style={{
-          position: "absolute",
-          inset: -200,
-          backgroundImage:
-            "radial-gradient(circle at 10px 10px, rgba(255,255,255,0.55) 1px, rgba(0,0,0,0) 1.6px)",
-          backgroundSize: "26px 26px",
-          opacity: 0.55,
-          animation: "starScrollA 18s linear infinite",
-        }}
-      />
-
-      {/* 星層B（大粒） */}
-      <div
-        style={{
-          position: "absolute",
-          inset: -300,
-          backgroundImage:
-            "radial-gradient(circle at 16px 16px, rgba(255,255,255,0.7) 1.6px, rgba(0,0,0,0) 2.3px)",
-          backgroundSize: "58px 58px",
-          opacity: 0.35,
-          animation: "starScrollB 30s linear infinite",
-          mixBlendMode: "screen",
-        }}
-      />
-    </div>
+    <canvas
+      ref={canvasRef}
+      style={{ position: "absolute", inset: 0, zIndex: 0 }}
+    />
   );
 };

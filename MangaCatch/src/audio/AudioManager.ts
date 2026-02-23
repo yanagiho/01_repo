@@ -42,7 +42,6 @@ class AudioAsset {
     }
     pause() { this.el.pause(); }
     stop() { this.el.pause(); try { this.el.currentTime = 0; } catch { } }
-    setVolume(v: number) { this.el.volume = v; }
     get element() { return this.el; }
 }
 
@@ -138,29 +137,22 @@ export class AudioManager {
         if (kind === "game") this.bgmGame.play();
     }
 
-    stopBgm() {
-        if (!this.unlocked) return;
-        this.bgmUi.stop();
-        this.bgmGame.stop();
-        this.currentBgm = null;
-    }
-
-    // ★要件：ゲームBGM停止→ジングル→一呼吸→UI BGM
+    // ゲーム終了：BGM停止 → ジングル →（待ち）→ UI BGM
     async playJingleGameEndThenUi() {
         if (!this.unlocked) return;
 
-        // 1) まずBGM停止
+        // BGM停止
         this.bgmGame.stop();
         this.currentBgm = null;
 
-        // 2) ジングル
+        // ジングル再生
         await this.jingleEnd.play();
 
-        // 3) ジングル終了→0.7秒→UI BGM
+        // ★ジングル終了→1.4秒待ってUI BGM
         this.jingleEnd.element.onended = () => {
             window.setTimeout(() => {
                 this.playBgm("ui");
-            }, 700);
+            }, 1400);
         };
     }
 }
