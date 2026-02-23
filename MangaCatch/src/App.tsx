@@ -13,6 +13,7 @@ import { ResultScene } from "./components/scenes/ResultScene";
 import { RecommendScene } from "./components/scenes/RecommendScene";
 import { PhotoScene } from "./components/scenes/PhotoScene";
 import { RankingScene } from "./components/scenes/RankingScene";
+import { AssetCheckScene } from "./components/scenes/AssetCheckScene";
 
 import { AudioManager } from "./audio/AudioManager";
 import { getCharacterById, getEnabledCharacters } from "./constants/master";
@@ -23,10 +24,11 @@ const DUR_RECOMMEND = 5200;
 const DUR_PHOTO = 9000;
 const DUR_RANKING = 7000;
 
+type InternalScene = SceneType | "ASSET_CHECK";
+
 function todayKey() {
   return `mangacatch_ranking_${new Date().toLocaleDateString()}`;
 }
-
 function loadRankingToday(): RankingEntry[] {
   const raw = localStorage.getItem(todayKey());
   if (!raw) return [];
@@ -37,7 +39,6 @@ function loadRankingToday(): RankingEntry[] {
     return [];
   }
 }
-
 function saveRankingToday(entry: RankingEntry) {
   const list = loadRankingToday();
   list.push(entry);
@@ -55,7 +56,6 @@ function calcBestCharId(counts: Record<string, number>): string {
     }
   }
   if (bestId) return bestId;
-
   const pool = getEnabledCharacters();
   return pool[Math.floor(Math.random() * pool.length)].id;
 }
@@ -66,14 +66,14 @@ export default function App() {
   const { playerCount, speedMultiplier, playerX } = useSensor();
   const { particles, createParticles } = useParticles();
 
-  const [scene, setScene] = useState<SceneType>("TITLE");
+  const [scene, setScene] = useState<InternalScene>("TITLE");
 
-  // 派手ワイプ用
+  // ワイプ
   const [wipeTrigger, setWipeTrigger] = useState(false);
-  const pendingRef = useRef<SceneType | null>(null);
+  const pendingRef = useRef<InternalScene | null>(null);
   const transitioningRef = useRef(false);
 
-  // ゲーム結果
+  // 結果
   const [score, setScore] = useState(0);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [bestCharId, setBestCharId] = useState<string>("");
@@ -85,7 +85,7 @@ export default function App() {
   const bestChar = useMemo(() => (bestCharId ? getCharacterById(bestCharId) : null), [bestCharId]);
 
   const goto = useCallback(
-    (next: SceneType) => {
+    (next: InternalScene) => {
       if (transitioningRef.current) return;
 
       transitioningRef.current = true;
@@ -100,10 +100,9 @@ export default function App() {
           setWipeTrigger(false);
           transitioningRef.current = false;
 
-          // BGM切替（unlock後）
           if (audio.isUnlocked()) {
             if (next === "GAME") audio.playBgm("game");
-            else audio.playBgm("ui");
+            else if (next !== "ASSET_CHECK") audio.playBgm("ui");
           }
           if (next === "RANKING") setRanking(loadRankingToday());
         }
@@ -119,12 +118,10 @@ export default function App() {
     setScene(next);
     pendingRef.current = null;
 
-    // BGM切替（unlock後）
     if (audio.isUnlocked()) {
       if (next === "GAME") audio.playBgm("game");
-      else audio.playBgm("ui");
+      else if (next !== "ASSET_CHECK") audio.playBgm("ui");
     }
-
     if (next === "RANKING") setRanking(loadRankingToday());
   }, [audio]);
 
@@ -133,7 +130,19 @@ export default function App() {
     transitioningRef.current = false;
   }, []);
 
-  // 自動遷移（TITLEは手動）
+  // TITLEで A キー → AssetCheck
+  useEffect(() => {
+    if (scene !== "TITLE") return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "a" || e.key === "A") {
+        goto("ASSET_CHECK");
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [scene, goto]);
+
+  // 自動遷移
   useEffect(() => {
     if (scene === "RESULT") {
       const t = window.setTimeout(() => goto("RECOMMEND"), DUR_RESULT);
@@ -159,17 +168,7 @@ export default function App() {
   }, [scene, goto, score, bestCharId]);
 
   return (
-    <div
-      style={{
-        width: "100vw",
-        height: "100vh",
-        background: "#000",
-        position: "relative",
-        overflow: "hidden",
-        cursor: "none",
-        color: "#fff",
-      }}
-    >
+    <div style={{ width: "100vw", height: "100vh", background: "#000", position: "relative", overflow: "hidden", cursor: "none", color: "#fff" }}>
       <StarBackground />
       <ScreentoneWipe trigger={wipeTrigger} onMiddle={onWipeMiddle} onComplete={onWipeComplete} />
 
@@ -193,7 +192,8 @@ export default function App() {
         />
       ))}
 
-      {/* TITLE：クリック必須（将来センサー入力に置換） */}
+      {scene === "ASSET_CHECK" && <AssetCheckScene onBack={() => goto("TITLE")} />}
+
       {scene === "TITLE" && (
         <TitleScene
           onStart={async () => {
@@ -205,7 +205,6 @@ export default function App() {
         />
       )}
 
-      {/* チュートリアル動画（動画内にカウントダウンを埋め込む前提） */}
       {scene === "TUTORIAL_VIDEO" && (
         <TutorialVideoScene
           onUserSkip={() => audio.playSeClick()}
@@ -227,10 +226,7 @@ export default function App() {
             setScore(s);
             setCounts(c);
             setBestCharId(calcBestCharId(c));
-
-            // BGM停止→ジングル→（待ち）→UI BGM（AudioManager側の実装を使用）
             audio.playJingleGameEndThenUi();
-
             goto("RESULT");
           }}
         />
@@ -257,7 +253,7 @@ export default function App() {
           pointerEvents: "none",
         }}
       >
-        scene:{scene} / wipe:{String(wipeTrigger)}
+        scene:{scene} / wipe:{String(wipeTrigger)}（TITLEでAキー→ASSET CHECK）
       </div>
     </div>
   );

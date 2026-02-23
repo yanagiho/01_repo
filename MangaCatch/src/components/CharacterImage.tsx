@@ -1,6 +1,7 @@
 // MangaCatch/src/components/CharacterImage.tsx
 import React, { useMemo, useState } from "react";
 import type { CharacterData } from "../constants/master";
+import { extractNo3FromIdOrNo, getOverrideNo3 } from "../utils/charImageOverride";
 
 const PLACEHOLDER =
     "data:image/svg+xml;charset=utf-8," +
@@ -17,20 +18,7 @@ function baseUrl(): string {
     return b.endsWith("/") ? b : b + "/";
 }
 
-function extractNo3(char: CharacterData): string {
-    // id: "chara_001" / "chara_010" から 001/010 を取る
-    const m = String((char as any).id ?? "").match(/(\d{1,3})$/);
-    if (m) return m[1].padStart(3, "0");
-    // fallback: no フィールドがあればそれを使う
-    const n = Number((char as any).no ?? 0);
-    return String(n).padStart(3, "0");
-}
-
-function buildCandidates(char: CharacterData): string[] {
-    const no3 = extractNo3(char);
-    const filename = `chara_${no3}.png`;
-
-    // public 配下は /assets/... で見える。file:// 対策で ./ も入れる
+function buildCandidates(filename: string): string[] {
     const roots = Array.from(
         new Set([
             baseUrl() + "assets/characters/",
@@ -39,7 +27,6 @@ function buildCandidates(char: CharacterData): string[] {
             "assets/characters/",
         ])
     );
-
     return roots.map((r) => r + filename);
 }
 
@@ -47,9 +34,14 @@ export const CharacterImage: React.FC<{
     char: CharacterData;
     style?: React.CSSProperties;
 }> = ({ char, style }) => {
-    const candidates = useMemo(() => buildCandidates(char), [char]);
-    const [idx, setIdx] = useState(0);
+    const candidates = useMemo(() => {
+        const override = getOverrideNo3((char as any).id);
+        const no3 = override ?? extractNo3FromIdOrNo((char as any).id, (char as any).no);
+        const filename = `chara_${no3}.png`;
+        return buildCandidates(filename);
+    }, [char]);
 
+    const [idx, setIdx] = useState(0);
     const src = candidates[idx] ?? PLACEHOLDER;
 
     return (
