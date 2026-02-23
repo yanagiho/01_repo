@@ -18,14 +18,15 @@ import { AudioManager } from "./audio/AudioManager";
 import { getCharacterById, getEnabledCharacters } from "./constants/master";
 import type { RankingEntry, SceneType } from "./types/game";
 
-const DUR_RESULT = 4000;
-const DUR_RECOMMEND = 6000;
-const DUR_PHOTO = 10000;
-const DUR_RANKING = 8000;
+const DUR_RESULT = 3200;
+const DUR_RECOMMEND = 5200;
+const DUR_PHOTO = 9000;
+const DUR_RANKING = 7000;
 
 function todayKey() {
   return `mangacatch_ranking_${new Date().toLocaleDateString()}`;
 }
+
 function loadRankingToday(): RankingEntry[] {
   const raw = localStorage.getItem(todayKey());
   if (!raw) return [];
@@ -36,6 +37,7 @@ function loadRankingToday(): RankingEntry[] {
     return [];
   }
 }
+
 function saveRankingToday(entry: RankingEntry) {
   const list = loadRankingToday();
   list.push(entry);
@@ -53,6 +55,7 @@ function calcBestCharId(counts: Record<string, number>): string {
     }
   }
   if (bestId) return bestId;
+
   const pool = getEnabledCharacters();
   return pool[Math.floor(Math.random() * pool.length)].id;
 }
@@ -65,62 +68,48 @@ export default function App() {
 
   const [scene, setScene] = useState<SceneType>("TITLE");
 
+  // 派手ワイプ用
   const [wipeTrigger, setWipeTrigger] = useState(false);
   const pendingRef = useRef<SceneType | null>(null);
-  const [pendingView, setPendingView] = useState<SceneType | null>(null);
-
   const transitioningRef = useRef(false);
 
+  // ゲーム結果
   const [score, setScore] = useState(0);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [bestCharId, setBestCharId] = useState<string>("");
 
+  // ランキング
   const [ranking, setRanking] = useState<RankingEntry[]>([]);
+  const [highlightAchievedAt, setHighlightAchievedAt] = useState<number | undefined>(undefined);
 
   const bestChar = useMemo(() => (bestCharId ? getCharacterById(bestCharId) : null), [bestCharId]);
 
-  const forceClearTransition = useCallback(() => {
-    // ★詰まった時に強制解除
-    transitioningRef.current = false;
-    pendingRef.current = null;
-    setPendingView(null);
-    setWipeTrigger(false);
-  }, []);
-
   const goto = useCallback(
     (next: SceneType) => {
-      // ★「lockが残っていて動けない」ケースの保険
-      if (!wipeTrigger && !pendingRef.current && transitioningRef.current) {
-        console.warn("[App] stale lock cleared");
-        transitioningRef.current = false;
-      }
-
       if (transitioningRef.current) return;
-      transitioningRef.current = true;
 
+      transitioningRef.current = true;
       pendingRef.current = next;
-      setPendingView(next);
       setWipeTrigger(true);
 
-      // ★ワイプが何かで死んでも1.5秒で強制移動
+      // 保険：ワイプが死んでも進む
       window.setTimeout(() => {
         if (pendingRef.current === next) {
-          console.warn("[App] wipe failsafe -> direct setScene", next);
           setScene(next);
           pendingRef.current = null;
-          setPendingView(null);
           setWipeTrigger(false);
           transitioningRef.current = false;
 
+          // BGM切替（unlock後）
           if (audio.isUnlocked()) {
             if (next === "GAME") audio.playBgm("game");
             else audio.playBgm("ui");
           }
           if (next === "RANKING") setRanking(loadRankingToday());
         }
-      }, 1500);
+      }, 1600);
     },
-    [audio, wipeTrigger]
+    [audio]
   );
 
   const onWipeMiddle = useCallback(() => {
@@ -129,12 +118,13 @@ export default function App() {
 
     setScene(next);
     pendingRef.current = null;
-    setPendingView(null);
 
+    // BGM切替（unlock後）
     if (audio.isUnlocked()) {
       if (next === "GAME") audio.playBgm("game");
       else audio.playBgm("ui");
     }
+
     if (next === "RANKING") setRanking(loadRankingToday());
   }, [audio]);
 
@@ -155,7 +145,9 @@ export default function App() {
     }
     if (scene === "PHOTO") {
       const t = window.setTimeout(() => {
-        saveRankingToday({ score, bestCharId: bestCharId || "unknown", achieved_at: Date.now() });
+        const achieved_at = Date.now();
+        setHighlightAchievedAt(achieved_at);
+        saveRankingToday({ score, bestCharId: bestCharId || "unknown", achieved_at });
         goto("RANKING");
       }, DUR_PHOTO);
       return () => window.clearTimeout(t);
@@ -167,11 +159,21 @@ export default function App() {
   }, [scene, goto, score, bestCharId]);
 
   return (
-    <div style={{ width: "100vw", height: "100vh", background: "#000", position: "relative", overflow: "hidden", cursor: "none", color: "#fff" }}>
+    <div
+      style={{
+        width: "100vw",
+        height: "100vh",
+        background: "#000",
+        position: "relative",
+        overflow: "hidden",
+        cursor: "none",
+        color: "#fff",
+      }}
+    >
       <StarBackground />
-
       <ScreentoneWipe trigger={wipeTrigger} onMiddle={onWipeMiddle} onComplete={onWipeComplete} />
 
+      {/* particles */}
       {particles.map((p) => (
         <div
           key={p.id}
@@ -191,6 +193,7 @@ export default function App() {
         />
       ))}
 
+      {/* TITLE：クリック必須（将来センサー入力に置換） */}
       {scene === "TITLE" && (
         <TitleScene
           onStart={async () => {
@@ -202,14 +205,11 @@ export default function App() {
         />
       )}
 
+      {/* チュートリアル動画（動画内にカウントダウンを埋め込む前提） */}
       {scene === "TUTORIAL_VIDEO" && (
         <TutorialVideoScene
           onUserSkip={() => audio.playSeClick()}
-          onEnded={() => {
-            // ★ここが最重要：チュートリアルから進まない場合の強制解除
-            forceClearTransition();
-            goto("GAME");
-          }}
+          onEnded={() => goto("GAME")}
         />
       )}
 
@@ -226,9 +226,11 @@ export default function App() {
           onEnd={(s, c) => {
             setScore(s);
             setCounts(c);
-            const b = calcBestCharId(c);
-            setBestCharId(b);
+            setBestCharId(calcBestCharId(c));
+
+            // BGM停止→ジングル→（待ち）→UI BGM（AudioManager側の実装を使用）
             audio.playJingleGameEndThenUi();
+
             goto("RESULT");
           }}
         />
@@ -237,11 +239,25 @@ export default function App() {
       {scene === "RESULT" && <ResultScene score={score} counts={counts} />}
       {scene === "RECOMMEND" && <RecommendScene bestChar={bestChar} />}
       {scene === "PHOTO" && <PhotoScene bestChar={bestChar} score={score} />}
-      {scene === "RANKING" && <RankingScene ranking={ranking} />}
+      {scene === "RANKING" && <RankingScene ranking={ranking} highlightAchievedAt={highlightAchievedAt} />}
 
       {/* debug */}
-      <div style={{ position: "fixed", top: 8, left: 8, zIndex: 20000, padding: "6px 8px", borderRadius: 8, background: "rgba(0,0,0,0.45)", fontFamily: "monospace", fontSize: 12, opacity: 0.85 }}>
-        scene:{scene} / wipe:{String(wipeTrigger)} / pending:{String(pendingView)} / lock:{String(transitioningRef.current)}
+      <div
+        style={{
+          position: "fixed",
+          top: 8,
+          left: 8,
+          zIndex: 20000,
+          padding: "6px 8px",
+          borderRadius: 8,
+          background: "rgba(0,0,0,0.45)",
+          fontFamily: "monospace",
+          fontSize: 12,
+          opacity: 0.85,
+          pointerEvents: "none",
+        }}
+      >
+        scene:{scene} / wipe:{String(wipeTrigger)}
       </div>
     </div>
   );
