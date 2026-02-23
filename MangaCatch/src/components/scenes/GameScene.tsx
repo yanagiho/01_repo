@@ -31,7 +31,7 @@ export const GameScene: React.FC<{
 
     return (
         <div style={{ position: "absolute", inset: 0, zIndex: 10 }}>
-            {/* HUD */}
+            {/* 左上：小さめステータス */}
             <div
                 style={{
                     position: "absolute",
@@ -39,13 +39,30 @@ export const GameScene: React.FC<{
                     top: 16,
                     zIndex: 20,
                     fontFamily: "monospace",
-                    color: "#00eebb",
+                    color: "rgba(0,238,187,0.9)",
+                    fontSize: 12,
+                    opacity: 0.85,
                 }}
             >
-                <div style={{ fontSize: 18 }}>SCORE: {score}</div>
-                <div style={{ fontSize: 14, opacity: 0.9 }}>
-                    PLAYERS: {playerCount} / SPEED x{speedMultiplier.toFixed(2)}
-                </div>
+                PLAYERS: {playerCount} / SPEED x{speedMultiplier.toFixed(2)}
+            </div>
+
+            {/* ★右上：スコアを大きく */}
+            <div
+                style={{
+                    position: "absolute",
+                    right: 20,
+                    top: 14,
+                    zIndex: 20,
+                    fontFamily: "monospace",
+                    fontSize: 44,
+                    fontWeight: 800,
+                    color: "#00eebb",
+                    textShadow: "0 3px 10px rgba(0,0,0,0.75)",
+                    pointerEvents: "none",
+                }}
+            >
+                {score}
             </div>
 
             {/* タイマーバー（上部中央：幅1/3） */}
@@ -74,7 +91,7 @@ export const GameScene: React.FC<{
                 />
             </div>
 
-            {/* ★残り時間：バーの下に大きく */}
+            {/* 残り時間：バーの下で大きく */}
             <div
                 style={{
                     position: "absolute",
@@ -83,7 +100,7 @@ export const GameScene: React.FC<{
                     top: 40,
                     fontFamily: "monospace",
                     fontSize: 34,
-                    fontWeight: 700,
+                    fontWeight: 800,
                     color: "#00eebb",
                     opacity: 0.95,
                     zIndex: 20,
@@ -125,9 +142,7 @@ export const GameScene: React.FC<{
                     borderRadius: 18,
                     border: "3px solid rgba(0,238,187,0.9)",
                     background: "rgba(0,0,0,0.25)",
-                    boxShadow: isHit
-                        ? "0 0 35px rgba(0,238,187,0.9)"
-                        : "0 0 10px rgba(0,0,0,0.4)",
+                    boxShadow: isHit ? "0 0 35px rgba(0,238,187,0.9)" : "0 0 10px rgba(0,0,0,0.4)",
                     transition: "box-shadow 120ms linear",
                 }}
             />

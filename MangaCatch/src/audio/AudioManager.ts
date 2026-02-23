@@ -38,11 +38,34 @@ class AudioAsset {
     }
 
     async play() {
-        try { await this.el.play(); } catch { }
+        try {
+            await this.el.play();
+            return true;
+        } catch {
+            return false;
+        }
     }
-    pause() { this.el.pause(); }
-    stop() { this.el.pause(); try { this.el.currentTime = 0; } catch { } }
-    get element() { return this.el; }
+
+    pause() {
+        this.el.pause();
+    }
+
+    stop() {
+        this.el.pause();
+        try { this.el.currentTime = 0; } catch { }
+    }
+
+    setVolume(v: number) {
+        this.el.volume = v;
+    }
+
+    setMuted(m: boolean) {
+        this.el.muted = m;
+    }
+
+    get element() {
+        return this.el;
+    }
 }
 
 export class AudioManager {
@@ -53,6 +76,7 @@ export class AudioManager {
     }
 
     private unlocked = false;
+    private needsUnmute = false;
 
     private bgmUi: AudioAsset;
     private bgmGame: AudioAsset;
@@ -61,7 +85,6 @@ export class AudioManager {
     private seCatchBase: HTMLAudioElement;
 
     private jingleEnd: AudioAsset;
-
     private currentBgm: BgmKind | null = null;
 
     private constructor() {
@@ -94,21 +117,68 @@ export class AudioManager {
         this.jingleEnd = new AudioAsset(jCandidates, false, 0.85);
     }
 
-    isUnlocked() { return this.unlocked; }
+    isUnlocked() {
+        return this.unlocked;
+    }
 
+    // ★起動直後に呼ぶ：鳴れる環境では最初からBGMが鳴る
+    // 鳴れない環境では、ミュートで先に再生 → 最初のクリックで音が出る
+    async tryAutoplayUiBgm() {
+        if (this.currentBgm) return;
+
+        this.bgmUi.setMuted(false);
+        const ok = await this.bgmUi.play();
+        if (ok) {
+            this.currentBgm = "ui";
+            this.needsUnmute = false;
+            return;
+        }
+
+        // だめなら “ミュートなら通る” ケースを狙う
+        this.bgmUi.setMuted(true);
+        const okMuted = await this.bgmUi.play();
+        if (okMuted) {
+            this.currentBgm = "ui";
+            this.needsUnmute = true; // unlockで解除
+        }
+    }
+
+    // タイトルクリック（ユーザー操作）内で呼ぶ
     async unlock() {
-        if (this.unlocked) return;
+        if (this.unlocked) {
+            // 既にunlock済みでも、必要ならミュート解除だけする
+            if (this.needsUnmute) {
+                this.bgmUi.setMuted(false);
+                this.needsUnmute = false;
+            }
+            return;
+        }
         this.unlocked = true;
 
+        // 無音再生でアンロック（環境によって必要）
         try {
             const a = new Audio();
-            a.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=";
+            a.src =
+                "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=";
             await a.play().catch(() => { });
             a.pause();
         } catch { }
 
+        // SE先読み
         this.seClickBase.load();
         this.seCatchBase.load();
+
+        // ミュート再生していたら解除
+        if (this.needsUnmute) {
+            this.bgmUi.setMuted(false);
+            this.needsUnmute = false;
+        }
+
+        // unlock後に「再生できていない」なら確実にUI BGMを起動
+        if (this.currentBgm === "ui") {
+            this.bgmUi.setMuted(false);
+            await this.bgmUi.play();
+        }
     }
 
     playSeClick() {
@@ -125,30 +195,33 @@ export class AudioManager {
         a.play().catch(() => { });
     }
 
-    playBgm(kind: BgmKind) {
-        if (!this.unlocked) return;
+    async playBgm(kind: BgmKind) {
         if (this.currentBgm === kind) return;
 
         if (this.currentBgm === "ui") this.bgmUi.pause();
         if (this.currentBgm === "game") this.bgmGame.pause();
 
         this.currentBgm = kind;
-        if (kind === "ui") this.bgmUi.play();
-        if (kind === "game") this.bgmGame.play();
+
+        if (kind === "ui") {
+            this.bgmUi.setMuted(!this.unlocked && this.needsUnmute);
+            await this.bgmUi.play();
+        } else {
+            this.bgmGame.setMuted(false);
+            await this.bgmGame.play();
+        }
     }
 
     // ゲーム終了：BGM停止 → ジングル →（待ち）→ UI BGM
     async playJingleGameEndThenUi() {
-        if (!this.unlocked) return;
-
-        // BGM停止
+        // 1) BGM停止
         this.bgmGame.stop();
         this.currentBgm = null;
 
-        // ジングル再生
+        // 2) ジングル
         await this.jingleEnd.play();
 
-        // ★ジングル終了→1.4秒待ってUI BGM
+        // 3) ジングル終了→1.4秒待ってUI
         this.jingleEnd.element.onended = () => {
             window.setTimeout(() => {
                 this.playBgm("ui");

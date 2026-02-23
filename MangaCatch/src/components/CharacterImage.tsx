@@ -1,7 +1,6 @@
 // MangaCatch/src/components/CharacterImage.tsx
 import React, { useMemo, useState } from "react";
 import type { CharacterData } from "../constants/master";
-import { extractNo3FromIdOrNo, getOverrideNo3 } from "../utils/charImageOverride";
 
 const PLACEHOLDER =
     "data:image/svg+xml;charset=utf-8," +
@@ -16,6 +15,14 @@ const PLACEHOLDER =
 function baseUrl(): string {
     const b = (import.meta as any)?.env?.BASE_URL ?? "/";
     return b.endsWith("/") ? b : b + "/";
+}
+
+function extractNo3(char: CharacterData): string {
+    // id: "chara_001" / "chara_010"
+    const m = String((char as any).id ?? "").match(/(\d{1,3})$/);
+    if (m) return m[1].padStart(3, "0");
+    const n = Number((char as any).no ?? 0);
+    return String(n).padStart(3, "0");
 }
 
 function buildCandidates(filename: string): string[] {
@@ -35,10 +42,8 @@ export const CharacterImage: React.FC<{
     style?: React.CSSProperties;
 }> = ({ char, style }) => {
     const candidates = useMemo(() => {
-        const override = getOverrideNo3((char as any).id);
-        const no3 = override ?? extractNo3FromIdOrNo((char as any).id, (char as any).no);
-        const filename = `chara_${no3}.png`;
-        return buildCandidates(filename);
+        const no3 = extractNo3(char);
+        return buildCandidates(`chara_${no3}.png`);
     }, [char]);
 
     const [idx, setIdx] = useState(0);
@@ -52,12 +57,7 @@ export const CharacterImage: React.FC<{
             style={{ userSelect: "none", WebkitUserDrag: "none", ...style }}
             onError={() => {
                 if (idx + 1 < candidates.length) setIdx(idx + 1);
-                else {
-                    console.warn("[CharacterImage] not found", {
-                        id: (char as any).id,
-                        tried: candidates,
-                    });
-                }
+                else console.warn("[CharacterImage] not found", { id: (char as any).id, tried: candidates });
             }}
         />
     );
