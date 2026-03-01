@@ -1,5 +1,5 @@
 // MangaCatch/src/App.tsx
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StarBackground } from "./components/StarBackground";
 import { ScreentoneWipe } from "./components/ScreentoneWipe";
 
@@ -68,20 +68,39 @@ export default function App() {
 
   const [scene, setScene] = useState<SceneType>("TITLE");
 
+  // ワイプ
   const [wipeTrigger, setWipeTrigger] = useState(false);
   const pendingRef = useRef<SceneType | null>(null);
   const transitioningRef = useRef(false);
 
+  // 結果
   const [score, setScore] = useState(0);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [bestCharId, setBestCharId] = useState<string>("");
 
+  // ランキング
   const [ranking, setRanking] = useState<RankingEntry[]>([]);
   const [highlightAchievedAt, setHighlightAchievedAt] = useState<number | undefined>(undefined);
 
   const bestChar = useMemo(() => (bestCharId ? getCharacterById(bestCharId) : null), [bestCharId]);
 
-  // ★起動直後にBGMの自動再生を試す
+  // =========================
+  // ★カメラシェイク（画面全体）
+  // =========================
+  const [shake, setShake] = useState(false);
+  const shakeTimerRef = useRef<number | null>(null);
+
+  const triggerShake = useCallback(() => {
+    if (shakeTimerRef.current != null) window.clearTimeout(shakeTimerRef.current);
+    // true → すぐ false に戻す（アニメが確実に再発火するように）
+    setShake(false);
+    requestAnimationFrame(() => {
+      setShake(true);
+      shakeTimerRef.current = window.setTimeout(() => setShake(false), 420);
+    });
+  }, []);
+
+  // 起動直後にBGM自動再生を試す（可能なら最初から鳴る）
   useEffect(() => {
     audio.tryAutoplayUiBgm();
   }, [audio]);
@@ -89,6 +108,9 @@ export default function App() {
   const goto = useCallback(
     (next: SceneType) => {
       if (transitioningRef.current) return;
+
+      // ★遷移開始の瞬間にシェイク
+      triggerShake();
 
       transitioningRef.current = true;
       pendingRef.current = next;
@@ -109,7 +131,7 @@ export default function App() {
         }
       }, 1700);
     },
-    [audio]
+    [audio, triggerShake]
   );
 
   const onWipeMiddle = useCallback(() => {
@@ -130,6 +152,7 @@ export default function App() {
     transitioningRef.current = false;
   }, []);
 
+  // 自動遷移（TITLEは手動）
   useEffect(() => {
     if (scene === "RESULT") {
       const t = window.setTimeout(() => goto("RECOMMEND"), DUR_RESULT);
@@ -155,10 +178,36 @@ export default function App() {
   }, [scene, goto, score, bestCharId]);
 
   return (
-    <div style={{ width: "100vw", height: "100vh", background: "#000", position: "relative", overflow: "hidden", cursor: "none", color: "#fff" }}>
+    <div
+      style={{
+        width: "100vw",
+        height: "100vh",
+        background: "#000",
+        position: "relative",
+        overflow: "hidden",
+        cursor: "none",
+        color: "#fff",
+        // ★ここで画面全体にシェイクをかける
+        animation: shake ? "mc_camShake 420ms cubic-bezier(.2,.9,.2,1)" : "none",
+      }}
+    >
+      <style>{`
+        @keyframes mc_camShake {
+          0%   { transform: translate(0px, 0px) rotate(0deg); }
+          10%  { transform: translate(-3px, 2px) rotate(-0.35deg); }
+          22%  { transform: translate(3px, -2px) rotate(0.30deg); }
+          34%  { transform: translate(-5px, -1px) rotate(-0.45deg); }
+          48%  { transform: translate(5px, 1px) rotate(0.40deg); }
+          62%  { transform: translate(-3px, 2px) rotate(-0.28deg); }
+          78%  { transform: translate(3px, -2px) rotate(0.22deg); }
+          100% { transform: translate(0px, 0px) rotate(0deg); }
+        }
+      `}</style>
+
       <StarBackground />
       <ScreentoneWipe trigger={wipeTrigger} onMiddle={onWipeMiddle} onComplete={onWipeComplete} />
 
+      {/* particles */}
       {particles.map((p) => (
         <div
           key={p.id}
@@ -181,7 +230,6 @@ export default function App() {
       {scene === "TITLE" && (
         <TitleScene
           onStart={async () => {
-            // unlock：SE確実化＆ミュート解除
             await audio.unlock();
             audio.playSeClick();
             audio.playBgm("ui");
@@ -220,7 +268,9 @@ export default function App() {
       {scene === "RESULT" && <ResultScene score={score} counts={counts} />}
       {scene === "RECOMMEND" && <RecommendScene bestChar={bestChar} />}
       {scene === "PHOTO" && <PhotoScene bestChar={bestChar} score={score} />}
-      {scene === "RANKING" && <RankingScene ranking={ranking} highlightAchievedAt={highlightAchievedAt} />}
+      {scene === "RANKING" && (
+        <RankingScene ranking={ranking} highlightAchievedAt={highlightAchievedAt} />
+      )}
     </div>
   );
 }

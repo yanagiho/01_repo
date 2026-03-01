@@ -1,7 +1,7 @@
-// MangaCatch/src/components/scenes/GameScene.tsx
 import React, { useEffect } from "react";
 import { useGameLoop } from "../../hooks/useGameLoop";
 import { CharacterImage } from "../CharacterImage";
+import { CatcherImage } from "../CatcherImage";
 
 export const GameScene: React.FC<{
     scene: string;
@@ -11,12 +11,7 @@ export const GameScene: React.FC<{
     onEnd: (score: number, counts: Record<string, number>) => void;
     onCatchFx: (x: number, y: number) => void;
 }> = ({ scene, playerX, speedMultiplier, playerCount, onEnd, onCatchFx }) => {
-    const { items, score, timer, isHit, catchCount } = useGameLoop(
-        scene,
-        playerX,
-        speedMultiplier,
-        onCatchFx
-    );
+    const { items, score, timer, isHit, catchCount } = useGameLoop(scene, playerX, speedMultiplier, onCatchFx);
 
     useEffect(() => {
         if (scene === "GAME" && timer <= 0) onEnd(score, catchCount.current);
@@ -24,9 +19,11 @@ export const GameScene: React.FC<{
 
     const total = 30;
     const ratio = Math.max(0, Math.min(1, timer / total));
-    const basketY = window.innerHeight - 80;
 
-    // バーは画面幅の1/3
+    // useGameLoop側の当たり判定基準に合わせる（pY = innerHeight - 80）
+    const catcherY = window.innerHeight - 80;
+
+    // タイマーバー幅
     const barW = Math.floor(window.innerWidth / 3);
 
     return (
@@ -42,12 +39,13 @@ export const GameScene: React.FC<{
                     color: "rgba(0,238,187,0.9)",
                     fontSize: 12,
                     opacity: 0.85,
+                    pointerEvents: "none",
                 }}
             >
                 PLAYERS: {playerCount} / SPEED x{speedMultiplier.toFixed(2)}
             </div>
 
-            {/* ★右上：スコアを大きく */}
+            {/* 右上：スコア大 */}
             <div
                 style={{
                     position: "absolute",
@@ -65,7 +63,7 @@ export const GameScene: React.FC<{
                 {score}
             </div>
 
-            {/* タイマーバー（上部中央：幅1/3） */}
+            {/* タイマーバー */}
             <div
                 style={{
                     position: "absolute",
@@ -91,7 +89,7 @@ export const GameScene: React.FC<{
                 />
             </div>
 
-            {/* 残り時間：バーの下で大きく */}
+            {/* 残り時間（バー下） */}
             <div
                 style={{
                     position: "absolute",
@@ -111,7 +109,7 @@ export const GameScene: React.FC<{
                 {timer.toFixed(1)}
             </div>
 
-            {/* 落下 */}
+            {/* 落下キャラ */}
             {items.map((it) => (
                 <CharacterImage
                     key={it.id}
@@ -130,20 +128,26 @@ export const GameScene: React.FC<{
                 />
             ))}
 
-            {/* カゴ */}
-            <div
+            {/* ★カゴ（プレイヤー）を画像に差し替え */}
+            <CatcherImage
                 style={{
                     position: "absolute",
                     left: playerX,
-                    top: basketY,
-                    width: 220,
-                    height: 90,
+                    top: catcherY,
+
+                    // 画像サイズ（必要なら調整）
+                    width: 260,
+                    height: 120,
+
                     transform: "translate(-50%, -50%)",
-                    borderRadius: 18,
-                    border: "3px solid rgba(0,238,187,0.9)",
-                    background: "rgba(0,0,0,0.25)",
-                    boxShadow: isHit ? "0 0 35px rgba(0,238,187,0.9)" : "0 0 10px rgba(0,0,0,0.4)",
-                    transition: "box-shadow 120ms linear",
+                    objectFit: "contain",
+                    pointerEvents: "none",
+
+                    // ヒット時の軽い演出
+                    filter: isHit
+                        ? "drop-shadow(0 0 22px rgba(0,238,187,0.9))"
+                        : "drop-shadow(0 10px 12px rgba(0,0,0,0.55))",
+                    transition: "filter 120ms linear, transform 120ms linear",
                 }}
             />
         </div>

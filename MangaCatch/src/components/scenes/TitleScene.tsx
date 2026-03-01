@@ -1,5 +1,6 @@
-// MangaCatch/src/components/scenes/TitleScene.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { TitleBackgroundVideo } from "../TitleBackgroundVideo";
+import { ErrorBoundary } from "../ErrorBoundary";
 
 type Props = { onStart: () => void };
 
@@ -14,12 +15,15 @@ function buildLogoCandidates(): string[] {
         "assets/mangacatch_title_logo.png",
         "assets/ui/mangacatch_logo.png",
     ];
-    const bases = [norm(baseUrl), "./", "", "../", "../../"];
 
+    const bases = [norm(baseUrl), "./", "", "../", "../../"];
     const out: string[] = [];
     for (const b of bases) for (const n of names) out.push(b + n);
     return Array.from(new Set(out));
 }
+
+const FALLBACK_BG =
+    "radial-gradient(circle at 50% 35%, rgba(40,110,180,0.55) 0%, rgba(0,0,0,0.92) 70%)";
 
 export const TitleScene: React.FC<Props> = ({ onStart }) => {
     const startedRef = useRef(false);
@@ -27,7 +31,6 @@ export const TitleScene: React.FC<Props> = ({ onStart }) => {
     const startOnce = () => {
         if (startedRef.current) return;
         startedRef.current = true;
-        console.log("[TitleScene] START");
         onStart();
     };
 
@@ -54,9 +57,17 @@ export const TitleScene: React.FC<Props> = ({ onStart }) => {
                 color: "#fff",
                 userSelect: "none",
                 cursor: "pointer",
+                background: FALLBACK_BG, // ★黒ではなくグラデ
+                overflow: "hidden",
             }}
         >
-            <div style={{ textAlign: "center", width: "min(900px, 92vw)" }}>
+            <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none" }}>
+                <ErrorBoundary>
+                    <TitleBackgroundVideo />
+                </ErrorBoundary>
+            </div>
+
+            <div style={{ textAlign: "center", width: "min(900px, 92vw)", zIndex: 2 }}>
                 <div style={{ display: "grid", placeItems: "center" }}>
                     <img
                         src={logoCandidates[logoIdx]}
@@ -82,16 +93,16 @@ export const TitleScene: React.FC<Props> = ({ onStart }) => {
                         padding: "18px 44px",
                         borderRadius: 999,
                         border: "2px solid rgba(255,255,255,0.22)",
-                        background: "rgba(0,0,0,0.35)",
+                        background: "rgba(0,0,0,0.28)",
                         fontSize: 22,
                         letterSpacing: 1,
-                        opacity: 0.9,
+                        opacity: 0.92,
                     }}
                 >
                     TOUCH TO START
                 </div>
 
-                <div style={{ marginTop: 14, fontSize: 12, opacity: 0.6 }}>
+                <div style={{ marginTop: 14, fontSize: 12, opacity: 0.7 }}>
                     ※クリック（将来はセンサー入力）しない限り進みません
                 </div>
             </div>
