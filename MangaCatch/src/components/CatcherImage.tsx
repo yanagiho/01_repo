@@ -28,7 +28,7 @@ export const CatcherImage: React.FC<{ style?: React.CSSProperties }> = ({ style 
             src={src}
             alt="catcher"
             draggable={false}
-            style={{ userSelect: "none", WebkitUserDrag: "none", ...style }}
+            style={{ userSelect: "none", WebkitUserDrag: "none", ...style } as any}
             onError={() => {
                 if (idx + 1 < candidates.length) setIdx(idx + 1);
                 else console.warn("[CatcherImage] catcher.png not found. tried:", candidates);

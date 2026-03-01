@@ -1,5 +1,5 @@
 // MangaCatch/src/App.tsx
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StarBackground } from "./components/StarBackground";
 import { ScreentoneWipe } from "./components/ScreentoneWipe";
 
@@ -84,15 +84,17 @@ export default function App() {
 
   const bestChar = useMemo(() => (bestCharId ? getCharacterById(bestCharId) : null), [bestCharId]);
 
-  // =========================
+  // ★起動直後にBGMの自動再生を試す（可能なら最初から鳴る）
+  useEffect(() => {
+    audio.tryAutoplayUiBgm();
+  }, [audio]);
+
   // ★カメラシェイク（画面全体）
-  // =========================
   const [shake, setShake] = useState(false);
   const shakeTimerRef = useRef<number | null>(null);
 
   const triggerShake = useCallback(() => {
     if (shakeTimerRef.current != null) window.clearTimeout(shakeTimerRef.current);
-    // true → すぐ false に戻す（アニメが確実に再発火するように）
     setShake(false);
     requestAnimationFrame(() => {
       setShake(true);
@@ -100,16 +102,10 @@ export default function App() {
     });
   }, []);
 
-  // 起動直後にBGM自動再生を試す（可能なら最初から鳴る）
-  useEffect(() => {
-    audio.tryAutoplayUiBgm();
-  }, [audio]);
-
   const goto = useCallback(
     (next: SceneType) => {
       if (transitioningRef.current) return;
 
-      // ★遷移開始の瞬間にシェイク
       triggerShake();
 
       transitioningRef.current = true;
@@ -187,7 +183,6 @@ export default function App() {
         overflow: "hidden",
         cursor: "none",
         color: "#fff",
-        // ★ここで画面全体にシェイクをかける
         animation: shake ? "mc_camShake 420ms cubic-bezier(.2,.9,.2,1)" : "none",
       }}
     >
@@ -239,10 +234,7 @@ export default function App() {
       )}
 
       {scene === "TUTORIAL_VIDEO" && (
-        <TutorialVideoScene
-          onUserSkip={() => audio.playSeClick()}
-          onEnded={() => goto("GAME")}
-        />
+        <TutorialVideoScene onUserSkip={() => audio.playSeClick()} onEnded={() => goto("GAME")} />
       )}
 
       {scene === "GAME" && (
@@ -268,9 +260,7 @@ export default function App() {
       {scene === "RESULT" && <ResultScene score={score} counts={counts} />}
       {scene === "RECOMMEND" && <RecommendScene bestChar={bestChar} />}
       {scene === "PHOTO" && <PhotoScene bestChar={bestChar} score={score} />}
-      {scene === "RANKING" && (
-        <RankingScene ranking={ranking} highlightAchievedAt={highlightAchievedAt} />
-      )}
+      {scene === "RANKING" && <RankingScene ranking={ranking} highlightAchievedAt={highlightAchievedAt} />}
     </div>
   );
 }
