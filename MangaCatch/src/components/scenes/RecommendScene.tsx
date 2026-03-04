@@ -1,8 +1,8 @@
-// MangaCatch/src/components/scenes/RecommendScene.tsx
-import React from "react";
 import type { CharacterData } from "../../constants/master";
 import { CoverImage } from "../CoverImage";
 import { CharacterImage } from "../CharacterImage";
+
+const COPYRIGHT_JP = "© Springbless";
 
 export const RecommendScene: React.FC<{ bestChar: CharacterData | null }> = ({ bestChar }) => {
     if (!bestChar) return null;
@@ -20,9 +20,9 @@ export const RecommendScene: React.FC<{ bestChar: CharacterData | null }> = ({ b
                     border: "1px solid rgba(255,255,255,0.08)",
                     borderRadius: 22,
                     padding: 22,
+                    position: "relative",
                 }}
             >
-                {/* 書影 */}
                 <CoverImage
                     char={bestChar}
                     style={{
@@ -34,13 +34,14 @@ export const RecommendScene: React.FC<{ bestChar: CharacterData | null }> = ({ b
                     }}
                 />
 
-                {/* ★キャラを大きく */}
                 <div style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: 22, opacity: 0.85 }}>お気にいり</div>
-                    <div style={{ marginTop: 8, fontSize: 40, color: "#00eebb" }}>{bestChar.work}</div>
-                    <div style={{ marginTop: 8, fontSize: 20, opacity: 0.9 }}>
-                        {bestChar.artist} <span style={{ opacity: 0.7 }}>({bestChar.artistEn})</span>
-                    </div>
+                    <div style={{ fontSize: 24, opacity: 0.85 }}>作品紹介</div>
+
+                    <div style={{ marginTop: 10, fontSize: 44, color: "#00eebb", fontWeight: 900 }}>{bestChar.work}</div>
+                    <div style={{ marginTop: 6, fontSize: 18, opacity: 0.85 }}>{bestChar.workEn}</div>
+
+                    <div style={{ marginTop: 14, fontSize: 26 }}>{bestChar.artist}</div>
+                    <div style={{ marginTop: 4, fontSize: 16, opacity: 0.85 }}>{bestChar.artistEn}</div>
 
                     <div style={{ marginTop: 18 }}>
                         <CharacterImage
@@ -53,8 +54,10 @@ export const RecommendScene: React.FC<{ bestChar: CharacterData | null }> = ({ b
                             }}
                         />
                     </div>
+                </div>
 
-                    <div style={{ marginTop: 14, opacity: 0.65, fontSize: 14 }}>※自動で次へ進みます</div>
+                <div style={{ position: "absolute", left: 18, bottom: 14, fontSize: 12, opacity: 0.75 }}>
+                    {COPYRIGHT_JP}
                 </div>
             </div>
         </div>

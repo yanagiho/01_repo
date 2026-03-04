@@ -1,122 +1,113 @@
-// MangaCatch/src/components/scenes/TutorialVideoScene.tsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-function baseUrl(): string {
-    const b = (import.meta as any)?.env?.BASE_URL ?? "/";
-    return b.endsWith("/") ? b : b + "/";
-}
+type Props = {
+    onUserSkip: () => void;
+    onEnded: () => void;
+};
 
 function buildCandidates(): string[] {
-    // dev(http) と file:// の両方で当たるように候補を複数
     return Array.from(
         new Set([
-            baseUrl() + "assets/videos/tutorial.mp4",
-            "/assets/videos/tutorial.mp4",
-            "./assets/videos/tutorial.mp4",
-            "assets/videos/tutorial.mp4",
+            "/assets/tutorial/tutorial.png",
+            "./assets/tutorial/tutorial.png",
+            "assets/tutorial/tutorial.png",
+            "/assets/tutorial/tutorial.jpg",
+            "./assets/tutorial/tutorial.jpg",
+            "assets/tutorial/tutorial.jpg",
         ])
     );
 }
 
-export const TutorialVideoScene: React.FC<{
-    onEnded: () => void;
-    onUserSkip?: () => void;
-}> = ({ onEnded, onUserSkip }) => {
+export const TutorialVideoScene = ({ onUserSkip, onEnded }: Props) => {
     const candidates = useMemo(() => buildCandidates(), []);
     const [idx, setIdx] = useState(0);
-    const [status, setStatus] = useState<"loading" | "playing" | "error">("loading");
 
-    const doneRef = useRef(false);
-    const videoRef = useRef<HTMLVideoElement | null>(null);
+    // 5→1 のカウントダウン
+    const [sec, setSec] = useState(5);
 
-    const finishOnce = () => {
-        if (doneRef.current) return;
-        doneRef.current = true;
-        onEnded();
-    };
-
-    // 最終保険：止まらない
     useEffect(() => {
-        const t = window.setTimeout(() => {
-            console.warn("[TutorialVideo] failsafe -> go GAME");
-            finishOnce();
-        }, 9000);
-        return () => window.clearTimeout(t);
-    }, []);
-
-    // 読めたら play を強制
-    const tryPlay = async () => {
-        const v = videoRef.current;
-        if (!v) return;
-        try {
-            await v.play();
-            setStatus("playing");
-        } catch {
-            // autoplay失敗等
-            console.warn("[TutorialVideo] play() rejected");
-            // ここで止めず、タップでスキップできるようにする
-        }
-    };
-
-    const src = candidates[idx];
+        const t = window.setInterval(() => {
+            setSec((s) => {
+                if (s <= 1) {
+                    window.clearInterval(t);
+                    onEnded();
+                    return 0;
+                }
+                return s - 1;
+            });
+        }, 1000);
+        return () => window.clearInterval(t);
+    }, [onEnded]);
 
     return (
         <div
             onPointerDown={() => {
-                onUserSkip?.();
-                finishOnce();
+                onUserSkip();
+                onEnded();
             }}
             style={{
                 position: "absolute",
                 inset: 0,
-                zIndex: 20,
+                zIndex: 40,
+                display: "grid",
+                placeItems: "center",
                 background: "#000",
+                color: "#fff",
                 cursor: "pointer",
+                userSelect: "none",
             }}
         >
-            <video
-                ref={videoRef}
-                key={src}
-                src={src}
-                autoPlay
-                muted
-                playsInline
-                preload="auto"
-                onLoadedMetadata={() => {
-                    setStatus("playing");
-                    tryPlay();
-                }}
-                onCanPlay={() => {
-                    setStatus("playing");
-                    tryPlay();
-                }}
-                onEnded={finishOnce}
+            <style>{`
+        @keyframes pop {
+          0% { transform: scale(0.95); opacity: 0.7; }
+          50% { transform: scale(1.05); opacity: 1; }
+          100% { transform: scale(1.00); opacity: 0.95; }
+        }
+      `}</style>
+
+            <img
+                src={candidates[idx]}
+                alt="tutorial"
                 onError={() => {
-                    if (idx + 1 < candidates.length) {
-                        console.warn("[TutorialVideo] error -> next", src);
-                        setIdx(idx + 1);
-                        setStatus("loading");
-                    } else {
-                        console.warn("[TutorialVideo] all candidates failed", candidates);
-                        setStatus("error");
-                        // 2秒見せてから進む
-                        setTimeout(finishOnce, 2000);
-                    }
+                    if (idx + 1 < candidates.length) setIdx(idx + 1);
                 }}
-                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                    opacity: 0.98,
+                }}
+                draggable={false}
             />
 
+            {/* 右下：カウントダウン */}
             <div
                 style={{
                     position: "absolute",
-                    left: 16,
-                    bottom: 14,
+                    right: 26,
+                    bottom: 26,
+                    width: 120,
+                    height: 120,
+                    borderRadius: 999,
+                    border: "6px solid rgba(0,238,187,0.85)",
+                    background: "rgba(0,0,0,0.35)",
+                    display: "grid",
+                    placeItems: "center",
                     fontFamily: "monospace",
-                    fontSize: 12,
-                    opacity: 0.75,
+                    fontSize: 54,
+                    fontWeight: 900,
+                    color: "#00eebb",
+                    textShadow: "0 3px 10px rgba(0,0,0,0.85)",
+                    animation: "pop 1s ease-in-out infinite",
                 }}
             >
-                tutorial video ({status}) / tap to skip
+                {sec}
+            </div>
+
+            <div style={{ position: "absolute", left: 18, bottom: 18, fontSize: 12, opacity: 0.65 }}>
+                tap to skip
             </div>
         </div>
     );

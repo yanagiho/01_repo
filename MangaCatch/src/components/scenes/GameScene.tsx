@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useGameLoop } from "../../hooks/useGameLoop";
 import { CharacterImage } from "../CharacterImage";
 import { CatcherImage } from "../CatcherImage";
@@ -10,8 +10,13 @@ export const GameScene: React.FC<{
     playerCount: number;
     onEnd: (score: number, counts: Record<string, number>) => void;
     onCatchFx: (x: number, y: number) => void;
-}> = ({ scene, playerX, speedMultiplier, playerCount, onEnd, onCatchFx }) => {
-    const { items, score, timer, isHit, catchCount } = useGameLoop(scene, playerX, speedMultiplier, onCatchFx);
+}> = ({ scene, playerX, speedMultiplier, onEnd, onCatchFx }) => {
+    const { items, score, timer, isHit, catchCount } = useGameLoop(
+        scene,
+        playerX,
+        speedMultiplier,
+        onCatchFx
+    );
 
     useEffect(() => {
         if (scene === "GAME" && timer <= 0) onEnd(score, catchCount.current);
@@ -20,43 +25,48 @@ export const GameScene: React.FC<{
     const total = 30;
     const ratio = Math.max(0, Math.min(1, timer / total));
 
-    // useGameLoop側の当たり判定基準に合わせる（pY = innerHeight - 80）
     const catcherY = window.innerHeight - 80;
 
-    // タイマーバー幅
+    // キャラ 1.5倍
+    const CHAR_SIZE = 255;
+
+    // ★光の輪（=カゴ画像を拡大表示）
+    const RING_D = 620;
+
+    // ★カゴ（同じ画像を通常サイズで表示）
+    const BASKET_W = 280;
+    const BASKET_H = 130;
+
     const barW = Math.floor(window.innerWidth / 3);
 
     return (
         <div style={{ position: "absolute", inset: 0, zIndex: 10 }}>
-            {/* 左上：小さめステータス */}
-            <div
-                style={{
-                    position: "absolute",
-                    left: 20,
-                    top: 16,
-                    zIndex: 20,
-                    fontFamily: "monospace",
-                    color: "rgba(0,238,187,0.9)",
-                    fontSize: 12,
-                    opacity: 0.85,
-                    pointerEvents: "none",
-                }}
-            >
-                PLAYERS: {playerCount} / SPEED x{speedMultiplier.toFixed(2)}
-            </div>
+            <style>{`
+        @keyframes scorePulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.06); }
+          100% { transform: scale(1); }
+        }
+      `}</style>
 
-            {/* 右上：スコア大 */}
+            {/* 右上：スコア（装飾） */}
             <div
                 style={{
                     position: "absolute",
-                    right: 20,
-                    top: 14,
-                    zIndex: 20,
+                    right: 18,
+                    top: 12,
+                    zIndex: 30,
                     fontFamily: "monospace",
-                    fontSize: 44,
-                    fontWeight: 800,
+                    fontSize: 76,
+                    fontWeight: 900,
                     color: "#00eebb",
-                    textShadow: "0 3px 10px rgba(0,0,0,0.75)",
+                    textShadow: "0 4px 16px rgba(0,0,0,0.85)",
+                    padding: "6px 14px",
+                    borderRadius: 14,
+                    background: "rgba(0,0,0,0.28)",
+                    border: "2px solid rgba(0,238,187,0.35)",
+                    boxShadow: "0 0 26px rgba(0,238,187,0.18)",
+                    animation: isHit ? "scorePulse 260ms ease-in-out 1" : "none",
                     pointerEvents: "none",
                 }}
             >
@@ -71,9 +81,9 @@ export const GameScene: React.FC<{
                     transform: "translateX(-50%)",
                     top: 18,
                     width: barW,
-                    height: 14,
-                    borderRadius: 10,
-                    border: "1px solid rgba(0,238,187,0.8)",
+                    height: 18,
+                    borderRadius: 12,
+                    border: "2px solid rgba(0,238,187,0.8)",
                     background: "rgba(0,0,0,0.35)",
                     zIndex: 20,
                 }}
@@ -82,72 +92,94 @@ export const GameScene: React.FC<{
                     style={{
                         width: `${ratio * 100}%`,
                         height: "100%",
-                        borderRadius: 10,
-                        background: "rgba(0,238,187,0.85)",
+                        borderRadius: 12,
+                        background: "rgba(0,238,187,0.88)",
                         transition: "width 120ms linear",
                     }}
                 />
             </div>
 
-            {/* 残り時間（バー下） */}
+            {/* 残り時間 */}
             <div
                 style={{
                     position: "absolute",
                     left: "50%",
                     transform: "translateX(-50%)",
-                    top: 40,
+                    top: 44,
                     fontFamily: "monospace",
-                    fontSize: 34,
-                    fontWeight: 800,
+                    fontSize: 46,
+                    fontWeight: 900,
                     color: "#00eebb",
-                    opacity: 0.95,
+                    textShadow: "0 3px 12px rgba(0,0,0,0.85)",
                     zIndex: 20,
-                    textShadow: "0 3px 10px rgba(0,0,0,0.75)",
                     pointerEvents: "none",
                 }}
             >
                 {timer.toFixed(1)}
             </div>
 
-            {/* 落下キャラ */}
-            {items.map((it) => (
-                <CharacterImage
-                    key={it.id}
-                    char={it.char}
-                    style={{
-                        position: "absolute",
-                        left: it.x,
-                        top: it.y,
-                        width: 170,
-                        height: 170,
-                        transform: "translate(-50%, -50%)",
-                        objectFit: "contain",
-                        filter: "drop-shadow(0 10px 10px rgba(0,0,0,0.6))",
-                        pointerEvents: "none",
-                    }}
-                />
-            ))}
+            {/* 落下キャラ（上部欠け修正：最低yをクランプ） */}
+            {items.map((it) => {
+                const y = Math.max(it.y, CHAR_SIZE / 2 + 2);
+                return (
+                    <CharacterImage
+                        key={it.id}
+                        char={it.char}
+                        style={{
+                            position: "absolute",
+                            left: it.x,
+                            top: y,
+                            width: CHAR_SIZE,
+                            height: CHAR_SIZE,
+                            transform: "translate(-50%, -50%)",
+                            objectFit: "contain",
+                            filter: "drop-shadow(0 12px 14px rgba(0,0,0,0.62))",
+                            pointerEvents: "none",
+                            zIndex: 14,
+                        }}
+                    />
+                );
+            })}
 
-            {/* ★カゴ（プレイヤー）を画像に差し替え */}
+            {/* ★光の輪（=カゴ画像の拡大表示） */}
             <CatcherImage
                 style={{
                     position: "absolute",
                     left: playerX,
                     top: catcherY,
-
-                    // 画像サイズ（必要なら調整）
-                    width: 260,
-                    height: 120,
-
+                    width: RING_D,
+                    height: RING_D,
                     transform: "translate(-50%, -50%)",
                     objectFit: "contain",
                     pointerEvents: "none",
+                    zIndex: 12,
 
-                    // ヒット時の軽い演出
+                    // “輪”っぽく：少し透過＋光る
+                    opacity: 0.85,
                     filter: isHit
-                        ? "drop-shadow(0 0 22px rgba(0,238,187,0.9))"
-                        : "drop-shadow(0 10px 12px rgba(0,0,0,0.55))",
-                    transition: "filter 120ms linear, transform 120ms linear",
+                        ? "drop-shadow(0 0 34px rgba(255,255,255,0.75)) drop-shadow(0 0 64px rgba(0,238,187,0.60))"
+                        : "drop-shadow(0 0 24px rgba(0,238,187,0.40))",
+                }}
+            />
+
+            {/* ★カゴ（同じ画像を通常サイズで前面に） */}
+            <CatcherImage
+                style={{
+                    position: "absolute",
+                    left: playerX,
+                    top: catcherY,
+                    width: BASKET_W,
+                    height: BASKET_H,
+                    transform: "translate(-50%, -50%)",
+                    objectFit: "contain",
+                    pointerEvents: "none",
+                    zIndex: 15,
+
+                    // ヒット時だけ強めに光る
+                    filter: isHit
+                        ? "drop-shadow(0 0 26px rgba(0,238,187,0.95))"
+                        : "drop-shadow(0 12px 14px rgba(0,0,0,0.55))",
+                    transition: "filter 120ms linear",
                 }}
             />
         </div>

@@ -1,33 +1,31 @@
-// MangaCatch/src/components/scenes/PhotoScene.tsx
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { CharacterData } from "../../constants/master";
 import { CoverImage } from "../CoverImage";
 import { CharacterImage } from "../CharacterImage";
 
-function baseUrl(): string {
-    const b = (import.meta as any)?.env?.BASE_URL ?? "/";
-    return b.endsWith("/") ? b : b + "/";
+const COPYRIGHT_JP = "© Springbless";
+
+function buildCameraCandidates(): string[] {
+    return Array.from(new Set(["/assets/ui/camera.png", "./assets/ui/camera.png", "assets/ui/camera.png"]));
 }
 
 function buildLogoCandidates(): string[] {
-    const b = baseUrl();
     return Array.from(
         new Set([
-            b + "assets/ui/mangacatch_title_logo.png",
-            b + "assets/ui/title_logo.png",
-            b + "assets/title_logo.png",
             "/assets/ui/mangacatch_title_logo.png",
+            "/assets/ui/title_logo.png",
             "/assets/title_logo.png",
             "./assets/ui/mangacatch_title_logo.png",
+            "./assets/ui/title_logo.png",
             "./assets/title_logo.png",
+            "assets/ui/mangacatch_title_logo.png",
+            "assets/ui/title_logo.png",
+            "assets/title_logo.png",
         ])
     );
 }
 
-export const PhotoScene: React.FC<{ bestChar: CharacterData | null; score: number }> = ({
-    bestChar,
-    score,
-}) => {
+export const PhotoScene: React.FC<{ bestChar: CharacterData | null; score: number }> = ({ bestChar, score }) => {
     const nowText = useMemo(() => {
         const d = new Date();
         const yyyy = d.getFullYear();
@@ -38,22 +36,16 @@ export const PhotoScene: React.FC<{ bestChar: CharacterData | null; score: numbe
         return `${yyyy}/${mm}/${dd} ${hh}:${mi}`;
     }, []);
 
+    const camCandidates = useMemo(() => buildCameraCandidates(), []);
     const logoCandidates = useMemo(() => buildLogoCandidates(), []);
+
+    const [camIdx, setCamIdx] = useState(0);
     const [logoIdx, setLogoIdx] = useState(0);
 
     if (!bestChar) return null;
 
     return (
-        <div
-            style={{
-                position: "absolute",
-                inset: 0,
-                zIndex: 10,
-                display: "grid",
-                placeItems: "center",
-                color: "#fff",
-            }}
-        >
+        <div style={{ position: "absolute", inset: 0, zIndex: 10, display: "grid", placeItems: "center", color: "#fff" }}>
             <div
                 style={{
                     width: "min(1280px, 96vw)",
@@ -67,47 +59,54 @@ export const PhotoScene: React.FC<{ bestChar: CharacterData | null; score: numbe
                     overflow: "hidden",
                 }}
             >
-                {/* 右上：得点と日付（大きく） */}
+                {/* 左上：撮影促し（カメラ＋英語） */}
+                <div style={{ position: "absolute", top: 16, left: 18, zIndex: 20, display: "flex", alignItems: "center", gap: 10 }}>
+                    <img
+                        src={camCandidates[camIdx]}
+                        alt="camera"
+                        onError={() => {
+                            if (camIdx + 1 < camCandidates.length) setCamIdx(camIdx + 1);
+                        }}
+                        style={{ width: 38, height: 38, objectFit: "contain", opacity: 0.95 }}
+                        draggable={false}
+                    />
+                    <div style={{ lineHeight: 1.1 }}>
+                        <div style={{ fontSize: 22, fontWeight: 800 }}>写真を撮ってね</div>
+                        <div style={{ fontSize: 14, opacity: 0.85 }}>Take a photo!</div>
+                    </div>
+                </div>
+
+                {/* 上中央：スコア */}
                 <div
                     style={{
                         position: "absolute",
                         top: 16,
-                        right: 18,
-                        textAlign: "right",
+                        left: "50%",
+                        transform: "translateX(-50%)",
                         zIndex: 20,
-                        textShadow: "0 3px 10px rgba(0,0,0,0.75)",
+                        textAlign: "center",
+                        textShadow: "0 3px 12px rgba(0,0,0,0.85)",
                     }}
                 >
-                    <div
-                        style={{
-                            fontFamily: "monospace",
-                            fontSize: 44,
-                            fontWeight: 800,
-                            color: "#00eebb",
-                        }}
-                    >
+                    <div style={{ fontFamily: "monospace", fontSize: 54, fontWeight: 900, color: "#00eebb" }}>
                         SCORE {score}
                     </div>
-                    <div style={{ fontFamily: "monospace", fontSize: 22, opacity: 0.92 }}>
-                        {nowText}
-                    </div>
+                    <div style={{ fontFamily: "monospace", fontSize: 18, opacity: 0.92 }}>{nowText}</div>
                 </div>
 
-                {/* レイアウト：書影（左）／空間（中央：表示なし）／キャラ（右） */}
                 <div
                     style={{
                         position: "absolute",
                         left: 18,
                         right: 18,
-                        top: 84,
-                        bottom: 80,
+                        top: 96,
+                        bottom: 86,
                         display: "grid",
                         gridTemplateColumns: "360px 1fr 360px",
                         gap: 18,
                         alignItems: "center",
                     }}
                 >
-                    {/* 書影 */}
                     <CoverImage
                         char={bestChar}
                         style={{
@@ -119,31 +118,23 @@ export const PhotoScene: React.FC<{ bestChar: CharacterData | null; score: numbe
                         }}
                     />
 
-                    {/* ★中央スペース：何も描画しない（撮影対象に余計なUIを出さない） */}
-                    <div />
+                    <div style={{ width: "100%", height: "100%" }} />
 
-                    {/* ★キャラ：少し上に移動してロゴと重ならないようにする */}
-                    <div
-                        style={{
-                            display: "grid",
-                            placeItems: "center",
-                            // ここで上に持ち上げる（必要なら数値を増減）
-                            transform: "translateY(-36px)",
-                        }}
-                    >
+                    {/* 右：キャラ（欠け対策） */}
+                    <div style={{ display: "grid", placeItems: "center", overflow: "visible" }}>
                         <CharacterImage
                             char={bestChar}
                             style={{
-                                width: 420,
-                                height: 420,
+                                width: 460,
+                                height: 460,
                                 objectFit: "contain",
                                 filter: "drop-shadow(0 18px 22px rgba(0,0,0,0.65))",
+                                display: "block",
                             }}
                         />
                     </div>
                 </div>
 
-                {/* 右下：ロゴ（重ならないよう固定） */}
                 <img
                     src={logoCandidates[logoIdx]}
                     alt="MANGA Catch!"
@@ -153,7 +144,7 @@ export const PhotoScene: React.FC<{ bestChar: CharacterData | null; score: numbe
                     style={{
                         position: "absolute",
                         right: 18,
-                        bottom: 16,
+                        bottom: 14,
                         width: 320,
                         opacity: 0.92,
                         zIndex: 10,
@@ -162,6 +153,10 @@ export const PhotoScene: React.FC<{ bestChar: CharacterData | null; score: numbe
                     }}
                     draggable={false}
                 />
+
+                <div style={{ position: "absolute", left: 18, bottom: 14, fontSize: 12, opacity: 0.75 }}>
+                    {COPYRIGHT_JP}
+                </div>
             </div>
         </div>
     );

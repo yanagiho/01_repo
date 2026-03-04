@@ -1,49 +1,31 @@
-// MangaCatch/src/components/scenes/ResultScene.tsx
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { getCharacterById } from "../../constants/master";
+import { CharacterImage } from "../CharacterImage";
 
-type Row = {
-    id: string;
-    work: string;
-    artist: string;
-    cnt: number;
-};
-
-export const ResultScene: React.FC<{ score: number; counts: Record<string, number> }> = ({ score, counts }) => {
-    const { total, rows, maxCnt } = useMemo(() => {
-        let totalCnt = 0;
-        const list: Row[] = [];
-
-        for (const [id, cnt] of Object.entries(counts)) {
-            totalCnt += cnt;
-            const c = getCharacterById(id);
-            if (!c) continue;
-            list.push({ id, work: c.work, artist: c.artist, cnt });
-        }
-
+export const ResultScene: React.FC<{ score: number; counts: Record<string, number> }> = ({
+    score,
+    counts,
+}) => {
+    const rows = useMemo(() => {
+        const list: { id: string; cnt: number }[] = [];
+        for (const [id, cnt] of Object.entries(counts)) list.push({ id, cnt });
         list.sort((a, b) => b.cnt - a.cnt);
-        const m = Math.max(1, ...list.map((r) => r.cnt));
-        return { total: totalCnt, rows: list.slice(0, 10), maxCnt: m };
+        const max = Math.max(1, ...list.map((r) => r.cnt));
+        return { list: list.slice(0, 10), max };
     }, [counts]);
 
     return (
-        <div style={{ position: "absolute", inset: 0, zIndex: 10, padding: 28, color: "#fff" }}>
+        <div style={{ position: "absolute", inset: 0, zIndex: 10, padding: 34, color: "#fff" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                <div style={{ fontSize: 44, color: "#00eebb" }}>RESULT</div>
-                <div style={{ fontFamily: "monospace", fontSize: 36 }}>
+                <div style={{ fontSize: 54, color: "#00eebb", fontWeight: 900 }}>RESULT</div>
+                <div style={{ fontFamily: "monospace", fontSize: 56, fontWeight: 900 }}>
                     SCORE <span style={{ color: "#00eebb" }}>{score}</span>
                 </div>
             </div>
 
-            {/* 合計 */}
-            <div style={{ marginTop: 8, fontSize: 28 }}>
-                取ったキャラ総数：<span style={{ color: "#00eebb", fontFamily: "monospace", fontSize: 40 }}>{total}</span>
-            </div>
-
-            {/* グラフ */}
             <div
                 style={{
-                    marginTop: 18,
+                    marginTop: 22,
                     maxWidth: 1100,
                     background: "rgba(0,0,0,0.35)",
                     borderRadius: 18,
@@ -51,33 +33,40 @@ export const ResultScene: React.FC<{ score: number; counts: Record<string, numbe
                     border: "1px solid rgba(255,255,255,0.08)",
                 }}
             >
-                {rows.length === 0 && <div style={{ opacity: 0.75 }}>キャッチがありません</div>}
+                {rows.list.map((r, idx) => {
+                    const c = getCharacterById(r.id);
+                    const w = Math.round((r.cnt / rows.max) * 100);
 
-                {rows.map((r, i) => {
-                    const w = Math.max(4, Math.round((r.cnt / maxCnt) * 100));
                     return (
                         <div
                             key={r.id}
                             style={{
                                 display: "grid",
-                                gridTemplateColumns: "60px 1fr 120px",
+                                gridTemplateColumns: "70px 90px 1fr 110px",
                                 gap: 14,
                                 alignItems: "center",
-                                padding: "10px 6px",
+                                padding: "12px 10px",
                                 borderBottom: "1px solid rgba(255,255,255,0.06)",
                             }}
                         >
-                            <div style={{ fontFamily: "monospace", color: "#00eebb", fontSize: 18 }}>#{i + 1}</div>
+                            <div style={{ fontFamily: "monospace", fontSize: 40, fontWeight: 900, color: "#00eebb", textAlign: "center" }}>
+                                {idx + 1}
+                            </div>
+
+                            <div style={{ width: 90, height: 90, display: "grid", placeItems: "center" }}>
+                                {c ? (
+                                    <CharacterImage char={c} style={{ width: 86, height: 86, objectFit: "contain" }} />
+                                ) : (
+                                    <div style={{ opacity: 0.5 }}>-</div>
+                                )}
+                            </div>
 
                             <div>
-                                <div style={{ fontSize: 18, lineHeight: 1.1 }}>{r.work}</div>
-                                <div style={{ fontSize: 12, opacity: 0.7 }}>{r.artist}</div>
                                 <div
                                     style={{
-                                        marginTop: 8,
-                                        height: 14,
-                                        borderRadius: 10,
-                                        background: "rgba(255,255,255,0.08)",
+                                        height: 18,
+                                        borderRadius: 12,
+                                        background: "rgba(255,255,255,0.10)",
                                         overflow: "hidden",
                                     }}
                                 >
@@ -85,21 +74,20 @@ export const ResultScene: React.FC<{ score: number; counts: Record<string, numbe
                                         style={{
                                             width: `${w}%`,
                                             height: "100%",
-                                            background: "rgba(0,238,187,0.85)",
+                                            borderRadius: 12,
+                                            background: "rgba(0,238,187,0.88)",
                                         }}
                                     />
                                 </div>
                             </div>
 
-                            <div style={{ textAlign: "right", fontFamily: "monospace", fontSize: 26, color: "#00eebb" }}>
-                                {r.cnt}
+                            <div style={{ textAlign: "right", fontFamily: "monospace", fontSize: 34, fontWeight: 900, color: "#00eebb" }}>
+                                x{r.cnt}
                             </div>
                         </div>
                     );
                 })}
             </div>
-
-            <div style={{ marginTop: 12, opacity: 0.65, fontSize: 14 }}>※自動で次へ進みます</div>
         </div>
     );
 };

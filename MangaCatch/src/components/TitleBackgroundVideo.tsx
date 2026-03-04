@@ -1,117 +1,106 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+type Props = {
+    onUserSkip: () => void; // 互換のため残す（使わない）
+    onEnded: () => void;
+};
 
 function buildCandidates(): string[] {
     return Array.from(
         new Set([
-            "/assets/videos/title_bg.mov",
-            "/assets/videos/title_bg.mp4",
-            "/assets/video/title_bg.mov",
-            "/assets/video/title_bg.mp4",
-            "./assets/videos/title_bg.mov",
-            "./assets/videos/title_bg.mp4",
-            "./assets/video/title_bg.mov",
-            "./assets/video/title_bg.mp4",
-            "assets/videos/title_bg.mov",
-            "assets/videos/title_bg.mp4",
-            "assets/video/title_bg.mov",
-            "assets/video/title_bg.mp4",
+            "/assets/tutorial/tutorial.png",
+            "./assets/tutorial/tutorial.png",
+            "assets/tutorial/tutorial.png",
+            "/assets/tutorial/tutorial.jpg",
+            "./assets/tutorial/tutorial.jpg",
+            "assets/tutorial/tutorial.jpg",
         ])
     );
 }
 
-// ★黒ではなく、待ち時間に見せる「タイトル専用の背景」
-const FALLBACK_BG =
-    "radial-gradient(circle at 50% 35%, rgba(40,110,180,0.55) 0%, rgba(0,0,0,0.92) 70%)";
-
-export const TitleBackgroundVideo: React.FC = () => {
+export const TutorialVideoScene = ({ onEnded }: Props) => {
     const candidates = useMemo(() => buildCandidates(), []);
     const [idx, setIdx] = useState(0);
-    const [ready, setReady] = useState(false);
-    const videoRef = useRef<HTMLVideoElement | null>(null);
 
-    const src = candidates[idx];
-
-    useEffect(() => {
-        setReady(false);
-    }, [src]);
+    // 5秒で自動遷移（タッチで進ませない）
+    const [sec, setSec] = useState(5);
 
     useEffect(() => {
-        const v = videoRef.current;
-        if (!v) return;
-
-        const tryPlay = async () => {
-            try {
-                await v.play();
-            } catch {
-                // autoplay拒否でもOK（タイトルはクリックで進む）
-            }
-        };
-        tryPlay();
-    }, [src]);
+        const t = window.setInterval(() => {
+            setSec((s) => {
+                if (s <= 1) {
+                    window.clearInterval(t);
+                    onEnded();
+                    return 0;
+                }
+                return s - 1;
+            });
+        }, 1000);
+        return () => window.clearInterval(t);
+    }, [onEnded]);
 
     return (
-        <div style={{ position: "absolute", inset: 0, zIndex: 0, overflow: "hidden" }}>
-            {/* ★待ち時間の下地：黒ではなくタイトル用グラデ */}
-            <div style={{ position: "absolute", inset: 0, background: FALLBACK_BG }} />
+        <div
+            style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 40,
+                display: "grid",
+                placeItems: "center",
+                background: "#000",
+                color: "#fff",
+                userSelect: "none",
+            }}
+        >
+            <style>{`
+        @keyframes pop {
+          0% { transform: scale(0.95); opacity: 0.75; }
+          50% { transform: scale(1.05); opacity: 1; }
+          100% { transform: scale(1.0); opacity: 0.95; }
+        }
+      `}</style>
 
-            <video
-                ref={videoRef}
-                key={src}
-                src={src}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="auto"
-                onLoadedData={() => setReady(true)}
-                onCanPlay={() => setReady(true)}
-                onPlaying={() => setReady(true)}
+            <img
+                src={candidates[idx]}
+                alt="tutorial"
                 onError={() => {
-                    if (idx + 1 < candidates.length) {
-                        console.warn("[TitleBackgroundVideo] failed:", src, "-> try next");
-                        setIdx(idx + 1);
-                    } else {
-                        console.warn("[TitleBackgroundVideo] all candidates failed:", candidates);
-                    }
+                    if (idx + 1 < candidates.length) setIdx(idx + 1);
                 }}
                 style={{
+                    position: "absolute",
+                    inset: 0,
                     width: "100%",
                     height: "100%",
-                    display: "block",
-                    objectFit: "cover",
-                    transform: "scale(1.01)",
-
-                    // 明るさ（暗くしない）
-                    filter: "brightness(1.08) contrast(1.02) saturate(1.10)",
-
-                    // readyになるまで映さない（ただし下地が黒ではないので“黒”は出ない）
-                    opacity: ready ? 1 : 0,
-                    transition: "opacity 260ms ease-out",
+                    objectFit: "contain",
+                    opacity: 0.98,
                 }}
+                draggable={false}
             />
 
-            {/* ★readyまでのマスクも黒ではなくグラデ */}
+            {/* カウントダウンは表示だけ（タッチでは進まない） */}
             <div
                 style={{
                     position: "absolute",
-                    inset: 0,
-                    background: FALLBACK_BG,
-                    opacity: ready ? 0 : 1,
-                    transition: "opacity 220ms ease-out",
+                    right: 26,
+                    bottom: 26,
+                    width: 120,
+                    height: 120,
+                    borderRadius: 999,
+                    border: "6px solid rgba(0,238,187,0.85)",
+                    background: "rgba(0,0,0,0.35)",
+                    display: "grid",
+                    placeItems: "center",
+                    fontFamily: "monospace",
+                    fontSize: 54,
+                    fontWeight: 900,
+                    color: "#00eebb",
+                    textShadow: "0 3px 10px rgba(0,0,0,0.85)",
+                    animation: "pop 1s ease-in-out infinite",
                     pointerEvents: "none",
                 }}
-            />
-
-            {/* ロゴ可読性のための薄いベール（黒く感じたらここをさらに薄く） */}
-            <div
-                style={{
-                    position: "absolute",
-                    inset: 0,
-                    pointerEvents: "none",
-                    background:
-                        "radial-gradient(circle at 50% 55%, rgba(0,0,0,0.03) 0%, rgba(0,0,0,0.16) 70%)",
-                }}
-            />
+            >
+                {sec}
+            </div>
         </div>
     );
 };

@@ -1,21 +1,133 @@
-import React from 'react';
+import { useEffect, useMemo, useRef, useState } from "react";
+import { TitleBackgroundVideo } from "../TitleBackgroundVideo";
 
-export const TitleScene: React.FC<{ onStart?: () => void }> = ({ onStart }) => {
+type Props = { onStart: () => void };
+
+function buildLogoCandidates(): string[] {
+  const baseUrl = (import.meta as any)?.env?.BASE_URL ?? "./";
+  const norm = (s: string) => (s.endsWith("/") ? s : s + "/");
+
+  const names = [
+    "assets/ui/mangacatch_title_logo.png",
+    "assets/ui/title_logo.png",
+    "assets/title_logo.png",
+    "assets/mangacatch_title_logo.png",
+    "assets/ui/mangacatch_logo.png",
+  ];
+  const bases = [norm(baseUrl), "./", "", "../", "../../"];
+
+  const out: string[] = [];
+  for (const b of bases) for (const n of names) out.push(b + n);
+  return Array.from(new Set(out));
+}
+
+const COPYRIGHT_JP = "© Springbless";
+
+export const TitleScene = ({ onStart }: Props) => {
+  const startedRef = useRef(false);
+
+  const startOnce = () => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    onStart();
+  };
+
+  const logoCandidates = useMemo(() => buildLogoCandidates(), []);
+  const [logoIdx, setLogoIdx] = useState(0);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") startOnce();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   return (
     <div
-      onClick={onStart}
+      onPointerDown={startOnce}
       style={{
-        position: 'absolute',
+        position: "absolute",
         inset: 0,
-        zIndex: 10,
-        display: 'grid',
-        placeItems: 'center',
-        color: '#fff',
+        zIndex: 50,
+        display: "grid",
+        placeItems: "center",
+        color: "#fff",
+        userSelect: "none",
+        cursor: "pointer",
+        overflow: "hidden",
       }}
     >
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: 56, letterSpacing: 2, color: '#00eebb' }}>MANGA Catch!</div>
-        <div style={{ marginTop: 12, opacity: 0.8 }}>（自動で開始します / クリックでも開始）</div>
+      <style>{`
+        @keyframes blinkStart {
+          0% { opacity: 0.25; transform: translateY(0); }
+          50% { opacity: 1; transform: translateY(-2px); }
+          100% { opacity: 0.25; transform: translateY(0); }
+        }
+      `}</style>
+
+      {/* 背景動画 */}
+      <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none" }}>
+        <TitleBackgroundVideo />
+      </div>
+
+      {/* UI */}
+      <div style={{ textAlign: "center", width: "min(900px, 92vw)", zIndex: 2 }}>
+        <div style={{ display: "grid", placeItems: "center" }}>
+          <img
+            src={logoCandidates[logoIdx]}
+            alt="MANGA Catch!"
+            onError={() => {
+              if (logoIdx + 1 < logoCandidates.length) setLogoIdx(logoIdx + 1);
+            }}
+            style={{
+              width: "min(640px, 84vw)",
+              height: "auto",
+              opacity: 0.98,
+              filter: "drop-shadow(0 14px 24px rgba(0,0,0,0.55))",
+            }}
+            draggable={false}
+          />
+        </div>
+
+        {/* START点滅 */}
+        <div
+          style={{
+            marginTop: 46,
+            display: "inline-block",
+            padding: "18px 56px",
+            borderRadius: 999,
+            border: "2px solid rgba(255,255,255,0.26)",
+            background: "rgba(0,0,0,0.28)",
+            fontSize: 28,
+            letterSpacing: 2,
+            animation: "blinkStart 1.1s ease-in-out infinite",
+            boxShadow: "0 0 18px rgba(0,238,187,0.18)",
+          }}
+        >
+          START
+        </div>
+
+        <div style={{ marginTop: 14, fontSize: 12, opacity: 0.7 }}>
+          ※クリック（将来はセンサー入力）しない限り進みません
+        </div>
+      </div>
+
+      {/* コピーライト */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 12,
+          left: 0,
+          right: 0,
+          textAlign: "center",
+          fontSize: 12,
+          opacity: 0.75,
+          zIndex: 3,
+          pointerEvents: "none",
+        }}
+      >
+        {COPYRIGHT_JP}
       </div>
     </div>
   );

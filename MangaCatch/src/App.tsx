@@ -7,7 +7,7 @@ import { useParticles } from "./hooks/useParticles";
 import { useSensor } from "./hooks/useSensor";
 
 import { TitleScene } from "./components/scenes/TitleScene";
-import { TutorialVideoScene } from "./components/scenes/TutorialVideoScene";
+import { TutorialVideoScene } from "./components/scenes/TutorialVideoScene"; // ※中身は「静止画+カウントダウン」に差し替え済み想定
 import { GameScene } from "./components/scenes/GameScene";
 import { ResultScene } from "./components/scenes/ResultScene";
 import { RecommendScene } from "./components/scenes/RecommendScene";
@@ -18,10 +18,11 @@ import { AudioManager } from "./audio/AudioManager";
 import { getCharacterById, getEnabledCharacters } from "./constants/master";
 import type { RankingEntry, SceneType } from "./types/game";
 
-const DUR_RESULT = 3200;
+// ★表示時間（ご要望：結果/フォト/ランキングは10秒）
+const DUR_RESULT = 10000;
 const DUR_RECOMMEND = 5200;
-const DUR_PHOTO = 9000;
-const DUR_RANKING = 7000;
+const DUR_PHOTO = 10000;
+const DUR_RANKING = 10000;
 
 function todayKey() {
   return `mangacatch_ranking_${new Date().toLocaleDateString()}`;
@@ -106,6 +107,7 @@ export default function App() {
     (next: SceneType) => {
       if (transitioningRef.current) return;
 
+      // 遷移開始の瞬間にシェイク
       triggerShake();
 
       transitioningRef.current = true;
@@ -234,7 +236,10 @@ export default function App() {
       )}
 
       {scene === "TUTORIAL_VIDEO" && (
-        <TutorialVideoScene onUserSkip={() => audio.playSeClick()} onEnded={() => goto("GAME")} />
+        <TutorialVideoScene
+          onUserSkip={() => audio.playSeClick()}
+          onEnded={() => goto("GAME")}
+        />
       )}
 
       {scene === "GAME" && (
@@ -251,7 +256,10 @@ export default function App() {
             setScore(s);
             setCounts(c);
             setBestCharId(calcBestCharId(c));
+
+            // 終了：BGM停止→ジングル→（間）→UI BGM はAudioManager側
             audio.playJingleGameEndThenUi();
+
             goto("RESULT");
           }}
         />
@@ -260,7 +268,9 @@ export default function App() {
       {scene === "RESULT" && <ResultScene score={score} counts={counts} />}
       {scene === "RECOMMEND" && <RecommendScene bestChar={bestChar} />}
       {scene === "PHOTO" && <PhotoScene bestChar={bestChar} score={score} />}
-      {scene === "RANKING" && <RankingScene ranking={ranking} highlightAchievedAt={highlightAchievedAt} />}
+      {scene === "RANKING" && (
+        <RankingScene ranking={ranking} highlightAchievedAt={highlightAchievedAt} />
+      )}
     </div>
   );
 }
