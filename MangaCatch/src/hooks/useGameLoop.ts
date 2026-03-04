@@ -1,142 +1,191 @@
-// MangaCatch/src/hooks/useGameLoop.ts
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { FallingItem } from "../types/game";
-import { getEnabledCharacters, type CharacterData } from "../constants/master";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { getEnabledCharacters } from "../constants/master";
+import type { CharacterData } from "../constants/master";
+import type { MutableRefObject } from "react";
 
-function pickWeighted(pool: CharacterData[]): CharacterData {
-    const total = pool.reduce((s, c) => s + (c.weight || 1), 0);
-    let r = Math.random() * total;
-    for (const c of pool) {
-        r -= c.weight || 1;
-        if (r <= 0) return c;
-    }
-    return pool[pool.length - 1];
-}
+type FallingItem = {
+    id: string;
+    char: CharacterData;
+    x: number;
+    y: number;
+    vy: number;
+    bornAt: number;
+    swayAmp: number;
+    swaySpd: number;
+    swayPhase: number;
+    baseX: number;
+};
+
+type UseGameLoopReturn = {
+    items: FallingItem[];
+    score: number;
+    timer: number;
+    isHit: boolean;
+    catchCount: MutableRefObject<Record<string, number>>;
+};
+
+const GAME_TIME_SEC = 30;
+const CHAR_SIZE = 255;
+const CATCH_RADIUS = 220;
+
+// ★GameSceneの catcherY=innerHeight-140 に合わせる
+const PLAYER_Y_OFFSET = 140;
+
+const BASE_FALL_SPEED = 220;
+const SPAWN_INTERVAL_MS = 520;
 
 function rand(min: number, max: number) {
     return min + Math.random() * (max - min);
 }
+function clamp(n: number, a: number, b: number) {
+    return Math.max(a, Math.min(b, n));
+}
 
-export const useGameLoop = (
+export function useGameLoop(
     scene: string,
     playerX: number,
     speedMultiplier: number,
     onCatchFx: (x: number, y: number) => void
-) => {
+): UseGameLoopReturn {
     const [items, setItems] = useState<FallingItem[]>([]);
     const [score, setScore] = useState(0);
-    const [timer, setTimer] = useState(30);
+    const [timer, setTimer] = useState(GAME_TIME_SEC);
     const [isHit, setIsHit] = useState(false);
 
     const catchCount = useRef<Record<string, number>>({});
-    const nextId = useRef(0);
-    const laneTimers = useRef<number[]>([0, 0, 0, 0, 0]);
 
-    // ★propsで変わる値はrefへ（interval安定化）
     const playerXRef = useRef(playerX);
-    const speedRef = useRef(speedMultiplier);
-    const onCatchRef = useRef(onCatchFx);
-
     useEffect(() => {
         playerXRef.current = playerX;
     }, [playerX]);
 
+    const onCatchFxRef = useRef(onCatchFx);
     useEffect(() => {
-        speedRef.current = speedMultiplier;
-    }, [speedMultiplier]);
-
-    useEffect(() => {
-        onCatchRef.current = onCatchFx;
+        onCatchFxRef.current = onCatchFx;
     }, [onCatchFx]);
 
-    const resetGame = useCallback(() => {
-        setItems([]);
-        setScore(0);
-        setTimer(30);
-        setIsHit(false);
-        catchCount.current = {};
-        laneTimers.current = [0, 0, 0, 0, 0];
-        nextId.current = 0;
-    }, []);
+    const rafRef = useRef<number | null>(null);
+    const lastRef = useRef<number>(0);
+    const spawnRef = useRef<number>(0);
+    const hitTimerRef = useRef<number | null>(null);
+
+    const pool = useMemo(() => getEnabledCharacters(), []);
 
     useEffect(() => {
-        if (scene !== "GAME") return;
+        if (scene !== "GAME") {
+            if (rafRef.current) cancelAnimationFrame(rafRef.current);
+            rafRef.current = null;
 
-        resetGame();
+            if (hitTimerRef.current) window.clearTimeout(hitTimerRef.current);
+            hitTimerRef.current = null;
 
-        const interval = window.setInterval(() => {
-            const m = Math.max(0.7, Math.min(2.0, speedRef.current || 1.0));
+            setItems([]);
+            setScore(0);
+            setTimer(GAME_TIME_SEC);
+            setIsHit(false);
+            catchCount.current = {};
 
-            // timer
-            setTimer((t) => Math.max(0, t - 0.016));
+            lastRef.current = 0;
+            spawnRef.current = 0;
+            return;
+        }
 
-            // lane cooldown
-            laneTimers.current = laneTimers.current.map((lt) => Math.max(0, lt - 1 * m));
+        setItems([]);
+        setScore(0);
+        setTimer(GAME_TIME_SEC);
+        setIsHit(false);
+        catchCount.current = {};
 
-            // spawn
-            if (Math.random() < 0.12 * m) {
-                const lane = Math.floor(Math.random() * 5);
-                if (laneTimers.current[lane] <= 0) {
-                    const pool = getEnabledCharacters();
-                    const char = pickWeighted(pool);
+        lastRef.current = performance.now();
+        spawnRef.current = 0;
 
-                    // ★揺れのバリエーションを大きく（幅も速度も個体差）
-                    const swayAmp = rand(18, 160) * (Math.random() < 0.25 ? 1.35 : 1.0); // たまに大きく
-                    const swaySpeed = rand(1.2, 4.2);
-                    const fallSpeed = rand(6.8, 9.6);
+        const step = (now: number) => {
+            const prev = lastRef.current || now;
+            const dt = Math.min(0.05, (now - prev) / 1000);
+            lastRef.current = now;
 
-                    setItems((prev) => [
-                        ...prev,
-                        {
-                            id: nextId.current++,
-                            baseX: (window.innerWidth / 5) * lane + window.innerWidth / 10,
-                            x: 0,
-                            y: -250,
-                            char,
-                            time: 0,
-                            swaySpeed,
-                            swayAmp,
-                            speed: fallSpeed,
-                        },
-                    ]);
+            setTimer((t) => Math.max(0, t - dt));
 
-                    laneTimers.current[lane] = 45 / m;
-                }
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+
+            const playerY = h - PLAYER_Y_OFFSET;
+            const px = playerXRef.current;
+
+            spawnRef.current += dt * 1000;
+            if (spawnRef.current >= SPAWN_INTERVAL_MS && pool.length > 0) {
+                spawnRef.current = spawnRef.current % SPAWN_INTERVAL_MS;
+
+                const char = pool[Math.floor(Math.random() * pool.length)];
+                const margin = 40;
+                const baseX = rand(margin, w - margin);
+
+                const it: FallingItem = {
+                    id: `${now}_${Math.random().toString(16).slice(2)}`,
+                    char,
+                    x: baseX,
+                    y: -CHAR_SIZE / 2,
+                    vy: BASE_FALL_SPEED * clamp(speedMultiplier || 1, 0.4, 3.0),
+                    bornAt: now,
+                    swayAmp: rand(30, 170),
+                    swaySpd: rand(1.0, 3.0),
+                    swayPhase: rand(0, Math.PI * 2),
+                    baseX,
+                };
+
+                setItems((cur) => [it, ...cur].slice(0, 18));
             }
 
-            // move + hit
-            setItems((prev) =>
-                prev
-                    .map((item) => {
-                        const newTime = item.time + 0.016;
-                        const newY = item.y + item.speed * m;
-                        const newX = item.baseX + Math.sin(newTime * item.swaySpeed) * item.swayAmp;
+            setItems((cur) => {
+                const next: FallingItem[] = [];
+                let addScore = 0;
 
-                        const basketY = window.innerHeight - 80;
-                        const hit =
-                            newY > basketY - 80 &&
-                            newY < basketY + 20 &&
-                            Math.abs(newX - playerXRef.current) < 110;
+                for (const it of cur) {
+                    const age = (now - it.bornAt) / 1000;
+                    const sway = Math.sin(it.swayPhase + age * it.swaySpd) * it.swayAmp;
 
-                        if (hit) {
-                            setScore((s) => s + item.char.score);
-                            catchCount.current[item.char.id] = (catchCount.current[item.char.id] || 0) + 1;
+                    const nx = clamp(it.baseX + sway, 20, w - 20);
+                    const ny = it.y + it.vy * dt;
 
-                            setIsHit(true);
-                            setTimeout(() => setIsHit(false), 100);
+                    if (ny > h + CHAR_SIZE) continue;
 
-                            onCatchRef.current(newX, newY + 50);
-                            return null;
-                        }
+                    const dx = nx - px;
+                    const dy = ny - playerY;
+                    const dist = Math.hypot(dx, dy);
 
-                        return { ...item, y: newY, x: newX, time: newTime };
-                    })
-                    .filter((i): i is FallingItem => i !== null && i.y < window.innerHeight + 200)
-            );
-        }, 16);
+                    if (dist <= CATCH_RADIUS) {
+                        addScore += 10;
 
-        return () => window.clearInterval(interval);
-    }, [scene, resetGame]);
+                        const id = (it.char as any).id as string;
+                        catchCount.current[id] = (catchCount.current[id] || 0) + 1;
 
-    return { items, score, timer, isHit, catchCount, resetGame };
-};
+                        onCatchFxRef.current(nx, ny);
+                        setIsHit(true);
+                        if (hitTimerRef.current) window.clearTimeout(hitTimerRef.current);
+                        hitTimerRef.current = window.setTimeout(() => setIsHit(false), 160);
+
+                        continue;
+                    }
+
+                    next.push({ ...it, x: nx, y: ny });
+                }
+
+                if (addScore > 0) setScore((s) => s + addScore);
+                return next;
+            });
+
+            rafRef.current = requestAnimationFrame(step);
+        };
+
+        rafRef.current = requestAnimationFrame(step);
+
+        return () => {
+            if (rafRef.current) cancelAnimationFrame(rafRef.current);
+            rafRef.current = null;
+            if (hitTimerRef.current) window.clearTimeout(hitTimerRef.current);
+            hitTimerRef.current = null;
+        };
+    }, [scene, speedMultiplier, pool]);
+
+    return { items, score, timer, isHit, catchCount };
+}

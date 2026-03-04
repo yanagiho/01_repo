@@ -2,6 +2,13 @@ import { useMemo } from "react";
 import { getCharacterById } from "../../constants/master";
 import { CharacterImage } from "../CharacterImage";
 
+function rankColor(rank: number) {
+    if (rank === 1) return "#ff3b30"; // 赤
+    if (rank === 2) return "#ff9500"; // オレンジ
+    if (rank === 3) return "#ffd60a"; // 黄色
+    return "#00eebb"; // それ以外は現状の緑
+}
+
 export const ResultScene: React.FC<{ score: number; counts: Record<string, number> }> = ({
     score,
     counts,
@@ -34,8 +41,10 @@ export const ResultScene: React.FC<{ score: number; counts: Record<string, numbe
                 }}
             >
                 {rows.list.map((r, idx) => {
+                    const rank = idx + 1;
                     const c = getCharacterById(r.id);
                     const w = Math.round((r.cnt / rows.max) * 100);
+                    const col = rankColor(rank);
 
                     return (
                         <div
@@ -49,8 +58,8 @@ export const ResultScene: React.FC<{ score: number; counts: Record<string, numbe
                                 borderBottom: "1px solid rgba(255,255,255,0.06)",
                             }}
                         >
-                            <div style={{ fontFamily: "monospace", fontSize: 40, fontWeight: 900, color: "#00eebb", textAlign: "center" }}>
-                                {idx + 1}
+                            <div style={{ fontFamily: "monospace", fontSize: 40, fontWeight: 900, color: col, textAlign: "center" }}>
+                                {rank}
                             </div>
 
                             <div style={{ width: 90, height: 90, display: "grid", placeItems: "center" }}>

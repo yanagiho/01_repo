@@ -25,17 +25,11 @@ export const GameScene: React.FC<{
     const total = 30;
     const ratio = Math.max(0, Math.min(1, timer / total));
 
-    const catcherY = window.innerHeight - 80;
+    // ★カゴを上に（下半分が切れないように）
+    const catcherY = window.innerHeight - 140;
 
-    // キャラ 1.5倍
     const CHAR_SIZE = 255;
-
-    // ★光の輪（=カゴ画像を拡大表示）
-    const RING_D = 620;
-
-    // ★カゴ（同じ画像を通常サイズで表示）
-    const BASKET_W = 280;
-    const BASKET_H = 130;
+    const BIG_CATCHER_D = 420;
 
     const barW = Math.floor(window.innerWidth / 3);
 
@@ -49,7 +43,6 @@ export const GameScene: React.FC<{
         }
       `}</style>
 
-            {/* 右上：スコア（装飾） */}
             <div
                 style={{
                     position: "absolute",
@@ -73,7 +66,6 @@ export const GameScene: React.FC<{
                 {score}
             </div>
 
-            {/* タイマーバー */}
             <div
                 style={{
                     position: "absolute",
@@ -99,7 +91,6 @@ export const GameScene: React.FC<{
                 />
             </div>
 
-            {/* 残り時間 */}
             <div
                 style={{
                     position: "absolute",
@@ -118,7 +109,6 @@ export const GameScene: React.FC<{
                 {timer.toFixed(1)}
             </div>
 
-            {/* 落下キャラ（上部欠け修正：最低yをクランプ） */}
             {items.map((it) => {
                 const y = Math.max(it.y, CHAR_SIZE / 2 + 2);
                 return (
@@ -141,45 +131,21 @@ export const GameScene: React.FC<{
                 );
             })}
 
-            {/* ★光の輪（=カゴ画像の拡大表示） */}
             <CatcherImage
                 style={{
                     position: "absolute",
                     left: playerX,
                     top: catcherY,
-                    width: RING_D,
-                    height: RING_D,
+                    width: BIG_CATCHER_D,
+                    height: BIG_CATCHER_D,
                     transform: "translate(-50%, -50%)",
                     objectFit: "contain",
                     pointerEvents: "none",
                     zIndex: 12,
-
-                    // “輪”っぽく：少し透過＋光る
-                    opacity: 0.85,
+                    opacity: 0.92,
                     filter: isHit
                         ? "drop-shadow(0 0 34px rgba(255,255,255,0.75)) drop-shadow(0 0 64px rgba(0,238,187,0.60))"
                         : "drop-shadow(0 0 24px rgba(0,238,187,0.40))",
-                }}
-            />
-
-            {/* ★カゴ（同じ画像を通常サイズで前面に） */}
-            <CatcherImage
-                style={{
-                    position: "absolute",
-                    left: playerX,
-                    top: catcherY,
-                    width: BASKET_W,
-                    height: BASKET_H,
-                    transform: "translate(-50%, -50%)",
-                    objectFit: "contain",
-                    pointerEvents: "none",
-                    zIndex: 15,
-
-                    // ヒット時だけ強めに光る
-                    filter: isHit
-                        ? "drop-shadow(0 0 26px rgba(0,238,187,0.95))"
-                        : "drop-shadow(0 12px 14px rgba(0,0,0,0.55))",
-                    transition: "filter 120ms linear",
                 }}
             />
         </div>

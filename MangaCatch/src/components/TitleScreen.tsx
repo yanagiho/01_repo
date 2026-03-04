@@ -6,7 +6,6 @@ type Props = { onStart: () => void };
 function buildLogoCandidates(): string[] {
   const baseUrl = (import.meta as any)?.env?.BASE_URL ?? "./";
   const norm = (s: string) => (s.endsWith("/") ? s : s + "/");
-
   const names = [
     "assets/ui/mangacatch_title_logo.png",
     "assets/ui/title_logo.png",
@@ -15,7 +14,6 @@ function buildLogoCandidates(): string[] {
     "assets/ui/mangacatch_logo.png",
   ];
   const bases = [norm(baseUrl), "./", "", "../", "../../"];
-
   const out: string[] = [];
   for (const b of bases) for (const n of names) out.push(b + n);
   return Array.from(new Set(out));
@@ -90,27 +88,26 @@ export const TitleScene = ({ onStart }: Props) => {
           />
         </div>
 
-        {/* START点滅 */}
+        {/* TOUCH TO START を大きく */}
         <div
           style={{
-            marginTop: 46,
+            marginTop: 52,
             display: "inline-block",
-            padding: "18px 56px",
+            padding: "22px 64px",
             borderRadius: 999,
-            border: "2px solid rgba(255,255,255,0.26)",
+            border: "2px solid rgba(255,255,255,0.28)",
             background: "rgba(0,0,0,0.28)",
-            fontSize: 28,
+            fontSize: 34, // ★大きく
+            fontWeight: 900,
             letterSpacing: 2,
             animation: "blinkStart 1.1s ease-in-out infinite",
-            boxShadow: "0 0 18px rgba(0,238,187,0.18)",
+            boxShadow: "0 0 22px rgba(0,238,187,0.18)",
           }}
         >
-          START
+          TOUCH TO START
         </div>
 
-        <div style={{ marginTop: 14, fontSize: 12, opacity: 0.7 }}>
-          ※クリック（将来はセンサー入力）しない限り進みません
-        </div>
+        {/* ★注意文（※クリック…）は削除 */}
       </div>
 
       {/* コピーライト */}

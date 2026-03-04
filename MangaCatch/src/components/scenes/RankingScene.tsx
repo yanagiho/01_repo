@@ -12,10 +12,10 @@ function fmtTime(ms: number) {
 }
 
 function rankColor(rank: number) {
-    if (rank === 1) return "#ff3b30"; // 赤
-    if (rank === 2) return "#ff9500"; // オレンジ
-    if (rank === 3) return "#ffd60a"; // 黄色
-    if (rank === 4 || rank === 5) return "#00eebb"; // 緑
+    if (rank === 1) return "#ff3b30";
+    if (rank === 2) return "#ff9500";
+    if (rank === 3) return "#ffd60a";
+    if (rank === 4 || rank === 5) return "#00eebb";
     return "rgba(255,255,255,0.85)";
 }
 
@@ -54,7 +54,6 @@ export const RankingScene: React.FC<{
       `}</style>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 18, alignItems: "start" }}>
-                {/* 左：ランキング */}
                 <div
                     style={{
                         background: "rgba(0,0,0,0.38)",
@@ -77,7 +76,7 @@ export const RankingScene: React.FC<{
                                 key={`${rank}-${r.achieved_at}-${r.score}`}
                                 style={{
                                     display: "grid",
-                                    gridTemplateColumns: "70px 90px 90px 1fr 110px",
+                                    gridTemplateColumns: "70px 90px 90px 1fr 130px",
                                     gap: 14,
                                     alignItems: "center",
                                     padding: "12px 12px",
@@ -86,43 +85,28 @@ export const RankingScene: React.FC<{
                                     background: "rgba(0,0,0,0.28)",
                                     border: "1px solid rgba(255,255,255,0.08)",
                                     animation: isMe ? "blinkRow 1.0s ease-in-out infinite" : "none",
-                                    color: col, // ★文字も順位色に
+                                    color: col,
                                 }}
                             >
-                                {/* 順位（#なし） */}
                                 <div style={{ fontFamily: "monospace", fontSize: 42, fontWeight: 900, textAlign: "center" }}>
                                     {rank}
                                 </div>
 
-                                {/* キャラ */}
                                 <div style={{ width: 90, height: 90, display: "grid", placeItems: "center" }}>
-                                    {c ? (
-                                        <CharacterImage char={c} style={{ width: 86, height: 86, objectFit: "contain" }} />
-                                    ) : (
-                                        <div style={{ opacity: 0.5 }}>-</div>
-                                    )}
+                                    {c ? <CharacterImage char={c} style={{ width: 86, height: 86, objectFit: "contain" }} /> : <div style={{ opacity: 0.5 }}>-</div>}
                                 </div>
 
-                                {/* 書影 */}
                                 <div style={{ width: 90, height: 90, display: "grid", placeItems: "center" }}>
-                                    {c ? (
-                                        <CoverImage char={c} style={{ width: 86, height: 86, objectFit: "contain", borderRadius: 8 }} />
-                                    ) : (
-                                        <div style={{ opacity: 0.5 }}>-</div>
-                                    )}
+                                    {c ? <CoverImage char={c} style={{ width: 86, height: 86, objectFit: "contain", borderRadius: 8 }} /> : <div style={{ opacity: 0.5 }}>-</div>}
                                 </div>
 
-                                {/* スコア・時刻 */}
                                 <div>
-                                    <div style={{ fontFamily: "monospace", fontSize: 34, fontWeight: 900 }}>
-                                        {r.score}
-                                    </div>
-                                    <div style={{ fontFamily: "monospace", fontSize: 14, opacity: 0.9 }}>
-                                        {fmtTime(r.achieved_at)}
-                                    </div>
+                                    <div style={{ fontFamily: "monospace", fontSize: 34, fontWeight: 900 }}>{r.score}</div>
+                                    <div style={{ fontFamily: "monospace", fontSize: 14, opacity: 0.9 }}>{fmtTime(r.achieved_at)}</div>
                                 </div>
 
-                                <div style={{ textAlign: "right", fontFamily: "monospace", fontSize: 16, opacity: 0.95 }}>
+                                {/* ★YOUを大きく */}
+                                <div style={{ textAlign: "right", fontFamily: "monospace", fontSize: 34, fontWeight: 900, opacity: 0.95 }}>
                                     {isMe ? "YOU" : ""}
                                 </div>
                             </div>
@@ -130,7 +114,6 @@ export const RankingScene: React.FC<{
                     })}
                 </div>
 
-                {/* 右：ロゴなど */}
                 <div
                     style={{
                         height: "100%",
@@ -144,7 +127,6 @@ export const RankingScene: React.FC<{
                     }}
                 >
                     <div style={{ fontSize: 46, fontWeight: 900, color: "#00eebb" }}>RANKING</div>
-
                     <div style={{ fontFamily: "monospace", fontSize: 16, opacity: 0.85 }}>TOP SCORE</div>
                     <div style={{ fontFamily: "monospace", fontSize: 56, fontWeight: 900, color: "#00eebb" }}>
                         {top[0]?.score ?? 0}

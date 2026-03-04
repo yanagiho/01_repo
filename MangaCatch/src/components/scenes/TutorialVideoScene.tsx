@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 type Props = {
-    onUserSkip: () => void;
+    onUserSkip: () => void; // 互換のため残す（未使用）
     onEnded: () => void;
 };
 
@@ -18,22 +18,23 @@ function buildCandidates(): string[] {
     );
 }
 
-export const TutorialVideoScene = ({ onUserSkip, onEnded }: Props) => {
+export const TutorialVideoScene = ({ onEnded }: Props) => {
     const candidates = useMemo(() => buildCandidates(), []);
     const [idx, setIdx] = useState(0);
 
-    // 5→1 のカウントダウン
     const [sec, setSec] = useState(5);
 
     useEffect(() => {
+        setSec(5);
         const t = window.setInterval(() => {
             setSec((s) => {
-                if (s <= 1) {
+                const next = s - 1;
+                if (next <= 0) {
                     window.clearInterval(t);
                     onEnded();
                     return 0;
                 }
-                return s - 1;
+                return next;
             });
         }, 1000);
         return () => window.clearInterval(t);
@@ -41,10 +42,6 @@ export const TutorialVideoScene = ({ onUserSkip, onEnded }: Props) => {
 
     return (
         <div
-            onPointerDown={() => {
-                onUserSkip();
-                onEnded();
-            }}
             style={{
                 position: "absolute",
                 inset: 0,
@@ -53,14 +50,15 @@ export const TutorialVideoScene = ({ onUserSkip, onEnded }: Props) => {
                 placeItems: "center",
                 background: "#000",
                 color: "#fff",
-                cursor: "pointer",
                 userSelect: "none",
+                // ★タッチで進まない：クリックやタップを受けない
+                pointerEvents: "none",
             }}
         >
             <style>{`
         @keyframes pop {
           0% { transform: scale(0.95); opacity: 0.7; }
-          50% { transform: scale(1.05); opacity: 1; }
+          50% { transform: scale(1.06); opacity: 1; }
           100% { transform: scale(1.00); opacity: 0.95; }
         }
       `}</style>
@@ -82,7 +80,7 @@ export const TutorialVideoScene = ({ onUserSkip, onEnded }: Props) => {
                 draggable={false}
             />
 
-            {/* 右下：カウントダウン */}
+            {/* カウントダウン（表示のみ） */}
             <div
                 style={{
                     position: "absolute",
@@ -106,9 +104,7 @@ export const TutorialVideoScene = ({ onUserSkip, onEnded }: Props) => {
                 {sec}
             </div>
 
-            <div style={{ position: "absolute", left: 18, bottom: 18, fontSize: 12, opacity: 0.65 }}>
-                tap to skip
-            </div>
+            {/* ★「tap to skip」等の文字は削除 */}
         </div>
     );
 };
