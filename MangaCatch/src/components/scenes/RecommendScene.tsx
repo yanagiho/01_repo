@@ -8,16 +8,7 @@ export const RecommendScene: React.FC<{ bestChar: CharacterData | null }> = ({ b
     if (!bestChar) return null;
 
     return (
-        <div
-            style={{
-                position: "absolute",
-                inset: 0,
-                zIndex: 10,
-                display: "grid",
-                placeItems: "center",
-                color: "#fff",
-            }}
-        >
+        <div style={{ position: "absolute", inset: 0, zIndex: 10, display: "grid", placeItems: "center", color: "#fff" }}>
             <div
                 style={{
                     width: "min(1200px, 92vw)",
@@ -32,7 +23,6 @@ export const RecommendScene: React.FC<{ bestChar: CharacterData | null }> = ({ b
                     position: "relative",
                 }}
             >
-                {/* 書影 */}
                 <CoverImage
                     char={bestChar}
                     style={{
@@ -44,10 +34,8 @@ export const RecommendScene: React.FC<{ bestChar: CharacterData | null }> = ({ b
                     }}
                 />
 
-                {/* 右 */}
                 <div style={{ display: "grid", gridTemplateRows: "auto auto 1fr", gap: 10 }}>
                     <div style={{ textAlign: "left" }}>
-                        {/* ★大きく */}
                         <div style={{ fontSize: 36, fontWeight: 900, opacity: 0.95 }}>作品紹介</div>
 
                         <div style={{ marginTop: 10, fontSize: 44, color: "#00eebb", fontWeight: 900 }}>
@@ -65,8 +53,16 @@ export const RecommendScene: React.FC<{ bestChar: CharacterData | null }> = ({ b
                         </div>
                     </div>
 
-                    {/* キャラ：右寄せ */}
-                    <div style={{ display: "grid", justifyItems: "end", alignItems: "center" }}>
+                    {/* ★キャラをさらに上へ */}
+                    <div
+                        style={{
+                            display: "grid",
+                            justifyItems: "end",
+                            alignItems: "start",
+                            paddingTop: 0,
+                            transform: "translateY(-90px)",
+                        }}
+                    >
                         <CharacterImage
                             char={bestChar}
                             style={{

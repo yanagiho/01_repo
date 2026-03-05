@@ -54,7 +54,6 @@ export const RankingScene: React.FC<{
       `}</style>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 18, alignItems: "start" }}>
-                {/* 左 */}
                 <div
                     style={{
                         background: "rgba(0,0,0,0.38)",
@@ -104,14 +103,17 @@ export const RankingScene: React.FC<{
 
                                 <div style={{ minWidth: 0 }}>
                                     <div style={{ fontFamily: "monospace", fontSize: 34, fontWeight: 900 }}>{r.score}</div>
-                                    <div style={{ marginTop: 4, fontSize: 16, fontWeight: 900, color: "rgba(255,255,255,0.92)", lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+
+                                    {/* ★時間表示をスコアと同じ大きさに */}
+                                    <div style={{ marginTop: 2, fontFamily: "monospace", fontSize: 34, fontWeight: 900, opacity: 0.75 }}>
+                                        {fmtTime(r.achieved_at)}
+                                    </div>
+
+                                    <div style={{ marginTop: 6, fontSize: 16, fontWeight: 900, color: "rgba(255,255,255,0.92)", lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                                         {work || " "}
                                     </div>
                                     <div style={{ marginTop: 2, fontSize: 14, opacity: 0.88, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                                         {artist || " "}
-                                    </div>
-                                    <div style={{ marginTop: 3, fontFamily: "monospace", fontSize: 12, opacity: 0.75 }}>
-                                        {fmtTime(r.achieved_at)}
                                     </div>
                                 </div>
 
@@ -123,7 +125,6 @@ export const RankingScene: React.FC<{
                     })}
                 </div>
 
-                {/* 右 */}
                 <div
                     style={{
                         height: "100%",
@@ -137,22 +138,11 @@ export const RankingScene: React.FC<{
                     }}
                 >
                     <div style={{ fontSize: 46, fontWeight: 900, color: "#00eebb" }}>RANKING</div>
-
-                    {/* ★TOP SCORE を点数と同じ大きさに */}
-                    <div style={{ fontFamily: "monospace", fontSize: 56, fontWeight: 900, opacity: 0.85 }}>
-                        TOP SCORE
-                    </div>
-
+                    <div style={{ fontFamily: "monospace", fontSize: 56, fontWeight: 900, opacity: 0.85 }}>TOP SCORE</div>
                     <div style={{ fontFamily: "monospace", fontSize: 56, fontWeight: 900, color: "#00eebb" }}>
                         {top[0]?.score ?? 0}
                     </div>
-
-                    <div style={{ fontFamily: "monospace", fontSize: 14, opacity: 0.75 }}>
-                        {top[0] ? fmtTime(top[0].achieved_at) : ""}
-                    </div>
-
                     <div style={{ flex: 1 }} />
-
                     <div style={{ display: "grid", placeItems: "center", paddingBottom: 6 }}>
                         <img
                             src={logoCandidates[logoIdx]}

@@ -42,7 +42,6 @@ export const ResultScene: React.FC<{ score: number; counts: Record<string, numbe
                             const col = rankColor(rank);
                             const c = getCharacterById(r.id);
 
-                            // 作品名・作者名（存在しない可能性があるので保険）
                             const work = (c as any)?.work ?? (c as any)?.title ?? "";
                             const artist = (c as any)?.artist ?? (c as any)?.author ?? "";
 
@@ -62,7 +61,6 @@ export const ResultScene: React.FC<{ score: number; counts: Record<string, numbe
                                         border: "1px solid rgba(255,255,255,0.08)",
                                     }}
                                 >
-                                    {/* 順位 */}
                                     <div
                                         style={{
                                             fontFamily: "monospace",
@@ -75,26 +73,14 @@ export const ResultScene: React.FC<{ score: number; counts: Record<string, numbe
                                         {rank}
                                     </div>
 
-                                    {/* キャラ */}
                                     <div style={{ width: 96, height: 96, display: "grid", placeItems: "center" }}>
                                         {c ? (
-                                            <CharacterImage
-                                                char={c}
-                                                style={{ width: 92, height: 92, objectFit: "contain" }}
-                                            />
+                                            <CharacterImage char={c} style={{ width: 92, height: 92, objectFit: "contain" }} />
                                         ) : (
-                                            <div
-                                                style={{
-                                                    width: 92,
-                                                    height: 92,
-                                                    borderRadius: 12,
-                                                    border: "2px dashed rgba(255,255,255,0.14)",
-                                                }}
-                                            />
+                                            <div style={{ width: 92, height: 92, borderRadius: 12, border: "2px dashed rgba(255,255,255,0.14)" }} />
                                         )}
                                     </div>
 
-                                    {/* 作品名・作者名 ＋ 棒グラフ */}
                                     <div style={{ minWidth: 0 }}>
                                         <div style={{ fontSize: 20, fontWeight: 900, color: "#fff", lineHeight: 1.15 }}>
                                             {work || " "}
@@ -124,7 +110,6 @@ export const ResultScene: React.FC<{ score: number; counts: Record<string, numbe
                                         </div>
                                     </div>
 
-                                    {/* 数字だけ（xなし） */}
                                     <div
                                         style={{
                                             fontFamily: "monospace",
@@ -142,7 +127,7 @@ export const ResultScene: React.FC<{ score: number; counts: Record<string, numbe
                     </div>
                 </div>
 
-                {/* 右：余白内に RESULT */}
+                {/* 右：RESULT / SCORE */}
                 <div
                     style={{
                         background: "rgba(0,0,0,0.30)",
@@ -151,14 +136,15 @@ export const ResultScene: React.FC<{ score: number; counts: Record<string, numbe
                         border: "1px solid rgba(255,255,255,0.08)",
                         display: "flex",
                         flexDirection: "column",
-                        gap: 12,
+                        gap: 10,
                         textAlign: "right",
                     }}
                 >
-                    {/* ★画面内右余白に RESULT */}
                     <div style={{ fontSize: 54, fontWeight: 900, color: "#00eebb" }}>RESULT</div>
 
-                    <div style={{ fontFamily: "monospace", fontSize: 18, opacity: 0.85 }}>SCORE</div>
+                    {/* ★SCORE を RESULT と同じサイズ */}
+                    <div style={{ fontSize: 54, fontWeight: 900, opacity: 0.85 }}>SCORE</div>
+
                     <div
                         style={{
                             fontFamily: "monospace",
