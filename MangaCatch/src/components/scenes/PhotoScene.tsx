@@ -1,9 +1,7 @@
 import { useMemo, useState } from "react";
+import * as CoverMod from "../CoverImage";
+import * as CharMod from "../CharacterImage";
 import type { CharacterData } from "../../constants/master";
-import { CoverImage } from "../CoverImage";
-import { CharacterImage } from "../CharacterImage";
-
-const COPYRIGHT_JP = "© Springbless";
 
 function buildCameraCandidates(): string[] {
     return Array.from(
@@ -33,10 +31,10 @@ function buildLogoCandidates(): string[] {
     );
 }
 
-export const PhotoScene: React.FC<{ bestChar: CharacterData | null; score: number }> = ({
-    bestChar,
-    score,
-}) => {
+export const PhotoScene = ({ bestChar, score }: { bestChar: CharacterData | null; score: number }) => {
+    const CoverImageComp = (CoverMod as any).CoverImage ?? (CoverMod as any).default;
+    const CharacterImageComp = (CharMod as any).CharacterImage ?? (CharMod as any).default;
+
     const nowText = useMemo(() => {
         const d = new Date();
         const yyyy = d.getFullYear();
@@ -131,31 +129,34 @@ export const PhotoScene: React.FC<{ bestChar: CharacterData | null; score: numbe
                         alignItems: "center",
                     }}
                 >
-                    <CoverImage
-                        char={bestChar}
-                        style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "contain",
-                            borderRadius: 16,
-                            background: "rgba(0,0,0,0.22)",
-                        }}
-                    />
+                    {CoverImageComp ? (
+                        <CoverImageComp
+                            char={bestChar}
+                            style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "contain",
+                                borderRadius: 16,
+                                background: "rgba(0,0,0,0.22)",
+                            }}
+                        />
+                    ) : null}
 
                     <div style={{ width: "100%", height: "100%" }} />
 
-                    {/* ★キャラをもっともっと上へ */}
                     <div style={{ display: "grid", placeItems: "center", overflow: "visible", transform: "translateY(-120px)" }}>
-                        <CharacterImage
-                            char={bestChar}
-                            style={{
-                                width: 460,
-                                height: 460,
-                                objectFit: "contain",
-                                filter: "drop-shadow(0 18px 22px rgba(0,0,0,0.65))",
-                                display: "block",
-                            }}
-                        />
+                        {CharacterImageComp ? (
+                            <CharacterImageComp
+                                char={bestChar}
+                                style={{
+                                    width: 460,
+                                    height: 460,
+                                    objectFit: "contain",
+                                    filter: "drop-shadow(0 18px 22px rgba(0,0,0,0.65))",
+                                    display: "block",
+                                }}
+                            />
+                        ) : null}
                     </div>
                 </div>
 
@@ -179,9 +180,7 @@ export const PhotoScene: React.FC<{ bestChar: CharacterData | null; score: numbe
                     draggable={false}
                 />
 
-                <div style={{ position: "absolute", left: 18, bottom: 14, fontSize: 12, opacity: 0.75 }}>
-                    {COPYRIGHT_JP}
-                </div>
+                {/* SpringBreath/SpringBless のコピーライトは表示しない */}
             </div>
         </div>
     );

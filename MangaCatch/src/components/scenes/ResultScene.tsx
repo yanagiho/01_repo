@@ -1,19 +1,18 @@
 import { useMemo } from "react";
 import { getCharacterById } from "../../constants/master";
-import { CharacterImage } from "../CharacterImage";
+import * as CharMod from "../CharacterImage";
 
 function rankColor(rank: number) {
-    if (rank === 1) return "#ff3b30"; // 赤
-    if (rank === 2) return "#ff9500"; // オレンジ
-    if (rank === 3) return "#ffd60a"; // 黄色
-    if (rank === 4 || rank === 5) return "#00eebb"; // 緑
+    if (rank === 1) return "#ff3b30";
+    if (rank === 2) return "#ff9500";
+    if (rank === 3) return "#ffd60a";
+    if (rank === 4 || rank === 5) return "#00eebb";
     return "rgba(255,255,255,0.85)";
 }
 
-export const ResultScene: React.FC<{ score: number; counts: Record<string, number> }> = ({
-    score,
-    counts,
-}) => {
+export const ResultScene = ({ score, counts }: { score: number; counts: Record<string, number> }) => {
+    const CharacterImageComp = (CharMod as any).CharacterImage ?? (CharMod as any).default;
+
     const { rows, max } = useMemo(() => {
         const list: { id: string; cnt: number }[] = [];
         for (const [id, cnt] of Object.entries(counts)) list.push({ id, cnt });
@@ -26,7 +25,6 @@ export const ResultScene: React.FC<{ score: number; counts: Record<string, numbe
     return (
         <div style={{ position: "absolute", inset: 0, zIndex: 10, padding: 26, color: "#fff" }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 18, height: "100%" }}>
-                {/* 左：縦に多い順 */}
                 <div
                     style={{
                         background: "rgba(0,0,0,0.35)",
@@ -44,7 +42,6 @@ export const ResultScene: React.FC<{ score: number; counts: Record<string, numbe
 
                             const work = (c as any)?.work ?? (c as any)?.title ?? "";
                             const artist = (c as any)?.artist ?? (c as any)?.author ?? "";
-
                             const w = Math.round((r.cnt / max) * 100);
 
                             return (
@@ -61,73 +58,40 @@ export const ResultScene: React.FC<{ score: number; counts: Record<string, numbe
                                         border: "1px solid rgba(255,255,255,0.08)",
                                     }}
                                 >
-                                    <div
-                                        style={{
-                                            fontFamily: "monospace",
-                                            fontSize: 34,
-                                            fontWeight: 900,
-                                            color: col,
-                                            textAlign: "center",
-                                        }}
-                                    >
+                                    <div style={{ fontFamily: "monospace", fontSize: 34, fontWeight: 900, color: col, textAlign: "center" }}>
                                         {rank}
                                     </div>
 
                                     <div style={{ width: 96, height: 96, display: "grid", placeItems: "center" }}>
-                                        {c ? (
-                                            <CharacterImage char={c} style={{ width: 92, height: 92, objectFit: "contain" }} />
+                                        {c && CharacterImageComp ? (
+                                            <CharacterImageComp char={c} style={{ width: 92, height: 92, objectFit: "contain" }} />
                                         ) : (
                                             <div style={{ width: 92, height: 92, borderRadius: 12, border: "2px dashed rgba(255,255,255,0.14)" }} />
                                         )}
                                     </div>
 
                                     <div style={{ minWidth: 0 }}>
-                                        <div style={{ fontSize: 20, fontWeight: 900, color: "#fff", lineHeight: 1.15 }}>
-                                            {work || " "}
-                                        </div>
-                                        <div style={{ marginTop: 4, fontSize: 16, opacity: 0.9, lineHeight: 1.1 }}>
-                                            {artist || " "}
-                                        </div>
+                                        <div style={{ fontSize: 20, fontWeight: 900, color: "#fff", lineHeight: 1.15 }}>{work || " "}</div>
+                                        <div style={{ marginTop: 4, fontSize: 16, opacity: 0.9, lineHeight: 1.1 }}>{artist || " "}</div>
 
                                         <div style={{ marginTop: 10 }}>
-                                            <div
-                                                style={{
-                                                    height: 18,
-                                                    borderRadius: 999,
-                                                    background: "rgba(255,255,255,0.10)",
-                                                    overflow: "hidden",
-                                                }}
-                                            >
-                                                <div
-                                                    style={{
-                                                        width: `${w}%`,
-                                                        height: "100%",
-                                                        borderRadius: 999,
-                                                        background: "rgba(0,238,187,0.88)",
-                                                    }}
-                                                />
+                                            <div style={{ height: 18, borderRadius: 999, background: "rgba(255,255,255,0.10)", overflow: "hidden" }}>
+                                                <div style={{ width: `${w}%`, height: "100%", borderRadius: 999, background: "rgba(0,238,187,0.88)" }} />
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div
-                                        style={{
-                                            fontFamily: "monospace",
-                                            fontSize: 34,
-                                            fontWeight: 900,
-                                            color: "#00eebb",
-                                            textAlign: "right",
-                                        }}
-                                    >
+                                    <div style={{ fontFamily: "monospace", fontSize: 34, fontWeight: 900, color: "#00eebb", textAlign: "right" }}>
                                         {r.cnt}
                                     </div>
                                 </div>
                             );
                         })}
                     </div>
+
+                    {/* SpringBreath/SpringBless のコピーライトは表示しない */}
                 </div>
 
-                {/* 右：RESULT / SCORE */}
                 <div
                     style={{
                         background: "rgba(0,0,0,0.30)",
@@ -141,19 +105,9 @@ export const ResultScene: React.FC<{ score: number; counts: Record<string, numbe
                     }}
                 >
                     <div style={{ fontSize: 54, fontWeight: 900, color: "#00eebb" }}>RESULT</div>
-
-                    {/* ★SCORE を RESULT と同じサイズ */}
                     <div style={{ fontSize: 54, fontWeight: 900, opacity: 0.85 }}>SCORE</div>
 
-                    <div
-                        style={{
-                            fontFamily: "monospace",
-                            fontSize: 72,
-                            fontWeight: 900,
-                            color: "#00eebb",
-                            textShadow: "0 4px 16px rgba(0,0,0,0.85)",
-                        }}
-                    >
+                    <div style={{ fontFamily: "monospace", fontSize: 72, fontWeight: 900, color: "#00eebb", textShadow: "0 4px 16px rgba(0,0,0,0.85)" }}>
                         {score}
                     </div>
 

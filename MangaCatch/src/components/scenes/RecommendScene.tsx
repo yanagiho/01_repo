@@ -1,10 +1,11 @@
+import * as CoverMod from "../CoverImage";
+import * as CharMod from "../CharacterImage";
 import type { CharacterData } from "../../constants/master";
-import { CoverImage } from "../CoverImage";
-import { CharacterImage } from "../CharacterImage";
 
-const COPYRIGHT_JP = "© Springbless";
+export const RecommendScene = ({ bestChar }: { bestChar: CharacterData | null }) => {
+    const CoverImageComp = (CoverMod as any).CoverImage ?? (CoverMod as any).default;
+    const CharacterImageComp = (CharMod as any).CharacterImage ?? (CharMod as any).default;
 
-export const RecommendScene: React.FC<{ bestChar: CharacterData | null }> = ({ bestChar }) => {
     if (!bestChar) return null;
 
     return (
@@ -23,16 +24,18 @@ export const RecommendScene: React.FC<{ bestChar: CharacterData | null }> = ({ b
                     position: "relative",
                 }}
             >
-                <CoverImage
-                    char={bestChar}
-                    style={{
-                        width: "100%",
-                        height: 560,
-                        objectFit: "contain",
-                        borderRadius: 16,
-                        background: "rgba(0,0,0,0.22)",
-                    }}
-                />
+                {CoverImageComp ? (
+                    <CoverImageComp
+                        char={bestChar}
+                        style={{
+                            width: "100%",
+                            height: 560,
+                            objectFit: "contain",
+                            borderRadius: 16,
+                            background: "rgba(0,0,0,0.22)",
+                        }}
+                    />
+                ) : null}
 
                 <div style={{ display: "grid", gridTemplateRows: "auto auto 1fr", gap: 10 }}>
                     <div style={{ textAlign: "left" }}>
@@ -53,33 +56,25 @@ export const RecommendScene: React.FC<{ bestChar: CharacterData | null }> = ({ b
                         </div>
                     </div>
 
-                    {/* ★キャラをさらに上へ */}
-                    <div
-                        style={{
-                            display: "grid",
-                            justifyItems: "end",
-                            alignItems: "start",
-                            paddingTop: 0,
-                            transform: "translateY(-90px)",
-                        }}
-                    >
-                        <CharacterImage
-                            char={bestChar}
-                            style={{
-                                width: 520,
-                                height: 520,
-                                objectFit: "contain",
-                                filter: "drop-shadow(0 18px 22px rgba(0,0,0,0.65))",
-                            }}
-                        />
+                    {/* キャラ：上寄せ */}
+                    <div style={{ display: "grid", justifyItems: "end", alignItems: "start", transform: "translateY(-90px)" }}>
+                        {CharacterImageComp ? (
+                            <CharacterImageComp
+                                char={bestChar}
+                                style={{
+                                    width: 520,
+                                    height: 520,
+                                    objectFit: "contain",
+                                    filter: "drop-shadow(0 18px 22px rgba(0,0,0,0.65))",
+                                }}
+                            />
+                        ) : null}
                     </div>
 
                     <div />
                 </div>
 
-                <div style={{ position: "absolute", left: 18, bottom: 14, fontSize: 12, opacity: 0.75 }}>
-                    {COPYRIGHT_JP}
-                </div>
+                {/* SpringBreath/SpringBless のコピーライトは表示しない */}
             </div>
         </div>
     );

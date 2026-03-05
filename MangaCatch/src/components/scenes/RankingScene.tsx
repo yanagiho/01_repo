@@ -1,8 +1,8 @@
+import { useMemo, useState } from "react";
 import type { RankingEntry } from "../../types/game";
 import { getCharacterById } from "../../constants/master";
-import { CharacterImage } from "../CharacterImage";
-import { CoverImage } from "../CoverImage";
-import { useMemo, useState } from "react";
+import * as CharMod from "../CharacterImage";
+import * as CoverMod from "../CoverImage";
 
 function fmtTime(ms: number) {
     const d = new Date(ms);
@@ -35,10 +35,10 @@ function buildLogoCandidates(): string[] {
     );
 }
 
-export const RankingScene: React.FC<{
-    ranking: RankingEntry[];
-    highlightAchievedAt?: number;
-}> = ({ ranking, highlightAchievedAt }) => {
+export const RankingScene = ({ ranking, highlightAchievedAt }: { ranking: RankingEntry[]; highlightAchievedAt?: number }) => {
+    const CharacterImageComp = (CharMod as any).CharacterImage ?? (CharMod as any).default;
+    const CoverImageComp = (CoverMod as any).CoverImage ?? (CoverMod as any).default;
+
     const top = useMemo(() => ranking.slice(0, 5), [ranking]);
     const logoCandidates = useMemo(() => buildLogoCandidates(), []);
     const [logoIdx, setLogoIdx] = useState(0);
@@ -46,23 +46,11 @@ export const RankingScene: React.FC<{
     return (
         <div style={{ position: "absolute", inset: 0, zIndex: 10, padding: 28, color: "#fff" }}>
             <style>{`
-        @keyframes blinkRow {
-          0% { opacity: 0.35; }
-          50% { opacity: 1; }
-          100% { opacity: 0.35; }
-        }
+        @keyframes blinkRow { 0%{opacity:.35} 50%{opacity:1} 100%{opacity:.35} }
       `}</style>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 18, alignItems: "start" }}>
-                <div
-                    style={{
-                        background: "rgba(0,0,0,0.38)",
-                        borderRadius: 18,
-                        padding: 16,
-                        border: "1px solid rgba(255,255,255,0.08)",
-                        minHeight: 520,
-                    }}
-                >
+                <div style={{ background: "rgba(0,0,0,0.38)", borderRadius: 18, padding: 16, border: "1px solid rgba(255,255,255,0.08)", minHeight: 520 }}>
                     {top.map((r, idx) => {
                         const rank = idx + 1;
                         const c = getCharacterById(r.bestCharId);
@@ -89,26 +77,21 @@ export const RankingScene: React.FC<{
                                     color: col,
                                 }}
                             >
-                                <div style={{ fontFamily: "monospace", fontSize: 42, fontWeight: 900, textAlign: "center" }}>
-                                    {rank}
+                                <div style={{ fontFamily: "monospace", fontSize: 42, fontWeight: 900, textAlign: "center" }}>{rank}</div>
+
+                                <div style={{ width: 92, height: 92, display: "grid", placeItems: "center", transform: "translateY(-6px)" }}>
+                                    {c && CharacterImageComp ? <CharacterImageComp char={c} style={{ width: 88, height: 88, objectFit: "contain" }} /> : <div style={{ opacity: 0.5 }}>-</div>}
                                 </div>
 
                                 <div style={{ width: 92, height: 92, display: "grid", placeItems: "center", transform: "translateY(-6px)" }}>
-                                    {c ? <CharacterImage char={c} style={{ width: 88, height: 88, objectFit: "contain" }} /> : <div style={{ opacity: 0.5 }}>-</div>}
-                                </div>
-
-                                <div style={{ width: 92, height: 92, display: "grid", placeItems: "center", transform: "translateY(-6px)" }}>
-                                    {c ? <CoverImage char={c} style={{ width: 88, height: 88, objectFit: "contain", borderRadius: 10 }} /> : <div style={{ opacity: 0.5 }}>-</div>}
+                                    {c && CoverImageComp ? <CoverImageComp char={c} style={{ width: 88, height: 88, objectFit: "contain", borderRadius: 10 }} /> : <div style={{ opacity: 0.5 }}>-</div>}
                                 </div>
 
                                 <div style={{ minWidth: 0 }}>
                                     <div style={{ fontFamily: "monospace", fontSize: 34, fontWeight: 900 }}>{r.score}</div>
-
-                                    {/* ★時間表示をスコアと同じ大きさに */}
                                     <div style={{ marginTop: 2, fontFamily: "monospace", fontSize: 34, fontWeight: 900, opacity: 0.75 }}>
                                         {fmtTime(r.achieved_at)}
                                     </div>
-
                                     <div style={{ marginTop: 6, fontSize: 16, fontWeight: 900, color: "rgba(255,255,255,0.92)", lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                                         {work || " "}
                                     </div>
@@ -125,24 +108,13 @@ export const RankingScene: React.FC<{
                     })}
                 </div>
 
-                <div
-                    style={{
-                        height: "100%",
-                        background: "rgba(0,0,0,0.30)",
-                        borderRadius: 18,
-                        padding: 18,
-                        border: "1px solid rgba(255,255,255,0.08)",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 12,
-                    }}
-                >
+                <div style={{ height: "100%", background: "rgba(0,0,0,0.30)", borderRadius: 18, padding: 18, border: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", gap: 12 }}>
                     <div style={{ fontSize: 46, fontWeight: 900, color: "#00eebb" }}>RANKING</div>
                     <div style={{ fontFamily: "monospace", fontSize: 56, fontWeight: 900, opacity: 0.85 }}>TOP SCORE</div>
-                    <div style={{ fontFamily: "monospace", fontSize: 56, fontWeight: 900, color: "#00eebb" }}>
-                        {top[0]?.score ?? 0}
-                    </div>
+                    <div style={{ fontFamily: "monospace", fontSize: 56, fontWeight: 900, color: "#00eebb" }}>{top[0]?.score ?? 0}</div>
+
                     <div style={{ flex: 1 }} />
+
                     <div style={{ display: "grid", placeItems: "center", paddingBottom: 6 }}>
                         <img
                             src={logoCandidates[logoIdx]}
@@ -150,15 +122,12 @@ export const RankingScene: React.FC<{
                             onError={() => {
                                 if (logoIdx + 1 < logoCandidates.length) setLogoIdx(logoIdx + 1);
                             }}
-                            style={{
-                                width: 260,
-                                height: "auto",
-                                opacity: 0.92,
-                                filter: "drop-shadow(0 12px 18px rgba(0,0,0,0.55))",
-                            }}
+                            style={{ width: 260, height: "auto", opacity: 0.92, filter: "drop-shadow(0 12px 18px rgba(0,0,0,0.55))" }}
                             draggable={false}
                         />
                     </div>
+
+                    {/* SpringBreath/SpringBless のコピーライトは表示しない */}
                 </div>
             </div>
         </div>
