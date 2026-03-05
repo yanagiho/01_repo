@@ -6,7 +6,15 @@ import { CharacterImage } from "../CharacterImage";
 const COPYRIGHT_JP = "© Springbless";
 
 function buildCameraCandidates(): string[] {
-    return Array.from(new Set(["/assets/ui/camera.png", "./assets/ui/camera.png", "assets/ui/camera.png"]));
+    return Array.from(
+        new Set([
+            "/assets/ui/camera.png",
+            "/assets/ui/Camera.png",
+            "/assets/ui/camera_icon.png",
+            "./assets/ui/camera.png",
+            "assets/ui/camera.png",
+        ])
+    );
 }
 
 function buildLogoCandidates(): string[] {
@@ -25,7 +33,10 @@ function buildLogoCandidates(): string[] {
     );
 }
 
-export const PhotoScene: React.FC<{ bestChar: CharacterData | null; score: number }> = ({ bestChar, score }) => {
+export const PhotoScene: React.FC<{ bestChar: CharacterData | null; score: number }> = ({
+    bestChar,
+    score,
+}) => {
     const nowText = useMemo(() => {
         const d = new Date();
         const yyyy = d.getFullYear();
@@ -41,6 +52,7 @@ export const PhotoScene: React.FC<{ bestChar: CharacterData | null; score: numbe
 
     const [camIdx, setCamIdx] = useState(0);
     const [logoIdx, setLogoIdx] = useState(0);
+    const [camBroken, setCamBroken] = useState(false);
 
     if (!bestChar) return null;
 
@@ -59,28 +71,37 @@ export const PhotoScene: React.FC<{ bestChar: CharacterData | null; score: numbe
                     overflow: "hidden",
                 }}
             >
-                {/* 左上：撮影促し（カメラ＋英語） */}
-                <div style={{ position: "absolute", top: 16, left: 18, zIndex: 20, display: "flex", alignItems: "center", gap: 10 }}>
-                    <img
-                        src={camCandidates[camIdx]}
-                        alt="camera"
-                        onError={() => {
-                            if (camIdx + 1 < camCandidates.length) setCamIdx(camIdx + 1);
-                        }}
-                        style={{ width: 38, height: 38, objectFit: "contain", opacity: 0.95 }}
-                        draggable={false}
-                    />
-                    <div style={{ lineHeight: 1.1 }}>
-                        <div style={{ fontSize: 22, fontWeight: 800 }}>写真を撮ってね</div>
-                        <div style={{ fontSize: 14, opacity: 0.85 }}>Take a photo!</div>
+                {/* 左上 */}
+                <div style={{ position: "absolute", top: 18, left: 18, zIndex: 20, display: "flex", alignItems: "center", gap: 12 }}>
+                    {!camBroken && (
+                        <img
+                            src={camCandidates[camIdx]}
+                            alt="camera"
+                            onError={() => {
+                                if (camIdx + 1 < camCandidates.length) setCamIdx(camIdx + 1);
+                                else setCamBroken(true);
+                            }}
+                            style={{ width: 56, height: 56, objectFit: "contain", opacity: 0.95 }}
+                            draggable={false}
+                        />
+                    )}
+                    {camBroken && (
+                        <div style={{ width: 56, height: 56, display: "grid", placeItems: "center", fontSize: 44, opacity: 0.9 }}>
+                            📷
+                        </div>
+                    )}
+
+                    <div style={{ lineHeight: 1.05 }}>
+                        <div style={{ fontSize: 38, fontWeight: 900 }}>写真を撮ってね</div>
+                        <div style={{ fontSize: 22, opacity: 0.9, fontWeight: 800 }}>Take a photo!</div>
                     </div>
                 </div>
 
-                {/* 上中央：スコア */}
+                {/* 上中央 */}
                 <div
                     style={{
                         position: "absolute",
-                        top: 16,
+                        top: 18,
                         left: "50%",
                         transform: "translateX(-50%)",
                         zIndex: 20,
@@ -88,18 +109,21 @@ export const PhotoScene: React.FC<{ bestChar: CharacterData | null; score: numbe
                         textShadow: "0 3px 12px rgba(0,0,0,0.85)",
                     }}
                 >
-                    <div style={{ fontFamily: "monospace", fontSize: 54, fontWeight: 900, color: "#00eebb" }}>
+                    <div style={{ fontFamily: "monospace", fontSize: 62, fontWeight: 900, color: "#00eebb" }}>
                         SCORE {score}
                     </div>
-                    <div style={{ fontFamily: "monospace", fontSize: 18, opacity: 0.92 }}>{nowText}</div>
+                    <div style={{ fontFamily: "monospace", fontSize: 28, fontWeight: 900, opacity: 0.92 }}>
+                        {nowText}
+                    </div>
                 </div>
 
+                {/* レイアウト */}
                 <div
                     style={{
                         position: "absolute",
                         left: 18,
                         right: 18,
-                        top: 96,
+                        top: 110,
                         bottom: 86,
                         display: "grid",
                         gridTemplateColumns: "360px 1fr 360px",
@@ -120,8 +144,8 @@ export const PhotoScene: React.FC<{ bestChar: CharacterData | null; score: numbe
 
                     <div style={{ width: "100%", height: "100%" }} />
 
-                    {/* 右：キャラ（欠け対策） */}
-                    <div style={{ display: "grid", placeItems: "center", overflow: "visible" }}>
+                    {/* ★キャラをもっともっと上へ */}
+                    <div style={{ display: "grid", placeItems: "center", overflow: "visible", transform: "translateY(-120px)" }}>
                         <CharacterImage
                             char={bestChar}
                             style={{
@@ -135,6 +159,7 @@ export const PhotoScene: React.FC<{ bestChar: CharacterData | null; score: numbe
                     </div>
                 </div>
 
+                {/* ロゴ */}
                 <img
                     src={logoCandidates[logoIdx]}
                     alt="MANGA Catch!"

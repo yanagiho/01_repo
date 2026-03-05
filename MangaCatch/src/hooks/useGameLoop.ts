@@ -8,7 +8,6 @@ type FallingItem = {
     char: CharacterData;
     x: number;
     y: number;
-    vy: number;
     bornAt: number;
     swayAmp: number;
     swaySpd: number;
@@ -28,8 +27,8 @@ const GAME_TIME_SEC = 30;
 const CHAR_SIZE = 255;
 const CATCH_RADIUS = 220;
 
-// ★GameSceneの catcherY=innerHeight-140 に合わせる
-const PLAYER_Y_OFFSET = 140;
+// GameScene の catcherY = innerHeight - 200 に合わせる
+const PLAYER_Y_OFFSET = 200;
 
 const BASE_FALL_SPEED = 220;
 const SPAWN_INTERVAL_MS = 520;
@@ -59,6 +58,11 @@ export function useGameLoop(
         playerXRef.current = playerX;
     }, [playerX]);
 
+    const speedRef = useRef(speedMultiplier);
+    useEffect(() => {
+        speedRef.current = speedMultiplier;
+    }, [speedMultiplier]);
+
     const onCatchFxRef = useRef(onCatchFx);
     useEffect(() => {
         onCatchFxRef.current = onCatchFx;
@@ -84,7 +88,6 @@ export function useGameLoop(
             setTimer(GAME_TIME_SEC);
             setIsHit(false);
             catchCount.current = {};
-
             lastRef.current = 0;
             spawnRef.current = 0;
             return;
@@ -101,7 +104,8 @@ export function useGameLoop(
 
         const step = (now: number) => {
             const prev = lastRef.current || now;
-            const dt = Math.min(0.05, (now - prev) / 1000);
+            const rawDt = (now - prev) / 1000;
+            const dt = Math.min(0.2, Math.max(0, rawDt));
             lastRef.current = now;
 
             setTimer((t) => Math.max(0, t - dt));
@@ -125,7 +129,6 @@ export function useGameLoop(
                     char,
                     x: baseX,
                     y: -CHAR_SIZE / 2,
-                    vy: BASE_FALL_SPEED * clamp(speedMultiplier || 1, 0.4, 3.0),
                     bornAt: now,
                     swayAmp: rand(30, 170),
                     swaySpd: rand(1.0, 3.0),
@@ -140,12 +143,15 @@ export function useGameLoop(
                 const next: FallingItem[] = [];
                 let addScore = 0;
 
+                const sp = clamp(speedRef.current || 1, 0.4, 3.0);
+                const vy = BASE_FALL_SPEED * sp;
+
                 for (const it of cur) {
                     const age = (now - it.bornAt) / 1000;
                     const sway = Math.sin(it.swayPhase + age * it.swaySpd) * it.swayAmp;
 
                     const nx = clamp(it.baseX + sway, 20, w - 20);
-                    const ny = it.y + it.vy * dt;
+                    const ny = it.y + vy * dt;
 
                     if (ny > h + CHAR_SIZE) continue;
 
@@ -159,7 +165,9 @@ export function useGameLoop(
                         const id = (it.char as any).id as string;
                         catchCount.current[id] = (catchCount.current[id] || 0) + 1;
 
-                        onCatchFxRef.current(nx, ny);
+                        // ★エフェクトをキャラの最下部に出す（中心→下端）
+                        onCatchFxRef.current(nx, ny + CHAR_SIZE / 2);
+
                         setIsHit(true);
                         if (hitTimerRef.current) window.clearTimeout(hitTimerRef.current);
                         hitTimerRef.current = window.setTimeout(() => setIsHit(false), 160);
@@ -182,10 +190,11 @@ export function useGameLoop(
         return () => {
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
             rafRef.current = null;
+
             if (hitTimerRef.current) window.clearTimeout(hitTimerRef.current);
             hitTimerRef.current = null;
         };
-    }, [scene, speedMultiplier, pool]);
+    }, [scene, pool]);
 
     return { items, score, timer, isHit, catchCount };
 }

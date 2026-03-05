@@ -8,7 +8,16 @@ export const RecommendScene: React.FC<{ bestChar: CharacterData | null }> = ({ b
     if (!bestChar) return null;
 
     return (
-        <div style={{ position: "absolute", inset: 0, zIndex: 10, display: "grid", placeItems: "center", color: "#fff" }}>
+        <div
+            style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 10,
+                display: "grid",
+                placeItems: "center",
+                color: "#fff",
+            }}
+        >
             <div
                 style={{
                     width: "min(1200px, 92vw)",
@@ -23,6 +32,7 @@ export const RecommendScene: React.FC<{ bestChar: CharacterData | null }> = ({ b
                     position: "relative",
                 }}
             >
+                {/* 書影 */}
                 <CoverImage
                     char={bestChar}
                     style={{
@@ -34,16 +44,29 @@ export const RecommendScene: React.FC<{ bestChar: CharacterData | null }> = ({ b
                     }}
                 />
 
-                <div style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: 24, opacity: 0.85 }}>作品紹介</div>
+                {/* 右 */}
+                <div style={{ display: "grid", gridTemplateRows: "auto auto 1fr", gap: 10 }}>
+                    <div style={{ textAlign: "left" }}>
+                        {/* ★大きく */}
+                        <div style={{ fontSize: 36, fontWeight: 900, opacity: 0.95 }}>作品紹介</div>
 
-                    <div style={{ marginTop: 10, fontSize: 44, color: "#00eebb", fontWeight: 900 }}>{bestChar.work}</div>
-                    <div style={{ marginTop: 6, fontSize: 18, opacity: 0.85 }}>{bestChar.workEn}</div>
+                        <div style={{ marginTop: 10, fontSize: 44, color: "#00eebb", fontWeight: 900 }}>
+                            {(bestChar as any).work ?? ""}
+                        </div>
+                        <div style={{ marginTop: 6, fontSize: 18, opacity: 0.85 }}>
+                            {(bestChar as any).workEn ?? ""}
+                        </div>
 
-                    <div style={{ marginTop: 14, fontSize: 26 }}>{bestChar.artist}</div>
-                    <div style={{ marginTop: 4, fontSize: 16, opacity: 0.85 }}>{bestChar.artistEn}</div>
+                        <div style={{ marginTop: 14, fontSize: 26 }}>
+                            {(bestChar as any).artist ?? ""}
+                        </div>
+                        <div style={{ marginTop: 4, fontSize: 16, opacity: 0.85 }}>
+                            {(bestChar as any).artistEn ?? ""}
+                        </div>
+                    </div>
 
-                    <div style={{ marginTop: 18 }}>
+                    {/* キャラ：右寄せ */}
+                    <div style={{ display: "grid", justifyItems: "end", alignItems: "center" }}>
                         <CharacterImage
                             char={bestChar}
                             style={{
@@ -54,6 +77,8 @@ export const RecommendScene: React.FC<{ bestChar: CharacterData | null }> = ({ b
                             }}
                         />
                     </div>
+
+                    <div />
                 </div>
 
                 <div style={{ position: "absolute", left: 18, bottom: 14, fontSize: 12, opacity: 0.75 }}>

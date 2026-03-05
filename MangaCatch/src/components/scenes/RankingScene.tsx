@@ -27,7 +27,7 @@ function buildLogoCandidates(): string[] {
             "/assets/title_logo.png",
             "./assets/ui/mangacatch_title_logo.png",
             "./assets/ui/title_logo.png",
-            "./assets/title_logo.png",
+            "./assets/ui/title_logo.png",
             "assets/ui/mangacatch_title_logo.png",
             "assets/ui/title_logo.png",
             "assets/title_logo.png",
@@ -54,6 +54,7 @@ export const RankingScene: React.FC<{
       `}</style>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 18, alignItems: "start" }}>
+                {/* 左 */}
                 <div
                     style={{
                         background: "rgba(0,0,0,0.38)",
@@ -63,20 +64,21 @@ export const RankingScene: React.FC<{
                         minHeight: 520,
                     }}
                 >
-                    <div style={{ fontSize: 28, fontWeight: 900, marginBottom: 10 }}>Today ranking</div>
-
                     {top.map((r, idx) => {
                         const rank = idx + 1;
                         const c = getCharacterById(r.bestCharId);
                         const isMe = highlightAchievedAt != null && r.achieved_at === highlightAchievedAt;
                         const col = rankColor(rank);
 
+                        const work = (c as any)?.work ?? (c as any)?.title ?? "";
+                        const artist = (c as any)?.artist ?? (c as any)?.author ?? "";
+
                         return (
                             <div
                                 key={`${rank}-${r.achieved_at}-${r.score}`}
                                 style={{
                                     display: "grid",
-                                    gridTemplateColumns: "70px 90px 90px 1fr 130px",
+                                    gridTemplateColumns: "70px 92px 92px 1fr 120px",
                                     gap: 14,
                                     alignItems: "center",
                                     padding: "12px 12px",
@@ -92,20 +94,27 @@ export const RankingScene: React.FC<{
                                     {rank}
                                 </div>
 
-                                <div style={{ width: 90, height: 90, display: "grid", placeItems: "center" }}>
-                                    {c ? <CharacterImage char={c} style={{ width: 86, height: 86, objectFit: "contain" }} /> : <div style={{ opacity: 0.5 }}>-</div>}
+                                <div style={{ width: 92, height: 92, display: "grid", placeItems: "center", transform: "translateY(-6px)" }}>
+                                    {c ? <CharacterImage char={c} style={{ width: 88, height: 88, objectFit: "contain" }} /> : <div style={{ opacity: 0.5 }}>-</div>}
                                 </div>
 
-                                <div style={{ width: 90, height: 90, display: "grid", placeItems: "center" }}>
-                                    {c ? <CoverImage char={c} style={{ width: 86, height: 86, objectFit: "contain", borderRadius: 8 }} /> : <div style={{ opacity: 0.5 }}>-</div>}
+                                <div style={{ width: 92, height: 92, display: "grid", placeItems: "center", transform: "translateY(-6px)" }}>
+                                    {c ? <CoverImage char={c} style={{ width: 88, height: 88, objectFit: "contain", borderRadius: 10 }} /> : <div style={{ opacity: 0.5 }}>-</div>}
                                 </div>
 
-                                <div>
+                                <div style={{ minWidth: 0 }}>
                                     <div style={{ fontFamily: "monospace", fontSize: 34, fontWeight: 900 }}>{r.score}</div>
-                                    <div style={{ fontFamily: "monospace", fontSize: 14, opacity: 0.9 }}>{fmtTime(r.achieved_at)}</div>
+                                    <div style={{ marginTop: 4, fontSize: 16, fontWeight: 900, color: "rgba(255,255,255,0.92)", lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                        {work || " "}
+                                    </div>
+                                    <div style={{ marginTop: 2, fontSize: 14, opacity: 0.88, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                        {artist || " "}
+                                    </div>
+                                    <div style={{ marginTop: 3, fontFamily: "monospace", fontSize: 12, opacity: 0.75 }}>
+                                        {fmtTime(r.achieved_at)}
+                                    </div>
                                 </div>
 
-                                {/* ★YOUを大きく */}
                                 <div style={{ textAlign: "right", fontFamily: "monospace", fontSize: 34, fontWeight: 900, opacity: 0.95 }}>
                                     {isMe ? "YOU" : ""}
                                 </div>
@@ -114,6 +123,7 @@ export const RankingScene: React.FC<{
                     })}
                 </div>
 
+                {/* 右 */}
                 <div
                     style={{
                         height: "100%",
@@ -121,25 +131,41 @@ export const RankingScene: React.FC<{
                         borderRadius: 18,
                         padding: 18,
                         border: "1px solid rgba(255,255,255,0.08)",
-                        display: "grid",
-                        alignContent: "start",
-                        gap: 14,
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 12,
                     }}
                 >
                     <div style={{ fontSize: 46, fontWeight: 900, color: "#00eebb" }}>RANKING</div>
-                    <div style={{ fontFamily: "monospace", fontSize: 16, opacity: 0.85 }}>TOP SCORE</div>
+
+                    {/* ★TOP SCORE を点数と同じ大きさに */}
+                    <div style={{ fontFamily: "monospace", fontSize: 56, fontWeight: 900, opacity: 0.85 }}>
+                        TOP SCORE
+                    </div>
+
                     <div style={{ fontFamily: "monospace", fontSize: 56, fontWeight: 900, color: "#00eebb" }}>
                         {top[0]?.score ?? 0}
                     </div>
 
-                    <div style={{ marginTop: 18, display: "grid", placeItems: "center" }}>
+                    <div style={{ fontFamily: "monospace", fontSize: 14, opacity: 0.75 }}>
+                        {top[0] ? fmtTime(top[0].achieved_at) : ""}
+                    </div>
+
+                    <div style={{ flex: 1 }} />
+
+                    <div style={{ display: "grid", placeItems: "center", paddingBottom: 6 }}>
                         <img
                             src={logoCandidates[logoIdx]}
                             alt="MANGA Catch!"
                             onError={() => {
                                 if (logoIdx + 1 < logoCandidates.length) setLogoIdx(logoIdx + 1);
                             }}
-                            style={{ width: 320, opacity: 0.92, filter: "drop-shadow(0 12px 18px rgba(0,0,0,0.55))" }}
+                            style={{
+                                width: 260,
+                                height: "auto",
+                                opacity: 0.92,
+                                filter: "drop-shadow(0 12px 18px rgba(0,0,0,0.55))",
+                            }}
                             draggable={false}
                         />
                     </div>

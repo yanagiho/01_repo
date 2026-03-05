@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type Props = {
-    onUserSkip: () => void; // 互換のため残す（未使用）
+    onUserSkip: () => void; // 互換のため残す（使わない）
     onEnded: () => void;
 };
 
@@ -22,23 +22,31 @@ export const TutorialVideoScene = ({ onEnded }: Props) => {
     const candidates = useMemo(() => buildCandidates(), []);
     const [idx, setIdx] = useState(0);
 
+    // ★onEnded が毎renderで変わってもカウントダウンがリセットされないように ref 化
+    const onEndedRef = useRef(onEnded);
+    useEffect(() => {
+        onEndedRef.current = onEnded;
+    }, [onEnded]);
+
     const [sec, setSec] = useState(5);
 
     useEffect(() => {
+        // mount時に1回だけ開始
         setSec(5);
         const t = window.setInterval(() => {
             setSec((s) => {
                 const next = s - 1;
                 if (next <= 0) {
                     window.clearInterval(t);
-                    onEnded();
+                    onEndedRef.current();
                     return 0;
                 }
                 return next;
             });
         }, 1000);
+
         return () => window.clearInterval(t);
-    }, [onEnded]);
+    }, []);
 
     return (
         <div
@@ -51,7 +59,7 @@ export const TutorialVideoScene = ({ onEnded }: Props) => {
                 background: "#000",
                 color: "#fff",
                 userSelect: "none",
-                // ★タッチで進まない：クリックやタップを受けない
+                // ★タッチで進まない：入力を受けない
                 pointerEvents: "none",
             }}
         >
@@ -80,7 +88,7 @@ export const TutorialVideoScene = ({ onEnded }: Props) => {
                 draggable={false}
             />
 
-            {/* カウントダウン（表示のみ） */}
+            {/* カウントダウン表示（文字は無し） */}
             <div
                 style={{
                     position: "absolute",
@@ -103,8 +111,6 @@ export const TutorialVideoScene = ({ onEnded }: Props) => {
             >
                 {sec}
             </div>
-
-            {/* ★「tap to skip」等の文字は削除 */}
         </div>
     );
 };

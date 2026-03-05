@@ -3,6 +3,10 @@ import { useGameLoop } from "../../hooks/useGameLoop";
 import { CharacterImage } from "../CharacterImage";
 import { CatcherImage } from "../CatcherImage";
 
+function clamp(n: number, a: number, b: number) {
+    return Math.max(a, Math.min(b, n));
+}
+
 export const GameScene: React.FC<{
     scene: string;
     playerX: number;
@@ -25,8 +29,8 @@ export const GameScene: React.FC<{
     const total = 30;
     const ratio = Math.max(0, Math.min(1, timer / total));
 
-    // ★カゴを上に（下半分が切れないように）
-    const catcherY = window.innerHeight - 140;
+    // ★カゴをさらに上へ（下半分が切れない）
+    const catcherY = window.innerHeight - 200;
 
     const CHAR_SIZE = 255;
     const BIG_CATCHER_D = 420;
@@ -43,6 +47,7 @@ export const GameScene: React.FC<{
         }
       `}</style>
 
+            {/* スコア */}
             <div
                 style={{
                     position: "absolute",
@@ -66,6 +71,7 @@ export const GameScene: React.FC<{
                 {score}
             </div>
 
+            {/* タイマー */}
             <div
                 style={{
                     position: "absolute",
@@ -109,8 +115,16 @@ export const GameScene: React.FC<{
                 {timer.toFixed(1)}
             </div>
 
+            {/* 落下キャラ（出現時にジワッと） */}
             {items.map((it) => {
+                // it.bornAt は performance.now 基準
+                const age = (performance.now() - it.bornAt) / 1000;
+                const t = clamp(age / 0.22, 0, 1); // 0.22秒で出現完了
+                const opacity = 0.15 + 0.85 * t;
+                const scale = 0.92 + 0.08 * t;
+
                 const y = Math.max(it.y, CHAR_SIZE / 2 + 2);
+
                 return (
                     <CharacterImage
                         key={it.id}
@@ -121,8 +135,9 @@ export const GameScene: React.FC<{
                             top: y,
                             width: CHAR_SIZE,
                             height: CHAR_SIZE,
-                            transform: "translate(-50%, -50%)",
+                            transform: `translate(-50%, -50%) scale(${scale})`,
                             objectFit: "contain",
+                            opacity,
                             filter: "drop-shadow(0 12px 14px rgba(0,0,0,0.62))",
                             pointerEvents: "none",
                             zIndex: 14,
@@ -131,6 +146,7 @@ export const GameScene: React.FC<{
                 );
             })}
 
+            {/* 大カゴ（光の輪） */}
             <CatcherImage
                 style={{
                     position: "absolute",
