@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import type { RankingEntry } from "../../types/game";
 import { getCharacterById } from "../../constants/master";
-import * as CharMod from "../CharacterImage";
-import * as CoverMod from "../CoverImage";
+import { CharacterImage } from "../CharacterImage";
+import { CoverImage } from "../CoverImage";
 
 function fmtTime(ms: number) {
     const d = new Date(ms);
@@ -36,8 +36,8 @@ function buildLogoCandidates(): string[] {
 }
 
 export const RankingScene = ({ ranking, highlightAchievedAt }: { ranking: RankingEntry[]; highlightAchievedAt?: number }) => {
-    const CharacterImageComp = (CharMod as any).CharacterImage ?? (CharMod as any).default;
-    const CoverImageComp = (CoverMod as any).CoverImage ?? (CoverMod as any).default;
+    const CharacterImageComp = CharacterImage;
+    const CoverImageComp = CoverImage;
 
     const top = useMemo(() => ranking.slice(0, 5), [ranking]);
     const logoCandidates = useMemo(() => buildLogoCandidates(), []);

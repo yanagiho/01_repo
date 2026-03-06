@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import * as CoverMod from "../CoverImage";
-import * as CharMod from "../CharacterImage";
+import { CharacterImage } from "../CharacterImage";
+import { CoverImage } from "../CoverImage";
 import type { CharacterData } from "../../constants/master";
 
 function buildCameraCandidates(): string[] {
@@ -32,8 +32,8 @@ function buildLogoCandidates(): string[] {
 }
 
 export const PhotoScene = ({ bestChar, score }: { bestChar: CharacterData | null; score: number }) => {
-    const CoverImageComp = (CoverMod as any).CoverImage ?? (CoverMod as any).default;
-    const CharacterImageComp = (CharMod as any).CharacterImage ?? (CharMod as any).default;
+    const CoverImageComp = CoverImage;
+    const CharacterImageComp = CharacterImage;
 
     const nowText = useMemo(() => {
         const d = new Date();

@@ -1,10 +1,10 @@
-import * as CoverMod from "../CoverImage";
-import * as CharMod from "../CharacterImage";
+import { CharacterImage } from "../CharacterImage";
+import { CoverImage } from "../CoverImage";
 import type { CharacterData } from "../../constants/master";
 
 export const RecommendScene = ({ bestChar }: { bestChar: CharacterData | null }) => {
-    const CoverImageComp = (CoverMod as any).CoverImage ?? (CoverMod as any).default;
-    const CharacterImageComp = (CharMod as any).CharacterImage ?? (CharMod as any).default;
+    const CoverImageComp = CoverImage;
+    const CharacterImageComp = CharacterImage;
 
     if (!bestChar) return null;
 

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { getCharacterById } from "../../constants/master";
-import * as CharMod from "../CharacterImage";
+import { CharacterImage } from "../CharacterImage";
 
 function rankColor(rank: number) {
     if (rank === 1) return "#ff3b30";
@@ -11,7 +11,7 @@ function rankColor(rank: number) {
 }
 
 export const ResultScene = ({ score, counts }: { score: number; counts: Record<string, number> }) => {
-    const CharacterImageComp = (CharMod as any).CharacterImage ?? (CharMod as any).default;
+    const CharacterImageComp = CharacterImage;
 
     const { rows, max } = useMemo(() => {
         const list: { id: string; cnt: number }[] = [];

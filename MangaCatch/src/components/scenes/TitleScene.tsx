@@ -124,7 +124,7 @@ export const TitleScene = ({ onStart }: Props) => {
                     right: 18,
                     bottom: 12,
                     zIndex: 3,
-                    fontSize: 12,
+                    fontSize: 32,
                     lineHeight: 1.35,
                     color: "rgba(255,255,255,0.78)",
                     textShadow: "0 2px 10px rgba(0,0,0,0.65)",
