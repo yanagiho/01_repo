@@ -1,3 +1,4 @@
+
 import { useMemo, useState } from "react";
 import type { RankingEntry } from "../../types/game";
 import { getCharacterById } from "../../constants/master";
@@ -48,31 +49,36 @@ export const RankingScene = ({
   const logoCandidates = useMemo(() => buildLogoCandidates(), []);
   const [logoIdx, setLogoIdx] = useState(0);
 
+  const youIndex = useMemo(() => {
+    if (top.length === 0) return -1;
+    if (highlightAchievedAt != null) {
+      const matched = top.findIndex((r) => r.achieved_at === highlightAchievedAt);
+      if (matched >= 0) return matched;
+    }
+    return top.length - 1;
+  }, [top, highlightAchievedAt]);
+
   return (
     <div
       style={{
         position: "absolute",
         inset: 0,
         zIndex: 10,
-        padding: 18,
+        display: "grid",
+        placeItems: "center",
         color: "#fff",
+        padding: 18,
       }}
     >
-      <style>{`
-        @keyframes blinkRow {
-          0% { opacity: 0.35; }
-          50% { opacity: 1; }
-          100% { opacity: 0.35; }
-        }
-      `}</style>
-
       <div
         style={{
+          width: "min(1120px, 94vw)",
+          height: "min(820px, 92vh)",
           display: "grid",
-          gridTemplateColumns: "1fr 360px",
-          gap: 10,
-          alignItems: "start",
-          height: "100%",
+          gridTemplateColumns: "700px 320px",
+          gap: 14,
+          alignItems: "stretch",
+          justifyContent: "center",
         }}
       >
         {/* 左：ランキング一覧 */}
@@ -80,17 +86,18 @@ export const RankingScene = ({
           style={{
             background: "rgba(0,0,0,0.38)",
             borderRadius: 18,
-            padding: 12,
+            padding: 14,
             border: "1px solid rgba(255,255,255,0.08)",
-            minHeight: 520,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 10,
           }}
         >
           {top.map((r, idx) => {
             const rank = idx + 1;
             const c = getCharacterById(r.bestCharId);
-            const isMe =
-              highlightAchievedAt != null &&
-              r.achieved_at === highlightAchievedAt;
+            const isMe = idx === youIndex;
             const col = rankColor(rank);
 
             const work = (c as any)?.work ?? (c as any)?.title ?? "";
@@ -100,25 +107,24 @@ export const RankingScene = ({
               <div
                 key={`${rank}-${r.achieved_at}-${r.score}`}
                 style={{
+                  width: "min(620px, 96%)",
                   display: "grid",
-                  gridTemplateColumns: "58px 40px 40px 1fr 80px",
+                  gridTemplateColumns: "56px 36px 36px minmax(220px, 1fr) 96px",
                   gap: 10,
                   alignItems: "center",
-                  padding: "10px 10px 10px 18px",
-                  borderRadius: 14,
-                  marginBottom: 8,
+                  justifyContent: "center",
+                  padding: "14px 16px",
+                  borderRadius: 16,
                   background: "rgba(0,0,0,0.28)",
                   border: "1px solid rgba(255,255,255,0.08)",
-                  animation: isMe
-                    ? "blinkRow 1.0s ease-in-out infinite"
-                    : "none",
                   color: col,
+                  boxSizing: "border-box",
                 }}
               >
                 <div
                   style={{
                     fontFamily: "monospace",
-                    fontSize: 34,
+                    fontSize: 36,
                     fontWeight: 900,
                     textAlign: "right",
                   }}
@@ -128,19 +134,18 @@ export const RankingScene = ({
 
                 <div
                   style={{
-                    width: 40,
-                    height: 40,
+                    width: 36,
+                    height: 36,
                     display: "grid",
                     placeItems: "center",
-                    justifySelf: "start",
                   }}
                 >
                   {c && CharacterImageComp ? (
                     <CharacterImageComp
                       char={c}
                       style={{
-                        width: 34,
-                        height: 34,
+                        width: 30,
+                        height: 30,
                         objectFit: "contain",
                       }}
                     />
@@ -151,19 +156,18 @@ export const RankingScene = ({
 
                 <div
                   style={{
-                    width: 40,
-                    height: 40,
+                    width: 36,
+                    height: 36,
                     display: "grid",
                     placeItems: "center",
-                    justifySelf: "start",
                   }}
                 >
                   {c && CoverImageComp ? (
                     <CoverImageComp
                       char={c}
                       style={{
-                        width: 34,
-                        height: 34,
+                        width: 30,
+                        height: 30,
                         objectFit: "contain",
                         borderRadius: 6,
                       }}
@@ -179,27 +183,31 @@ export const RankingScene = ({
                       fontFamily: "monospace",
                       fontSize: 26,
                       fontWeight: 900,
+                      lineHeight: 1.0,
                     }}
                   >
                     {r.score}
                   </div>
+
                   <div
                     style={{
-                      marginTop: 2,
+                      marginTop: 6,
                       fontFamily: "monospace",
-                      fontSize: 22,
+                      fontSize: 20,
                       fontWeight: 900,
-                      opacity: 0.75,
+                      opacity: 0.78,
+                      lineHeight: 1.0,
                     }}
                   >
                     {fmtTime(r.achieved_at)}
                   </div>
+
                   <div
                     style={{
-                      marginTop: 4,
-                      fontSize: 14,
+                      marginTop: 8,
+                      fontSize: 15,
                       fontWeight: 900,
-                      color: "rgba(255,255,255,0.92)",
+                      color: "rgba(255,255,255,0.94)",
                       lineHeight: 1.1,
                       whiteSpace: "nowrap",
                       overflow: "hidden",
@@ -208,11 +216,12 @@ export const RankingScene = ({
                   >
                     {work || " "}
                   </div>
+
                   <div
                     style={{
-                      marginTop: 2,
-                      fontSize: 12,
-                      opacity: 0.88,
+                      marginTop: 4,
+                      fontSize: 13,
+                      opacity: 0.9,
                       whiteSpace: "nowrap",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
@@ -224,82 +233,93 @@ export const RankingScene = ({
 
                 <div
                   style={{
-                    textAlign: "right",
-                    fontFamily: "monospace",
-                    fontSize: 24,
-                    fontWeight: 900,
-                    opacity: 0.95,
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    alignItems: "center",
+                    minHeight: 36,
                   }}
                 >
-                  {isMe ? "YOU" : ""}
+                  {isMe ? (
+                    <div
+                      style={{
+                        fontFamily: "monospace",
+                        fontSize: 28,
+                        fontWeight: 900,
+                        lineHeight: 1,
+                        color: "#00eebb",
+                        border: "2px solid rgba(0,238,187,0.7)",
+                        borderRadius: 999,
+                        padding: "6px 12px",
+                        background: "rgba(0,238,187,0.12)",
+                      }}
+                    >
+                      YOU
+                    </div>
+                  ) : null}
                 </div>
               </div>
             );
           })}
         </div>
 
-        {/* 右：中央揃え情報エリア */}
+        {/* 右：中央寄せ情報ブロック */}
         <div
           style={{
-            height: "100%",
             background: "rgba(0,0,0,0.30)",
             borderRadius: 18,
             padding: 18,
             border: "1px solid rgba(255,255,255,0.08)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            textAlign: "center",
+            display: "grid",
+            placeItems: "center",
           }}
         >
           <div
             style={{
-              fontSize: 62,
-              fontWeight: 900,
-              color: "#00eebb",
-              lineHeight: 1.0,
-              marginTop: 2,
-            }}
-          >
-            RANKING
-          </div>
-
-          <div
-            style={{
-              marginTop: 28,
-              fontFamily: "monospace",
-              fontSize: 42,
-              fontWeight: 900,
-              opacity: 0.9,
-              lineHeight: 1.0,
-            }}
-          >
-            TOP SCORE
-          </div>
-
-          <div
-            style={{
-              marginTop: 22,
-              fontFamily: "monospace",
-              fontSize: 54,
-              fontWeight: 900,
-              color: "#00eebb",
-              lineHeight: 1.0,
-            }}
-          >
-            {top[0]?.score ?? 0}
-          </div>
-
-          <div style={{ flex: 1 }} />
-
-          <div
-            style={{
               width: "100%",
-              display: "grid",
-              placeItems: "center",
-              paddingBottom: 10,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              gap: 16,
+              transform: "translateX(-4px)",
             }}
           >
+            <div
+              style={{
+                fontSize: 54,
+                fontWeight: 900,
+                color: "#00eebb",
+                lineHeight: 1.0,
+              }}
+            >
+              RANKING
+            </div>
+
+            <div
+              style={{
+                fontFamily: "monospace",
+                fontSize: 34,
+                fontWeight: 900,
+                opacity: 0.9,
+                lineHeight: 1.0,
+              }}
+            >
+              TOP SCORE
+            </div>
+
+            <div
+              style={{
+                fontFamily: "monospace",
+                fontSize: 52,
+                fontWeight: 900,
+                color: "#00eebb",
+                lineHeight: 1.0,
+              }}
+            >
+              {top[0]?.score ?? 0}
+            </div>
+
             <img
               src={logoCandidates[logoIdx]}
               alt="MANGA Catch!"
@@ -309,8 +329,9 @@ export const RankingScene = ({
                 }
               }}
               style={{
-                width: 360,
+                width: 300,
                 height: "auto",
+                marginTop: 6,
                 opacity: 0.92,
                 filter: "drop-shadow(0 12px 18px rgba(0,0,0,0.55))",
               }}

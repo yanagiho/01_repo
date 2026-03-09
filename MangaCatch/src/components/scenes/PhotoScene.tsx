@@ -1,3 +1,4 @@
+
 import { useMemo, useState } from "react";
 import * as CoverMod from "../CoverImage";
 import * as CharMod from "../CharacterImage";
@@ -139,7 +140,6 @@ export const PhotoScene = ({
           </div>
         </div>
 
-        {/* SCORE を少し下げる */}
         <div
           style={{
             position: "absolute",
@@ -203,13 +203,12 @@ export const PhotoScene = ({
 
           <div style={{ width: "100%", height: "100%" }} />
 
-          {/* キャラを少し左へ */}
           <div
             style={{
               display: "grid",
               placeItems: "center",
               overflow: "visible",
-              transform: "translate(-64px, -120px)",
+              transform: "translate(-120px, -120px)",
             }}
           >
             {CharacterImageComp ? (

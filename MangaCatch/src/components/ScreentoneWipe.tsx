@@ -30,27 +30,22 @@ export const ScreentoneWipe: React.FC<{
 
         middleDoneRef.current = false;
 
-        // 表示開始
         setVisible(true);
         setOpacity(0);
 
-        // 次フレームでフェードイン開始
         t1Ref.current = window.setTimeout(() => {
             setOpacity(1);
         }, 10);
 
-        // 真ん中でコールバック
         t2Ref.current = window.setTimeout(() => {
             if (!middleDoneRef.current) {
                 middleDoneRef.current = true;
                 onMiddle?.();
             }
 
-            // フェードアウト開始
             setOpacity(0);
         }, 180);
 
-        // 完了
         t3Ref.current = window.setTimeout(() => {
             setVisible(false);
             onComplete?.();
@@ -66,7 +61,7 @@ export const ScreentoneWipe: React.FC<{
                 inset: 0,
                 zIndex: 9999,
                 pointerEvents: "none",
-                background: "#000",
+                background: "#fff",
                 opacity,
                 transition: "opacity 180ms linear",
             }}
