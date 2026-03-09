@@ -26,10 +26,7 @@ type UseGameLoopReturn = {
 const GAME_TIME_SEC = 30;
 const CHAR_SIZE = 255;
 const CATCH_RADIUS = 220;
-
-// GameScene の catcherY = innerHeight - 200 に合わせる
 const PLAYER_Y_OFFSET = 200;
-
 const BASE_FALL_SPEED = 220;
 const SPAWN_INTERVAL_MS = 520;
 
@@ -72,6 +69,7 @@ export function useGameLoop(
     const lastRef = useRef<number>(0);
     const spawnRef = useRef<number>(0);
     const hitTimerRef = useRef<number | null>(null);
+    const startedAtRef = useRef<number>(0);
 
     const pool = useMemo(() => getEnabledCharacters(), []);
 
@@ -90,6 +88,7 @@ export function useGameLoop(
             catchCount.current = {};
             lastRef.current = 0;
             spawnRef.current = 0;
+            startedAtRef.current = 0;
             return;
         }
 
@@ -99,7 +98,9 @@ export function useGameLoop(
         setIsHit(false);
         catchCount.current = {};
 
-        lastRef.current = performance.now();
+        const now0 = performance.now();
+        lastRef.current = now0;
+        startedAtRef.current = now0;
         spawnRef.current = 0;
 
         const step = (now: number) => {
@@ -108,7 +109,14 @@ export function useGameLoop(
             const dt = Math.min(0.2, Math.max(0, rawDt));
             lastRef.current = now;
 
-            setTimer((t) => Math.max(0, t - dt));
+            const elapsed = (now - startedAtRef.current) / 1000;
+            const remain = Math.max(0, GAME_TIME_SEC - elapsed);
+            setTimer(remain);
+
+            if (remain <= 0) {
+                rafRef.current = null;
+                return;
+            }
 
             const w = window.innerWidth;
             const h = window.innerHeight;
@@ -165,7 +173,6 @@ export function useGameLoop(
                         const id = (it.char as any).id as string;
                         catchCount.current[id] = (catchCount.current[id] || 0) + 1;
 
-                        // ★エフェクトをキャラの最下部に出す（中心→下端）
                         onCatchFxRef.current(nx, ny + CHAR_SIZE / 2);
 
                         setIsHit(true);
