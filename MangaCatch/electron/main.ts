@@ -6,17 +6,21 @@ import dgram from "node:dgram";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// =====================================================
-// OSC Receiver
-// =====================================================
+type OscArg = number | string;
+
+type OscPlayerSignal = {
+  x: number;
+  y: number;
+  id: number;
+};
+
+type OscPayload = {
+  frame: number;
+  players: OscPlayerSignal[];
+};
+
 const OSC_PORT = 7000;
 const udpServer = dgram.createSocket("udp4");
-
-type OscArg =
-  | { type: "i"; value: number }
-  | { type: "f"; value: number }
-  | { type: "s"; value: string }
-  | { type: "unknown"; value: null };
 
 function align4(n: number) {
   return (n + 3) & ~3;
@@ -43,63 +47,76 @@ function parseOscPacket(buf: Buffer): { address: string; args: OscArg[] } | null
   try {
     let offset = 0;
 
-    // address
     const addr = readOscString(buf, offset);
-    const address = addr.value;
     offset = addr.next;
 
-    if (!address.startsWith("/")) return null;
-    if (offset >= buf.length) return { address, args: [] };
+    if (!addr.value.startsWith("/")) return null;
 
-    // typetag
-    const tag = readOscString(buf, offset);
-    const typetag = tag.value;
-    offset = tag.next;
+    const typeTag = readOscString(buf, offset);
+    offset = typeTag.next;
 
-    if (!typetag.startsWith(",")) {
-      // typetagが無い/壊れているケース
-      return { address, args: [] };
+    if (!typeTag.value.startsWith(",")) {
+      return {
+        address: addr.value,
+        args: [],
+      };
     }
 
+    const types = typeTag.value.slice(1);
     const args: OscArg[] = [];
-    for (let i = 1; i < typetag.length; i++) {
-      const t = typetag[i];
+
+    for (const t of types) {
       if (t === "i") {
         const r = readInt32BE(buf, offset);
-        args.push({ type: "i", value: r.value });
+        args.push(r.value);
         offset = r.next;
       } else if (t === "f") {
         const r = readFloat32BE(buf, offset);
-        args.push({ type: "f", value: r.value });
+        args.push(r.value);
         offset = r.next;
       } else if (t === "s") {
         const r = readOscString(buf, offset);
-        args.push({ type: "s", value: r.value });
+        args.push(r.value);
         offset = r.next;
-      } else {
-        // 未対応型は安全にスキップ不能なので unknown 扱い
-        args.push({ type: "unknown", value: null });
       }
     }
 
-    return { address, args };
-  } catch (e) {
-    console.error("[OSC] parse error:", e);
+    return {
+      address: addr.value,
+      args,
+    };
+  } catch (err) {
+    console.error("[OSC] parse error:", err);
     return null;
   }
 }
 
-function numericArgs(args: OscArg[]): number[] {
-  return args
-    .filter((a) => a.type === "i" || a.type === "f")
-    .map((a) => (a.type === "i" || a.type === "f" ? a.value : 0))
-    .filter((n) => Number.isFinite(n));
+function toNumberArgs(args: OscArg[]): number[] {
+  return args.filter((v): v is number => typeof v === "number" && Number.isFinite(v));
 }
 
-function broadcastOscData(data: number[]) {
-  BrowserWindow.getAllWindows().forEach((win) => {
-    win.webContents.send("osc-data", data);
-  });
+function buildPlayersFromXY(values: number[], startIndex: number): OscPlayerSignal[] {
+  const players: OscPlayerSignal[] = [];
+
+  for (let i = startIndex; i + 1 < values.length; i += 2) {
+    const x = values[i];
+    const y = values[i + 1];
+    if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+
+    players.push({
+      x,
+      y,
+      id: players.length + 1,
+    });
+  }
+
+  return players;
+}
+
+function broadcastOscPayload(payload: OscPayload) {
+  for (const win of BrowserWindow.getAllWindows()) {
+    win.webContents.send("osc-data", payload);
+  }
 }
 
 udpServer.on("message", (msg) => {
@@ -107,53 +124,32 @@ udpServer.on("message", (msg) => {
     const parsed = parseOscPacket(msg);
     if (!parsed) return;
 
-    // -------------------------------------------------
-    // 1) HokuyoUtil / TouchDesigner の /touches
-    // 期待形: [frame, x1, y1, x2, y2, ...]
-    // -------------------------------------------------
     if (parsed.address === "/touches") {
-      const nums = numericArgs(parsed.args);
+      const nums = toNumberArgs(parsed.args);
+      const frame = nums.length > 0 ? nums[0] : 0;
+      const players = buildPlayersFromXY(nums, 1);
 
-      // そのまま renderer に送る
-      // SensorManager 側が count を見る/後段で使える形を優先
-      if (nums.length >= 1) {
-        broadcastOscData(nums);
-      }
+      broadcastOscPayload({
+        frame,
+        players,
+      });
       return;
     }
 
-    // -------------------------------------------------
-    // 2) 旧形式 /mangacatch/players
-    // -------------------------------------------------
     if (parsed.address === "/mangacatch/players") {
-      const nums = numericArgs(parsed.args);
-      if (nums.length > 0) {
-        broadcastOscData(nums);
-      }
+      const nums = toNumberArgs(parsed.args);
+      const startIndex = nums.length % 2 === 1 ? 1 : 0;
+      const frame = startIndex === 1 ? nums[0] : 0;
+      const players = buildPlayersFromXY(nums, startIndex);
+
+      broadcastOscPayload({
+        frame,
+        players,
+      });
       return;
     }
-
-    // -------------------------------------------------
-    // 3) 後方互換：壊れた簡易パケットっぽい場合
-    //    （旧 main.ts の Float32Array 化に近いフォールバック）
-    // -------------------------------------------------
-    if (parsed.address.startsWith("/")) {
-      const rawFloatCount = Math.floor(msg.byteLength / 4);
-      if (rawFloatCount > 0) {
-        try {
-          const arr = Array.from(
-            new Float32Array(msg.buffer, msg.byteOffset, rawFloatCount)
-          ).filter((n) => Number.isFinite(n));
-          if (arr.length > 0) {
-            broadcastOscData(arr);
-          }
-        } catch {
-          // 何もしない
-        }
-      }
-    }
-  } catch (e) {
-    console.error("[OSC] message handler error:", e);
+  } catch (err) {
+    console.error("[OSC] message handler error:", err);
   }
 });
 
@@ -166,9 +162,6 @@ udpServer.bind(OSC_PORT, () => {
   console.log(`[OSC] Listening on port ${OSC_PORT}`);
 });
 
-// =====================================================
-// Electron App
-// =====================================================
 app.disableHardwareAcceleration();
 app.commandLine.appendSwitch("disable-gpu");
 app.commandLine.appendSwitch("disable-gpu-compositing");
