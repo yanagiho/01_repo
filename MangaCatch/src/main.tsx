@@ -1,3 +1,4 @@
+
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -11,7 +12,6 @@ function showFatal(title: string, detail?: string) {
   const msg = `${title}${detail ? "\n\n" + detail : ""}`;
   console.error("[FATAL]", msg);
 
-  // 画面に必ず出す（Electronでconsoleが見えなくても分かる）
   document.body.innerHTML = `
     <div style="
       width:100vw;height:100vh;background:#000;color:#fff;
@@ -38,7 +38,6 @@ function escapeHtml(s: string) {
     .replaceAll("'", "&#39;");
 }
 
-// グローバル例外も拾う
 window.addEventListener("error", (e) => {
   const err = (e as ErrorEvent).error;
   showFatal("window.onerror", err?.stack || err?.message || String(e.message));
