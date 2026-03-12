@@ -1,4 +1,4 @@
-import { CHARACTER_MASTER, getCharacterData, type CharacterData } from "../constants/master";
+import { CHARACTER_MASTER, getCharacterById, type CharacterData } from "../constants/master";
 
 export type SceneType =
     | "BOOT"
@@ -140,7 +140,7 @@ export class SceneManager {
                 ].id;
         }
 
-        this.bestCharacter = getCharacterData(bestId) || null;
+        this.bestCharacter = getCharacterById(bestId) || null;
     }
 
     private saveRanking() {
