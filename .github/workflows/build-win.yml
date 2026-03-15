@@ -20,22 +20,24 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: MangaCatch/package-lock.json
 
       - name: Install deps
         run: npm ci
 
-      - name: Build (electron-builder)
-        run: npm run build
+      - name: Build web assets
+        run: npm run build:web
+
+      - name: Build Windows EXE (portable)
+        run: npx electron-builder --win portable --x64
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MangaCatch-win
-          path: |
-            MangaCatch/dist/**
-            MangaCatch/release/**
-            MangaCatch/out/**
-          if-no-files-found: warn
+          name: MangaCatch-Windows-x64
+          path: MangaCatch/release/*.exe
+          retention-days: 7
