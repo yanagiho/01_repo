@@ -26,6 +26,120 @@ type RendererOscPayload = {
 
 const OSC_PORT = 7000;
 
+function isOscBundle(buffer: Buffer): boolean {
+  return buffer.length >= 8 && buffer.toString('utf8', 0, 7) === '#bundle';
+}
+
+function parseOscBundle(buffer: Buffer): Array<{ address: string; args: OscArg[] }> {
+  if (!buffer || buffer.length < 16) {
+    throw new Error('OSC bundle too small');
+  }
+
+  // Skip '#bundle\0' (8 bytes) + timetag (8 bytes) = 16 bytes
+  let offset = 16;
+  const messages: Array<{ address: string; args: OscArg[] }> = [];
+
+  while (offset < buffer.length) {
+    if (offset + 4 > buffer.length) {
+      break;
+    }
+
+    const elementSize = buffer.readInt32BE(offset);
+    offset += 4;
+
+    if (elementSize <= 0 || offset + elementSize > buffer.length) {
+      break;
+    }
+
+    const elementBuffer = buffer.subarray(offset, offset + elementSize);
+    offset += elementSize;
+
+    try {
+      if (isOscBundle(elementBuffer)) {
+        messages.push(...parseOscBundle(elementBuffer));
+      } else {
+        messages.push(parseOscMessage(elementBuffer));
+      }
+    } catch {
+      // skip invalid element
+    }
+  }
+
+  return messages;
+}
+
+function interpretTuioBundle(messages: Array<{ address: string; args: OscArg[] }>): {
+  frame: number;
+  players: OscPlayer[];
+  parseMode: ParseMode;
+  parseError: string | null;
+} {
+  const tuioMessages = messages.filter((m) => m.address.toLowerCase().startsWith('/tuio'));
+
+  if (tuioMessages.length === 0) {
+    return {
+      frame: Date.now(),
+      players: [],
+      parseMode: 'touches',
+      parseError: 'No /tuio messages in bundle',
+    };
+  }
+
+  // alive メッセージからアクティブなセッションIDを取得
+  const aliveIds = new Set<number>();
+  let hasAlive = false;
+
+  for (const msg of tuioMessages) {
+    if (msg.args[0] === 'alive') {
+      hasAlive = true;
+      for (let i = 1; i < msg.args.length; i++) {
+        const id = toFiniteNumber(msg.args[i]);
+        if (id !== null) {
+          aliveIds.add(Math.round(id));
+        }
+      }
+    }
+  }
+
+  // fseq からフレーム番号を取得
+  let frame = Date.now();
+  for (const msg of tuioMessages) {
+    if (msg.args[0] === 'fseq') {
+      const fseq = toFiniteNumber(msg.args[1]);
+      if (fseq !== null && fseq > 0) {
+        frame = fseq;
+      }
+    }
+  }
+
+  // set メッセージからプレイヤー位置を抽出
+  // TUIO 2Dcur set: "set" s_id x y xv yv accel
+  const players: OscPlayer[] = [];
+
+  for (const msg of tuioMessages) {
+    if (msg.args[0] === 'set') {
+      const id = toFiniteNumber(msg.args[1]);
+      const x = toFiniteNumber(msg.args[2]);
+      const y = toFiniteNumber(msg.args[3]);
+
+      if (id !== null && x !== null && y !== null) {
+        const idInt = Math.round(id);
+
+        if (!hasAlive || aliveIds.has(idInt)) {
+          players.push({ id: idInt, x, y });
+        }
+      }
+    }
+  }
+
+  return {
+    frame,
+    players,
+    parseMode: 'touches',
+    parseError: players.length === 0 ? 'No active TUIO cursors' : null,
+  };
+}
+
 let mainWindow: BrowserWindow | null = null;
 let udpServer: dgram.Socket | null = null;
 
@@ -369,15 +483,26 @@ function startUdpServer(): void {
     let parseError: string | null = null;
 
     try {
-      const parsed = parseOscMessage(buffer);
-      address = parsed.address;
-      args = parsed.args;
+      if (isOscBundle(buffer)) {
+        const messages = parseOscBundle(buffer);
+        address = messages.length > 0 ? messages[0].address : '/bundle';
 
-      const interpreted = interpretArgs(address, args);
-      frame = interpreted.frame;
-      players = interpreted.players;
-      parseMode = interpreted.parseMode;
-      parseError = interpreted.parseError;
+        const interpreted = interpretTuioBundle(messages);
+        frame = interpreted.frame;
+        players = interpreted.players;
+        parseMode = interpreted.parseMode;
+        parseError = interpreted.parseError;
+      } else {
+        const parsed = parseOscMessage(buffer);
+        address = parsed.address;
+        args = parsed.args;
+
+        const interpreted = interpretArgs(address, args);
+        frame = interpreted.frame;
+        players = interpreted.players;
+        parseMode = interpreted.parseMode;
+        parseError = interpreted.parseError;
+      }
     } catch (error) {
       parseError = error instanceof Error ? error.message : String(error);
     }
@@ -426,7 +551,7 @@ function createWindow(): void {
     height: 900,
     backgroundColor: '#000000',
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
