@@ -64,7 +64,7 @@ function calcBestCharId(counts: Record<string, number>): string {
 export default function App() {
   const audio = AudioManager.instance;
 
-  const { playerCount, speedMultiplier, playerX } = useSensor();
+  const { personCount, speedMultiplier, playerX } = useSensor();
   const { particles, createParticles } = useParticles();
 
   const [scene, setScene] = useState<SceneType>("TITLE");
@@ -247,7 +247,7 @@ export default function App() {
           scene={scene}
           playerX={playerX}
           speedMultiplier={speedMultiplier}
-          playerCount={playerCount}
+          personCount={personCount}
           onCatchFx={(x, y) => {
             createParticles(x, y);
             audio.playSeCatch();

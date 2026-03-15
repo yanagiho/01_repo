@@ -11,10 +11,10 @@ export const GameScene: React.FC<{
   scene: string;
   playerX: number;
   speedMultiplier: number;
-  playerCount: number;
+  personCount: number;
   onEnd: (score: number, counts: Record<string, number>) => void;
   onCatchFx: (x: number, y: number) => void;
-}> = ({ scene, playerX, speedMultiplier, onEnd, onCatchFx }) => {
+}> = ({ scene, playerX, speedMultiplier, personCount: _personCount, onEnd, onCatchFx }) => {
   const CharacterImageComp = (CharMod as any).CharacterImage ?? (CharMod as any).default;
   const CatcherImageComp = (CatcherMod as any).CatcherImage ?? (CatcherMod as any).default;
 
