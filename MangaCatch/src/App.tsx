@@ -208,6 +208,7 @@ export default function App() {
 
       <SensorDebugOverlay
         debug={sensorDebug}
+        visible={false}
       />
 
       {/* particles */}

@@ -589,6 +589,9 @@ function createWindow(): void {
   });
 }
 
+// ChromeOS Crostini の GPU 初期化エラー対策
+app.commandLine.appendSwitch('disable-gpu');
+
 app.whenReady().then(() => {
   createWindow();
   startUdpServer();

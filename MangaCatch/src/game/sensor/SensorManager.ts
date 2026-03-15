@@ -81,11 +81,52 @@ class SensorManager {
     if (typeof window !== 'undefined') {
       const electronAPI = (window as any).electronAPI;
       if (electronAPI?.onOscData) {
+        // Electron IPC経由 (Windows/Mac本番環境)
         electronAPI.onOscData((payload: RendererOscPayload) => {
           this.handleOscPayload(payload);
         });
+      } else {
+        // WebSocket経由 (ChromeBook開発環境: osc-bridge.mjsと連携)
+        this.connectWebSocket();
       }
     }
+  }
+
+  private connectWebSocket(): void {
+    const WS_URL = 'ws://localhost:8765';
+    let ws: WebSocket | null = null;
+
+    const connect = () => {
+      try {
+        ws = new WebSocket(WS_URL);
+
+        ws.onopen = () => {
+          console.log('[SensorManager] WebSocket接続OK:', WS_URL);
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const payload = JSON.parse(event.data) as RendererOscPayload;
+            this.handleOscPayload(payload);
+          } catch {
+            // ignore parse error
+          }
+        };
+
+        ws.onclose = () => {
+          // 3秒後に再接続
+          setTimeout(connect, 3000);
+        };
+
+        ws.onerror = () => {
+          ws?.close();
+        };
+      } catch {
+        setTimeout(connect, 3000);
+      }
+    };
+
+    connect();
   }
 
   private normalizeRawX(rawX: number): number {
