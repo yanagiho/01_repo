@@ -589,8 +589,10 @@ function createWindow(): void {
   });
 }
 
-// ChromeOS Crostini の GPU 初期化エラー対策
-app.commandLine.appendSwitch('disable-gpu');
+// ChromeOS Crostini の GPU 初期化エラー対策（Linux環境のみ）
+if (process.platform === 'linux') {
+  app.commandLine.appendSwitch('disable-gpu');
+}
 
 app.whenReady().then(() => {
   createWindow();
