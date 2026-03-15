@@ -64,7 +64,12 @@ function parseOscMessage(buffer) {
 }
 
 function isOscBundle(buffer) {
-  return buffer.length >= 8 && buffer.toString('utf8', 0, 7) === '#bundle';
+  // '#bundle' = 0x23 0x62 0x75 0x6e 0x64 0x6c 0x65
+  return (
+    buffer.length >= 8 &&
+    buffer[0] === 0x23 && buffer[1] === 0x62 && buffer[2] === 0x75 &&
+    buffer[3] === 0x6e && buffer[4] === 0x64 && buffer[5] === 0x6c && buffer[6] === 0x65
+  );
 }
 
 function parseOscBundle(buffer) {
@@ -80,7 +85,7 @@ function parseOscBundle(buffer) {
     offset += elementSize;
     try {
       if (isOscBundle(elementBuffer)) {
-        messages.push(...parseOscBundle(elementBuffer));
+        for (const m of parseOscBundle(elementBuffer)) messages.push(m);
       } else {
         messages.push(parseOscMessage(elementBuffer));
       }
@@ -95,42 +100,34 @@ function interpretTuioBundle(messages) {
     return { frame: Date.now(), players: [], parseMode: 'touches', parseError: 'No /tuio messages in bundle' };
   }
 
+  // alive / fseq / set を1パスで処理
   const aliveIds = new Set();
-  let hasAlive = false;
+  let frame = Date.now();
+  const players = [];
+
   for (const msg of tuioMessages) {
-    if (msg.args[0] === 'alive') {
-      hasAlive = true;
+    const cmd = msg.args[0];
+    if (cmd === 'alive') {
       for (let i = 1; i < msg.args.length; i++) {
         const id = toFiniteNumber(msg.args[i]);
         if (id !== null) aliveIds.add(Math.round(id));
       }
-    }
-  }
-
-  let frame = Date.now();
-  for (const msg of tuioMessages) {
-    if (msg.args[0] === 'fseq') {
+    } else if (cmd === 'fseq') {
       const fseq = toFiniteNumber(msg.args[1]);
       if (fseq !== null && fseq > 0) frame = fseq;
-    }
-  }
-
-  const players = [];
-  for (const msg of tuioMessages) {
-    if (msg.args[0] === 'set') {
+    } else if (cmd === 'set') {
       const id = toFiniteNumber(msg.args[1]);
       const x = toFiniteNumber(msg.args[2]);
       const y = toFiniteNumber(msg.args[3]);
       if (id !== null && x !== null && y !== null) {
-        const idInt = Math.round(id);
-        if (!hasAlive || aliveIds.has(idInt)) {
-          players.push({ id: idInt, x, y });
-        }
+        players.push({ id: Math.round(id), x, y });
       }
     }
   }
 
-  return { frame, players, parseMode: 'touches', parseError: players.length === 0 ? 'No active TUIO cursors' : null };
+  // alive リストがある場合は非アクティブなプレイヤーを除外
+  const activePlayers = aliveIds.size > 0 ? players.filter(p => aliveIds.has(p.id)) : players;
+  return { frame, players: activePlayers, parseMode: 'touches', parseError: activePlayers.length === 0 ? 'No active TUIO cursors' : null };
 }
 
 function toFiniteNumber(value) {
@@ -255,7 +252,7 @@ udpServer.on('message', (buffer) => {
   try {
     if (isOscBundle(buffer)) {
       const messages = parseOscBundle(buffer);
-      address = messages.length > 0 ? messages[0].address : '/bundle';
+      address = '/bundle';
       const interpreted = interpretTuioBundle(messages);
       frame = interpreted.frame;
       players = interpreted.players;

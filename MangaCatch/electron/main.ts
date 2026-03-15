@@ -27,7 +27,17 @@ type RendererOscPayload = {
 const OSC_PORT = 7000;
 
 function isOscBundle(buffer: Buffer): boolean {
-  return buffer.length >= 8 && buffer.toString('utf8', 0, 7) === '#bundle';
+  // '#bundle' = 0x23 0x62 0x75 0x6e 0x64 0x6c 0x65
+  return (
+    buffer.length >= 8 &&
+    buffer[0] === 0x23 &&
+    buffer[1] === 0x62 &&
+    buffer[2] === 0x75 &&
+    buffer[3] === 0x6e &&
+    buffer[4] === 0x64 &&
+    buffer[5] === 0x6c &&
+    buffer[6] === 0x65
+  );
 }
 
 function parseOscBundle(buffer: Buffer): Array<{ address: string; args: OscArg[] }> {
@@ -56,7 +66,9 @@ function parseOscBundle(buffer: Buffer): Array<{ address: string; args: OscArg[]
 
     try {
       if (isOscBundle(elementBuffer)) {
-        messages.push(...parseOscBundle(elementBuffer));
+        for (const m of parseOscBundle(elementBuffer)) {
+          messages.push(m);
+        }
       } else {
         messages.push(parseOscMessage(elementBuffer));
       }
@@ -85,58 +97,47 @@ function interpretTuioBundle(messages: Array<{ address: string; args: OscArg[] }
     };
   }
 
-  // alive メッセージからアクティブなセッションIDを取得
+  // alive / fseq / set を1パスで処理
+  // TUIO 2Dcur set: "set" s_id x y xv yv accel
   const aliveIds = new Set<number>();
-  let hasAlive = false;
+  let frame = Date.now();
+  const players: OscPlayer[] = [];
 
   for (const msg of tuioMessages) {
-    if (msg.args[0] === 'alive') {
-      hasAlive = true;
+    const cmd = msg.args[0];
+
+    if (cmd === 'alive') {
       for (let i = 1; i < msg.args.length; i++) {
         const id = toFiniteNumber(msg.args[i]);
         if (id !== null) {
           aliveIds.add(Math.round(id));
         }
       }
-    }
-  }
-
-  // fseq からフレーム番号を取得
-  let frame = Date.now();
-  for (const msg of tuioMessages) {
-    if (msg.args[0] === 'fseq') {
+    } else if (cmd === 'fseq') {
       const fseq = toFiniteNumber(msg.args[1]);
       if (fseq !== null && fseq > 0) {
         frame = fseq;
       }
-    }
-  }
-
-  // set メッセージからプレイヤー位置を抽出
-  // TUIO 2Dcur set: "set" s_id x y xv yv accel
-  const players: OscPlayer[] = [];
-
-  for (const msg of tuioMessages) {
-    if (msg.args[0] === 'set') {
+    } else if (cmd === 'set') {
       const id = toFiniteNumber(msg.args[1]);
       const x = toFiniteNumber(msg.args[2]);
       const y = toFiniteNumber(msg.args[3]);
 
       if (id !== null && x !== null && y !== null) {
-        const idInt = Math.round(id);
-
-        if (!hasAlive || aliveIds.has(idInt)) {
-          players.push({ id: idInt, x, y });
-        }
+        players.push({ id: Math.round(id), x, y });
       }
     }
   }
 
+  // alive リストがある場合は非アクティブなプレイヤーを除外
+  const activePlayers =
+    aliveIds.size > 0 ? players.filter((p) => aliveIds.has(p.id)) : players;
+
   return {
     frame,
-    players,
+    players: activePlayers,
     parseMode: 'touches',
-    parseError: players.length === 0 ? 'No active TUIO cursors' : null,
+    parseError: activePlayers.length === 0 ? 'No active TUIO cursors' : null,
   };
 }
 
@@ -485,7 +486,7 @@ function startUdpServer(): void {
     try {
       if (isOscBundle(buffer)) {
         const messages = parseOscBundle(buffer);
-        address = messages.length > 0 ? messages[0].address : '/bundle';
+        address = '/bundle';
 
         const interpreted = interpretTuioBundle(messages);
         frame = interpreted.frame;
