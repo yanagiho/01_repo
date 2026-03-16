@@ -44,7 +44,7 @@ export const TitleScene = ({ onStart }: Props) => {
 
     return (
         <div
-            onPointerDown={(e) => { if (e.pointerType === "touch") startOnce(); }}
+            onPointerDown={() => startOnce()}
             style={{
                 position: "absolute",
                 inset: 0,

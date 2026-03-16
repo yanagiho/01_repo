@@ -67,10 +67,18 @@ export function useSensor(): UseSensorResult {
       sensorManager.setFallbackPlayerX(normalizedX);
     };
 
+    const handleMouseMove = (event: MouseEvent) => {
+      if (typeof window === 'undefined' || window.innerWidth <= 0) return;
+      const normalizedX = event.clientX / window.innerWidth;
+      sensorManager.setFallbackPlayerX(normalizedX);
+    };
+
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('mousemove', handleMouseMove);
 
     return () => {
       window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('mousemove', handleMouseMove);
     };
   }, []);
 

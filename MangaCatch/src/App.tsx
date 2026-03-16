@@ -15,6 +15,7 @@ import { RecommendScene } from "./components/scenes/RecommendScene";
 import { PhotoScene } from "./components/scenes/PhotoScene";
 import { RankingScene } from "./components/scenes/RankingScene";
 
+import SensorDebugOverlay from "./components/SensorDebugOverlay";
 import { AudioManager } from "./audio/AudioManager";
 import { getCharacterById, getEnabledCharacters } from "./constants/master";
 import type { RankingEntry, SceneType } from "./types/game";
@@ -65,7 +66,7 @@ function calcBestCharId(counts: Record<string, number>): string {
 export default function App() {
   const audio = AudioManager.instance;
 
-  const { personCount, speedMultiplier, playerXs } = useSensor();
+  const { personCount, speedMultiplier, playerXs, sensorDebug } = useSensor();
   const { particles, createParticles } = useParticles();
 
   const [scene, setScene] = useState<SceneType>("TITLE");
@@ -175,6 +176,7 @@ export default function App() {
 
       <StarBackground />
       <ScreentoneWipe trigger={wipeTrigger} onMiddle={onWipeMiddle} onComplete={onWipeComplete} />
+      <SensorDebugOverlay debug={sensorDebug} visible={new URLSearchParams(window.location.search).has('debug')} />
 
       {/* particles */}
       {particles.map((p) => (
