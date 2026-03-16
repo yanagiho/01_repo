@@ -6,7 +6,6 @@ import { ScreentoneWipe } from "./components/ScreentoneWipe";
 import { useParticles } from "./hooks/useParticles";
 import { useSensor } from "./hooks/useSensor";
 
-import SensorDebugOverlay from "./components/SensorDebugOverlay";
 
 import { TitleScene } from "./components/scenes/TitleScene";
 import { TutorialVideoScene } from "./components/scenes/TutorialVideoScene"; // ※中身は「静止画+カウントダウン」に差し替え済み想定
@@ -66,7 +65,7 @@ function calcBestCharId(counts: Record<string, number>): string {
 export default function App() {
   const audio = AudioManager.instance;
 
-  const { personCount, speedMultiplier, playerX, sensorDebug } = useSensor();
+  const { personCount, speedMultiplier, playerX } = useSensor();
   const { particles, createParticles } = useParticles();
 
   const [scene, setScene] = useState<SceneType>("TITLE");
@@ -205,11 +204,6 @@ export default function App() {
 
       <StarBackground />
       <ScreentoneWipe trigger={wipeTrigger} onMiddle={onWipeMiddle} onComplete={onWipeComplete} />
-
-      <SensorDebugOverlay
-        debug={sensorDebug}
-        visible={false}
-      />
 
       {/* particles */}
       {particles.map((p) => (
