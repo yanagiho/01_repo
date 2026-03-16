@@ -12,7 +12,7 @@
 import * as dgram from 'node:dgram';
 import { WebSocketServer } from 'ws';
 
-const OSC_PORT = 7000;
+const OSC_PORT = 9100;
 const WS_PORT = 8765;
 
 // ============================================================

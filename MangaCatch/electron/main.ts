@@ -24,7 +24,7 @@ type RendererOscPayload = {
   rawPreview: string;
 };
 
-const OSC_PORT = 7000;
+const OSC_PORT = 9100;
 
 function isOscBundle(buffer: Buffer): boolean {
   // '#bundle' = 0x23 0x62 0x75 0x6e 0x64 0x6c 0x65
