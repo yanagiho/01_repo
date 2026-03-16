@@ -4,6 +4,12 @@ export type SensorPlayer = {
   y: number;
 };
 
+// センサーの実際の検出範囲（端まで届かない場合はここで調整）
+// 例: センサーが 0.05〜0.95 の範囲しか出力しない場合は SENSOR_X_MIN=0.05, MAX=0.95
+const SENSOR_X_MIN = 0.0;
+const SENSOR_X_MAX = 1.0;
+const MAX_PLAYERS = 3;
+
 export type SensorDebugInfo = {
   oscReceived: boolean;
   lastReceivedAt: number;
@@ -35,6 +41,7 @@ type RendererOscPayload = {
 
 type PersonCountListener = (count: number) => void;
 type PlayerXListener = (normalizedX: number) => void;
+type PlayerXsListener = (normalizedXs: number[]) => void;
 type DebugListener = (debug: SensorDebugInfo) => void;
 
 function clamp01(value: number): number {
@@ -54,10 +61,12 @@ function formatNum(value: number): string {
 class SensorManager {
   private personCount = 0;
   private playerXNormalized = 0.5;
+  private playerXsNormalized: number[] = [0.5];
   private lastSensorAt = 0;
 
   private personCountListeners = new Set<PersonCountListener>();
   private playerXListeners = new Set<PlayerXListener>();
+  private playerXsListeners = new Set<PlayerXsListener>();
   private debugListeners = new Set<DebugListener>();
 
   private debugInfo: SensorDebugInfo = {
@@ -134,22 +143,30 @@ class SensorManager {
       return 0.5;
     }
 
+    let raw01: number;
+
     if (rawX >= 0 && rawX <= 1) {
-      return rawX;
+      raw01 = rawX;
+    } else {
+      const viewportWidth =
+        typeof window !== 'undefined' && window.innerWidth > 0 ? window.innerWidth : 1920;
+
+      if (rawX >= 0 && rawX <= viewportWidth) {
+        raw01 = rawX / viewportWidth;
+      } else if (rawX >= 0 && rawX <= 10000) {
+        raw01 = rawX / 10000;
+      } else {
+        raw01 = rawX;
+      }
     }
 
-    const viewportWidth =
-      typeof window !== 'undefined' && window.innerWidth > 0 ? window.innerWidth : 1920;
-
-    if (rawX >= 0 && rawX <= viewportWidth) {
-      return clamp01(rawX / viewportWidth);
+    // センサーの実際の検出範囲を画面端から端にリマップ
+    const range = SENSOR_X_MAX - SENSOR_X_MIN;
+    if (range > 0) {
+      raw01 = (raw01 - SENSOR_X_MIN) / range;
     }
 
-    if (rawX >= 0 && rawX <= 10000) {
-      return clamp01(rawX / 10000);
-    }
-
-    return clamp01(rawX);
+    return clamp01(raw01);
   }
 
   private emitPersonCount(): void {
@@ -161,6 +178,12 @@ class SensorManager {
   private emitPlayerX(): void {
     for (const listener of this.playerXListeners) {
       listener(this.playerXNormalized);
+    }
+  }
+
+  private emitPlayerXs(): void {
+    for (const listener of this.playerXsListeners) {
+      listener(this.playerXsNormalized);
     }
   }
 
@@ -181,10 +204,16 @@ class SensorManager {
 
     const normalizedX = this.normalizeRawX(avgXRaw);
 
+    // 最大MAX_PLAYERS人分の個別プレイヤー位置を正規化
+    const normalizedXs = players
+      .slice(0, MAX_PLAYERS)
+      .map((p) => this.normalizeRawX(Number(p.x || 0)));
+
     this.personCount = playerCount;
 
     if (playerCount > 0) {
       this.playerXNormalized = normalizedX;
+      this.playerXsNormalized = normalizedXs;
       this.lastSensorAt = payload.receivedAt;
     }
 
@@ -229,6 +258,7 @@ class SensorManager {
 
     if (playerCount > 0) {
       this.emitPlayerX();
+      this.emitPlayerXs();
     }
 
     this.emitDebug();
@@ -252,6 +282,15 @@ class SensorManager {
     };
   }
 
+  public onPlayerXsChange(listener: PlayerXsListener): () => void {
+    this.playerXsListeners.add(listener);
+    listener(this.playerXsNormalized);
+
+    return () => {
+      this.playerXsListeners.delete(listener);
+    };
+  }
+
   public onDebugChange(listener: DebugListener): () => void {
     this.debugListeners.add(listener);
     listener(this.debugInfo);
@@ -271,6 +310,7 @@ class SensorManager {
     }
 
     this.playerXNormalized = clamp01(normalizedX);
+    this.playerXsNormalized = [this.playerXNormalized];
 
     this.debugInfo = {
       ...this.debugInfo,
@@ -279,6 +319,7 @@ class SensorManager {
     };
 
     this.emitPlayerX();
+    this.emitPlayerXs();
     this.emitDebug();
   }
 

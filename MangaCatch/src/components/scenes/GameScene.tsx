@@ -9,18 +9,18 @@ function clamp(n: number, a: number, b: number) {
 
 export const GameScene: React.FC<{
   scene: string;
-  playerX: number;
+  playerXs: number[];
   speedMultiplier: number;
   playerCount: number;
   onEnd: (score: number, counts: Record<string, number>) => void;
   onCatchFx: (x: number, y: number) => void;
-}> = ({ scene, playerX, speedMultiplier, onEnd, onCatchFx }) => {
+}> = ({ scene, playerXs, speedMultiplier, onEnd, onCatchFx }) => {
   const CharacterImageComp = (CharMod as any).CharacterImage ?? (CharMod as any).default;
   const CatcherImageComp = (CatcherMod as any).CatcherImage ?? (CatcherMod as any).default;
 
   const { items, score, timer, isHit, catchCount } = useGameLoop(
     scene,
-    playerX,
+    playerXs,
     speedMultiplier,
     onCatchFx
   );
@@ -141,25 +141,28 @@ export const GameScene: React.FC<{
         ) : null;
       })}
 
-      {CatcherImageComp ? (
-        <CatcherImageComp
-          style={{
-            position: "absolute",
-            left: playerX,
-            top: catcherY,
-            width: BIG_CATCHER_D,
-            height: BIG_CATCHER_D,
-            transform: "translate(-50%, -50%)",
-            objectFit: "contain",
-            pointerEvents: "none",
-            zIndex: 12,
-            opacity: 0.92,
-            filter: isHit
-              ? "drop-shadow(0 0 34px rgba(255,255,255,0.75)) drop-shadow(0 0 64px rgba(0,238,187,0.60))"
-              : "drop-shadow(0 0 24px rgba(0,238,187,0.40))",
-          }}
-        />
-      ) : null}
+      {CatcherImageComp
+        ? playerXs.map((px, i) => (
+            <CatcherImageComp
+              key={i}
+              style={{
+                position: "absolute",
+                left: px,
+                top: catcherY,
+                width: BIG_CATCHER_D,
+                height: BIG_CATCHER_D,
+                transform: "translate(-50%, -50%)",
+                objectFit: "contain",
+                pointerEvents: "none",
+                zIndex: 12,
+                opacity: 0.92,
+                filter: isHit
+                  ? "drop-shadow(0 0 34px rgba(255,255,255,0.75)) drop-shadow(0 0 64px rgba(0,238,187,0.60))"
+                  : "drop-shadow(0 0 24px rgba(0,238,187,0.40))",
+              }}
+            />
+          ))
+        : null}
     </div>
   );
 };

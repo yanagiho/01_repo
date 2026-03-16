@@ -21,6 +21,7 @@ type UseGameLoopReturn = {
     timer: number;
     isHit: boolean;
     catchCount: MutableRefObject<Record<string, number>>;
+    playerXs: number[];
 };
 
 const GAME_TIME_SEC = 30;
@@ -39,7 +40,7 @@ function clamp(n: number, a: number, b: number) {
 
 export function useGameLoop(
     scene: string,
-    playerX: number,
+    playerXs: number[],
     speedMultiplier: number,
     onCatchFx: (x: number, y: number) => void
 ): UseGameLoopReturn {
@@ -50,10 +51,10 @@ export function useGameLoop(
 
     const catchCount = useRef<Record<string, number>>({});
 
-    const playerXRef = useRef(playerX);
+    const playerXsRef = useRef(playerXs);
     useEffect(() => {
-        playerXRef.current = playerX;
-    }, [playerX]);
+        playerXsRef.current = playerXs;
+    }, [playerXs]);
 
     const speedRef = useRef(speedMultiplier);
     useEffect(() => {
@@ -122,39 +123,44 @@ export function useGameLoop(
             const h = window.innerHeight;
 
             const playerY = h - PLAYER_Y_OFFSET;
-            const px = playerXRef.current;
+            const pxs = playerXsRef.current;
 
-            spawnRef.current += dt * 1000;
-            if (spawnRef.current >= SPAWN_INTERVAL_MS && pool.length > 0) {
-                spawnRef.current = spawnRef.current % SPAWN_INTERVAL_MS;
+            const sp = clamp(speedRef.current || 1, 0.4, 3.0);
+            const vy = BASE_FALL_SPEED * sp;
 
-                const char = pool[Math.floor(Math.random() * pool.length)];
-                const margin = 40;
-                const baseX = rand(margin, w - margin);
-
-                const it: FallingItem = {
-                    id: `${now}_${Math.random().toString(16).slice(2)}`,
-                    char,
-                    x: baseX,
-                    y: -CHAR_SIZE / 2,
-                    bornAt: now,
-                    swayAmp: rand(30, 170),
-                    swaySpd: rand(1.0, 3.0),
-                    swayPhase: rand(0, Math.PI * 2),
-                    baseX,
-                };
-
-                setItems((cur) => [it, ...cur].slice(0, 18));
-            }
-
+            // スポーンとフィジクスを1回のsetItemsにバッチ化（パフォーマンス最適化）
             setItems((cur) => {
-                const next: FallingItem[] = [];
+                let next = cur;
+
+                // スポーン
+                spawnRef.current += dt * 1000;
+                if (spawnRef.current >= SPAWN_INTERVAL_MS && pool.length > 0) {
+                    spawnRef.current = spawnRef.current % SPAWN_INTERVAL_MS;
+
+                    const char = pool[Math.floor(Math.random() * pool.length)];
+                    const margin = 40;
+                    const baseX = rand(margin, w - margin);
+
+                    const it: FallingItem = {
+                        id: `${now}_${Math.random().toString(16).slice(2)}`,
+                        char,
+                        x: baseX,
+                        y: -CHAR_SIZE / 2,
+                        bornAt: now,
+                        swayAmp: rand(30, 170),
+                        swaySpd: rand(1.0, 3.0),
+                        swayPhase: rand(0, Math.PI * 2),
+                        baseX,
+                    };
+
+                    next = [it, ...cur].slice(0, 18);
+                }
+
+                // フィジクス＋当たり判定（全プレイヤー）
+                const survived: FallingItem[] = [];
                 let addScore = 0;
 
-                const sp = clamp(speedRef.current || 1, 0.4, 3.0);
-                const vy = BASE_FALL_SPEED * sp;
-
-                for (const it of cur) {
+                for (const it of next) {
                     const age = (now - it.bornAt) / 1000;
                     const sway = Math.sin(it.swayPhase + age * it.swaySpd) * it.swayAmp;
 
@@ -163,30 +169,31 @@ export function useGameLoop(
 
                     if (ny > h + CHAR_SIZE) continue;
 
-                    const dx = nx - px;
-                    const dy = ny - playerY;
-                    const dist = Math.hypot(dx, dy);
+                    let caught = false;
+                    for (const px of pxs) {
+                        const dist = Math.hypot(nx - px, ny - playerY);
+                        if (dist <= CATCH_RADIUS) {
+                            caught = true;
+                            break;
+                        }
+                    }
 
-                    if (dist <= CATCH_RADIUS) {
+                    if (caught) {
                         addScore += 10;
-
                         const id = (it.char as any).id as string;
                         catchCount.current[id] = (catchCount.current[id] || 0) + 1;
-
                         onCatchFxRef.current(nx, ny + CHAR_SIZE / 2);
-
                         setIsHit(true);
                         if (hitTimerRef.current) window.clearTimeout(hitTimerRef.current);
                         hitTimerRef.current = window.setTimeout(() => setIsHit(false), 160);
-
                         continue;
                     }
 
-                    next.push({ ...it, x: nx, y: ny });
+                    survived.push({ ...it, x: nx, y: ny });
                 }
 
                 if (addScore > 0) setScore((s) => s + addScore);
-                return next;
+                return survived;
             });
 
             rafRef.current = requestAnimationFrame(step);
@@ -203,5 +210,5 @@ export function useGameLoop(
         };
     }, [scene, pool]);
 
-    return { items, score, timer, isHit, catchCount };
+    return { items, score, timer, isHit, catchCount, playerXs };
 }

@@ -69,22 +69,18 @@ export const PhotoScene = ({
         position: "absolute",
         inset: 0,
         zIndex: 10,
-        display: "grid",
-        placeItems: "center",
         color: "#fff",
+        overflow: "hidden",
       }}
     >
       <div
         style={{
-          width: "min(1280px, 96vw)",
-          height: "min(720px, 90vh)",
-          borderRadius: 22,
-          background: "rgba(0,0,0,0.40)",
-          border: "2px solid rgba(255,255,255,0.10)",
-          boxShadow: "0 22px 40px rgba(0,0,0,0.55)",
+          width: "100%",
+          height: "100%",
           padding: 18,
           position: "relative",
           overflow: "hidden",
+          boxSizing: "border-box",
         }}
       >
         <div
@@ -131,7 +127,7 @@ export const PhotoScene = ({
           )}
 
           <div style={{ lineHeight: 1.05 }}>
-            <div style={{ fontSize: 28, fontWeight: 900 }}>
+            <div style={{ fontSize: "70pt", fontWeight: 900 }}>
               いっしょに写真撮ってね
             </div>
             <div style={{ fontSize: 16, opacity: 0.9, fontWeight: 800 }}>
@@ -154,7 +150,7 @@ export const PhotoScene = ({
           <div
             style={{
               fontFamily: "monospace",
-              fontSize: 62,
+              fontSize: "71pt",
               fontWeight: 900,
               color: "#00eebb",
             }}
@@ -181,7 +177,7 @@ export const PhotoScene = ({
             top: 110,
             bottom: 86,
             display: "grid",
-            gridTemplateColumns: "360px 1fr 360px",
+            gridTemplateColumns: "1fr 1fr 1fr",
             gap: 18,
             alignItems: "center",
           }}

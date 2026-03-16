@@ -42,7 +42,7 @@ export const RecommendScene = ({ bestChar }: { bestChar: CharacterData | null })
             <div style={{ fontSize: 36, fontWeight: 900, opacity: 0.95 }}>作品紹介</div>
 
             <div style={{ marginTop: 10, fontSize: 28, fontWeight: 900, color: "rgba(255,255,255,0.95)" }}>
-              あなたが一番集めたのは
+              アナタがキャッチしたのは
             </div>
 
             <div style={{ marginTop: 8, fontSize: 44, color: "#00eebb", fontWeight: 900 }}>

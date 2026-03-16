@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import * as TitleBgModule from "../TitleBackgroundVideo";
 
 type Props = { onStart: () => void };
@@ -42,17 +42,9 @@ export const TitleScene = ({ onStart }: Props) => {
     const logoCandidates = useMemo(() => buildLogoCandidates(), []);
     const [logoIdx, setLogoIdx] = useState(0);
 
-    useEffect(() => {
-        const onKey = (e: KeyboardEvent) => {
-            if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") startOnce();
-        };
-        window.addEventListener("keydown", onKey);
-        return () => window.removeEventListener("keydown", onKey);
-    }, []);
-
     return (
         <div
-            onPointerDown={startOnce}
+            onPointerDown={(e) => { if (e.pointerType === "touch") startOnce(); }}
             style={{
                 position: "absolute",
                 inset: 0,

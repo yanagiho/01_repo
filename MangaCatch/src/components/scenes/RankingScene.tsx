@@ -109,7 +109,7 @@ export const RankingScene = ({
                 style={{
                   width: "min(620px, 96%)",
                   display: "grid",
-                  gridTemplateColumns: "56px 36px 36px minmax(220px, 1fr) 96px",
+                  gridTemplateColumns: "56px 80px 80px minmax(180px, 1fr) 96px",
                   gap: 10,
                   alignItems: "center",
                   justifyContent: "center",
@@ -134,8 +134,8 @@ export const RankingScene = ({
 
                 <div
                   style={{
-                    width: 36,
-                    height: 36,
+                    width: 80,
+                    height: 80,
                     display: "grid",
                     placeItems: "center",
                   }}
@@ -144,8 +144,8 @@ export const RankingScene = ({
                     <CharacterImageComp
                       char={c}
                       style={{
-                        width: 30,
-                        height: 30,
+                        width: 75,
+                        height: 75,
                         objectFit: "contain",
                       }}
                     />
@@ -156,8 +156,8 @@ export const RankingScene = ({
 
                 <div
                   style={{
-                    width: 36,
-                    height: 36,
+                    width: 80,
+                    height: 80,
                     display: "grid",
                     placeItems: "center",
                   }}
@@ -166,8 +166,8 @@ export const RankingScene = ({
                     <CoverImageComp
                       char={c}
                       style={{
-                        width: 30,
-                        height: 30,
+                        width: 75,
+                        height: 75,
                         objectFit: "contain",
                         borderRadius: 6,
                       }}

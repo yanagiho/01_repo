@@ -4,6 +4,7 @@ import { sensorManager, type SensorDebugInfo } from '../game/sensor/SensorManage
 type UseSensorResult = {
   personCount: number;
   playerX: number;
+  playerXs: number[];
   speedMultiplier: number;
   sensorDebug: SensorDebugInfo;
 };
@@ -20,6 +21,10 @@ export function useSensor(): UseSensorResult {
   const [playerX, setPlayerX] = useState(() => {
     if (typeof window !== 'undefined') return window.innerWidth / 2;
     return 960;
+  });
+  const [playerXs, setPlayerXs] = useState<number[]>(() => {
+    const w = typeof window !== 'undefined' ? window.innerWidth / 2 : 960;
+    return [w];
   });
 
   const [sensorDebug, setSensorDebug] = useState<SensorDebugInfo>(() =>
@@ -38,6 +43,11 @@ export function useSensor(): UseSensorResult {
       setPlayerX(Math.round(normalizedX * width));
     });
 
+    const offXs = sensorManager.onPlayerXsChange((normalizedXs) => {
+      const width = typeof window !== 'undefined' ? window.innerWidth : 1920;
+      setPlayerXs(normalizedXs.map((nx) => Math.round(nx * width)));
+    });
+
     const offDebug = sensorManager.onDebugChange((debug) => {
       setSensorDebug(debug);
     });
@@ -45,31 +55,24 @@ export function useSensor(): UseSensorResult {
     return () => {
       offCount();
       offX();
+      offXs();
       offDebug();
     };
   }, []);
 
   useEffect(() => {
-    const handleMouseMove = (event: MouseEvent) => {
-      if (typeof window === 'undefined' || window.innerWidth <= 0) return;
-      const normalizedX = event.clientX / window.innerWidth;
-      sensorManager.setFallbackPlayerX(normalizedX);
-    };
-
     const handleTouchMove = (event: TouchEvent) => {
       if (typeof window === 'undefined' || window.innerWidth <= 0 || event.touches.length === 0) return;
       const normalizedX = event.touches[0].clientX / window.innerWidth;
       sensorManager.setFallbackPlayerX(normalizedX);
     };
 
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('touchmove', handleTouchMove);
     };
   }, []);
 
-  return { personCount, playerX, speedMultiplier, sensorDebug };
+  return { personCount, playerX, playerXs, speedMultiplier, sensorDebug };
 }

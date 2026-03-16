@@ -61,7 +61,7 @@ export const ScreentoneWipe: React.FC<{
                 inset: 0,
                 zIndex: 9999,
                 pointerEvents: "none",
-                background: "#fff",
+                background: "#000",
                 opacity,
                 transition: "opacity 180ms linear",
             }}

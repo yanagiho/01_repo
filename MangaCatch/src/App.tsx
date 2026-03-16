@@ -65,7 +65,7 @@ function calcBestCharId(counts: Record<string, number>): string {
 export default function App() {
   const audio = AudioManager.instance;
 
-  const { personCount, speedMultiplier, playerX } = useSensor();
+  const { personCount, speedMultiplier, playerXs } = useSensor();
   const { particles, createParticles } = useParticles();
 
   const [scene, setScene] = useState<SceneType>("TITLE");
@@ -91,25 +91,9 @@ export default function App() {
     audio.tryAutoplayUiBgm();
   }, [audio]);
 
-  // ★カメラシェイク（画面全体）
-  const [shake, setShake] = useState(false);
-  const shakeTimerRef = useRef<number | null>(null);
-
-  const triggerShake = useCallback(() => {
-    if (shakeTimerRef.current != null) window.clearTimeout(shakeTimerRef.current);
-    setShake(false);
-    requestAnimationFrame(() => {
-      setShake(true);
-      shakeTimerRef.current = window.setTimeout(() => setShake(false), 420);
-    });
-  }, []);
-
   const goto = useCallback(
     (next: SceneType) => {
       if (transitioningRef.current) return;
-
-      // 遷移開始の瞬間にシェイク
-      triggerShake();
 
       transitioningRef.current = true;
       pendingRef.current = next;
@@ -130,7 +114,7 @@ export default function App() {
         }
       }, 1700);
     },
-    [audio, triggerShake]
+    [audio]
   );
 
   const onWipeMiddle = useCallback(() => {
@@ -186,21 +170,8 @@ export default function App() {
         overflow: "hidden",
         cursor: "none",
         color: "#fff",
-        animation: shake ? "mc_camShake 420ms cubic-bezier(.2,.9,.2,1)" : "none",
       }}
     >
-      <style>{`
-        @keyframes mc_camShake {
-          0%   { transform: translate(0px, 0px) rotate(0deg); }
-          10%  { transform: translate(-3px, 2px) rotate(-0.35deg); }
-          22%  { transform: translate(3px, -2px) rotate(0.30deg); }
-          34%  { transform: translate(-5px, -1px) rotate(-0.45deg); }
-          48%  { transform: translate(5px, 1px) rotate(0.40deg); }
-          62%  { transform: translate(-3px, 2px) rotate(-0.28deg); }
-          78%  { transform: translate(3px, -2px) rotate(0.22deg); }
-          100% { transform: translate(0px, 0px) rotate(0deg); }
-        }
-      `}</style>
 
       <StarBackground />
       <ScreentoneWipe trigger={wipeTrigger} onMiddle={onWipeMiddle} onComplete={onWipeComplete} />
@@ -246,7 +217,7 @@ export default function App() {
       {scene === "GAME" && (
         <GameScene
           scene={scene}
-          playerX={playerX}
+          playerXs={playerXs}
           speedMultiplier={speedMultiplier}
           playerCount={personCount}
           onCatchFx={(x, y) => {
