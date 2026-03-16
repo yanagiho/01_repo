@@ -26,8 +26,10 @@ Electron + React + TypeScript + Vite で構築された、タッチレスラク�
     │   │   └── scenes.ts        ← シーン定義
     │   ├── hooks/
     │   │   ├── useGameLoop.ts   ← ゲームループ・複数プレイヤー対応
-    │   │   └── useSensor.ts     ← センサー入力・タッチフォールバック
-    │   └── components/scenes/   ← 各シーンのReactコンポーネント
+    │   │   └── useSensor.ts     ← センサー入力・タッチ/マウスフォールバック・デバッグ情報
+    │   └── components/
+    │       ├── SensorDebugOverlay.tsx ← センサーデバッグ情報常時表示overlay
+    │       └── scenes/          ← 各シーンのReactコンポーネント
     ├── osc-bridge.mjs           ← ChromeBook開発環境用WebSocketブリッジ
     └── public/assets/           ← 画像・動画アセット
 ```
@@ -115,8 +117,8 @@ npm run dist:win
 ## ゲーム仕様
 
 ### 入力
-- **タイトル画面**: タッチ入力のみ（マウス・キーボード無効）。本番はタッチパネル専用機のため。
-- **ゲーム中**: センサー（OSC）優先。センサー未接続時はタッチフォールバック。
+- **タイトル画面**: 本番はタッチ入力のみ想定。ただし現在はマウスクリックでも開始可能（クライアント確認用）。
+- **ゲーム中**: センサー（OSC）優先。センサー未接続時はタッチ・マウス移動フォールバック。
 
 ### マルチプレイヤー
 - 最大3人まで対応。ゲームプレイ中に途中参加（ドロップイン）可能。
@@ -137,6 +139,15 @@ npm run dist:win
 | ランキング画面（自分） | `YOU` |
 
 > システムや翻訳機能による日本語変換禁止。カタカナ・英語で厳密にハードコード。
+
+## センサーデバッグ overlay
+
+`SensorDebugOverlay.tsx` が `App.tsx` に組み込まれており、常時レンダリングされる。
+URL に `?debug=1` を付けたときのみ画面右上に表示される（通常は非表示）。
+
+表示内容: OSC受信状態・frame・playerCount・playerX・rawPlayers・parseMode・usingFallback 等。
+
+デバッグ時のURL例: `http://localhost:5173/?debug=1`
 
 ## 写真撮影画面（PhotoScene）
 
