@@ -5,7 +5,7 @@
   "main": "dist-electron/main.cjs",
   "scripts": {
     "dev": "vite",
-    "dev:chromebook": "concurrently \"vite\" \"node osc-bridge.mjs\"",
+    "dev:chromebook": "concurrently \"vite --config vite.web.config.ts\" \"node osc-bridge.mjs\"",
     "build:web": "tsc -b && vite build",
     "dist": "npm run build:web && electron-builder",
     "dist:mac": "npm run build:web && electron-builder --mac",
