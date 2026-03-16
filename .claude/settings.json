@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -m json.tool)",
+      "Bash(ls /home/yanagiho/01_repo/*.jpg /home/yanagiho/01_repo/*.png)",
+      "Bash(pkill -f \"osc-bridge\")",
+      "Bash(concurrently \"npx vite --config vite.chromebook.config.ts\" \"node osc-bridge.mjs\")",
+      "Bash(netstat -tlnp)"
+    ],
+    "additionalDirectories": [
+      "/home/yanagiho/01_repo"
+    ]
+  }
+}
