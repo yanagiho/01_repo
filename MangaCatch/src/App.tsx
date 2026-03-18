@@ -243,7 +243,7 @@ export default function App() {
       {scene === "RECOMMEND" && <RecommendScene bestChar={bestChar} />}
       {scene === "PHOTO" && <PhotoScene bestChar={bestChar} score={score} />}
       {scene === "RANKING" && (
-        <RankingScene ranking={ranking} highlightAchievedAt={highlightAchievedAt} />
+        <RankingScene ranking={ranking} highlightAchievedAt={highlightAchievedAt} myScore={score} />
       )}
     </div>
   );

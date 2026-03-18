@@ -128,7 +128,7 @@ export const PhotoScene = ({
 
           <div style={{ lineHeight: 1.05 }}>
             <div style={{ fontSize: "70pt", fontWeight: 900 }}>
-              いっしょに写真撮ってね
+              一緒に写真を撮ってね
             </div>
             <div style={{ fontSize: 16, opacity: 0.9, fontWeight: 800 }}>
               Take a photo together!
@@ -139,11 +139,10 @@ export const PhotoScene = ({
         <div
           style={{
             position: "absolute",
-            top: -6,
-            left: "50%",
-            transform: "translateX(-50%)",
+            top: 18,
+            right: 18,
             zIndex: 20,
-            textAlign: "center",
+            textAlign: "right",
             textShadow: "0 3px 12px rgba(0,0,0,0.85)",
           }}
         >

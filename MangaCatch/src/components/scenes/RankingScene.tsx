@@ -36,9 +36,11 @@ function buildLogoCandidates(): string[] {
 export const RankingScene = ({
   ranking,
   highlightAchievedAt,
+  myScore,
 }: {
   ranking: RankingEntry[];
   highlightAchievedAt?: number;
+  myScore?: number;
 }) => {
   const CharacterImageComp =
     (CharMod as any).CharacterImage ?? (CharMod as any).default;
@@ -94,6 +96,12 @@ export const RankingScene = ({
             gap: 10,
           }}
         >
+          {/* タイトル */}
+          <div style={{ textAlign: "center", marginBottom: 4 }}>
+            <div style={{ fontSize: 42, fontWeight: 900 }}>ランキング</div>
+            <div style={{ fontSize: 18, color: "#00eebb", fontWeight: 700 }}>Ranking</div>
+          </div>
+
           {top.map((r, idx) => {
             const rank = idx + 1;
             const c = getCharacterById(r.bestCharId);
@@ -262,82 +270,81 @@ export const RankingScene = ({
           })}
         </div>
 
-        {/* 右：中央寄せ情報ブロック */}
+        {/* 右：スコア情報ブロック */}
         <div
           style={{
             background: "rgba(0,0,0,0.30)",
             borderRadius: 18,
-            padding: 18,
+            padding: 28,
             border: "1px solid rgba(255,255,255,0.08)",
-            display: "grid",
-            placeItems: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            justifyContent: "center",
+            gap: 24,
           }}
         >
-          <div
-            style={{
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
-              gap: 16,
-              transform: "translateX(-4px)",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 54,
-                fontWeight: 900,
-                color: "#00eebb",
-                lineHeight: 1.0,
-              }}
-            >
-              RANKING
+          {/* 本日のトップスコア */}
+          <div>
+            <div style={{ fontSize: 28, fontWeight: 900, lineHeight: 1.1 }}>
+              本日のトップスコア
             </div>
-
+            <div style={{ fontSize: 18, color: "#00eebb", fontWeight: 700, marginTop: 2 }}>
+              Top Score
+            </div>
             <div
               style={{
                 fontFamily: "monospace",
-                fontSize: 34,
+                fontSize: 80,
                 fontWeight: 900,
-                opacity: 0.9,
+                color: "#ff3b30",
                 lineHeight: 1.0,
-              }}
-            >
-              TOP SCORE
-            </div>
-
-            <div
-              style={{
-                fontFamily: "monospace",
-                fontSize: 52,
-                fontWeight: 900,
-                color: "#00eebb",
-                lineHeight: 1.0,
+                marginTop: 6,
               }}
             >
               {top[0]?.score ?? 0}
             </div>
-
-            <img
-              src={logoCandidates[logoIdx]}
-              alt="MANGA Catch!"
-              onError={() => {
-                if (logoIdx + 1 < logoCandidates.length) {
-                  setLogoIdx(logoIdx + 1);
-                }
-              }}
-              style={{
-                width: 300,
-                height: "auto",
-                marginTop: 6,
-                opacity: 0.92,
-                filter: "drop-shadow(0 12px 18px rgba(0,0,0,0.55))",
-              }}
-              draggable={false}
-            />
           </div>
+
+          {/* あなたのスコア */}
+          <div>
+            <div style={{ fontSize: 28, fontWeight: 900, lineHeight: 1.1 }}>
+              あなたのスコア
+            </div>
+            <div style={{ fontSize: 18, color: "#00eebb", fontWeight: 700, marginTop: 2 }}>
+              You Score
+            </div>
+            <div
+              style={{
+                fontFamily: "monospace",
+                fontSize: 80,
+                fontWeight: 900,
+                color: "#00eebb",
+                lineHeight: 1.0,
+                marginTop: 6,
+              }}
+            >
+              {myScore ?? 0}
+            </div>
+          </div>
+
+          <img
+            src={logoCandidates[logoIdx]}
+            alt="MANGA Catch!"
+            onError={() => {
+              if (logoIdx + 1 < logoCandidates.length) {
+                setLogoIdx(logoIdx + 1);
+              }
+            }}
+            style={{
+              width: 260,
+              height: "auto",
+              marginTop: 4,
+              opacity: 0.92,
+              filter: "drop-shadow(0 12px 18px rgba(0,0,0,0.55))",
+            }}
+            draggable={false}
+          />
         </div>
       </div>
     </div>
