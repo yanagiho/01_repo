@@ -21,15 +21,15 @@ export const RecommendScene = ({ bestChar }: { bestChar: CharacterData | null })
       {/* コンテンツ：表紙 ＋ テキスト ＋ キャラ */}
       <div
         style={{
-          width: "min(1200px, 92vw)",
+          width: "min(1600px, 96vw)",
           display: "grid",
-          gridTemplateColumns: "380px 1fr 380px",
-          gap: 26,
+          gridTemplateColumns: "360px 1fr 420px",
+          gap: 32,
           alignItems: "center",
           background: "rgba(0,0,0,0.35)",
           border: "1px solid rgba(255,255,255,0.08)",
           borderRadius: 22,
-          padding: "24px 28px",
+          padding: "28px 36px",
         }}
       >
         {/* 表紙 */}
@@ -38,7 +38,7 @@ export const RecommendScene = ({ bestChar }: { bestChar: CharacterData | null })
             char={bestChar}
             style={{
               width: "100%",
-              height: 480,
+              height: 520,
               objectFit: "contain",
               borderRadius: 16,
               background: "rgba(0,0,0,0.22)",
@@ -47,34 +47,34 @@ export const RecommendScene = ({ bestChar }: { bestChar: CharacterData | null })
         ) : <div />}
 
         {/* テキスト */}
-        <div style={{ textAlign: "left", display: "flex", flexDirection: "column", gap: 10 }}>
-          <div style={{ fontSize: 64, fontWeight: 900, color: "#00eebb" }}>
+        <div style={{ textAlign: "left", display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ fontSize: 72, fontWeight: 900, color: "#00eebb" }}>
             {(bestChar as any).name ?? ""} <span style={{ color: "#fff" }}>です</span>
           </div>
-          <div style={{ fontSize: 24, color: "#00eebb", fontWeight: 700 }}>
+          <div style={{ fontSize: 28, color: "#00eebb", fontWeight: 700 }}>
             {(bestChar as any).nameEn ?? ""}
           </div>
 
-          <div style={{ marginTop: 10, fontSize: 36, fontWeight: 900 }}>
+          <div style={{ marginTop: 14, fontSize: 44, fontWeight: 900 }}>
             {(bestChar as any).artist ?? ""} 先生 の
           </div>
-          <div style={{ fontSize: 20, color: "#00eebb", fontWeight: 700 }}>
+          <div style={{ fontSize: 24, color: "#00eebb", fontWeight: 700 }}>
             {(bestChar as any).artistEn ?? ""}
           </div>
 
-          <div style={{ marginTop: 10, fontSize: 36, fontWeight: 900 }}>
+          <div style={{ marginTop: 14, fontSize: 44, fontWeight: 900 }}>
             作品に出てきます
           </div>
         </div>
 
         {/* キャラクター */}
-        <div style={{ display: "grid", placeItems: "center" }}>
+        <div style={{ display: "grid", placeItems: "center", height: 520 }}>
           {CharacterImageComp ? (
             <CharacterImageComp
               char={bestChar}
               style={{
-                width: 360,
-                height: 400,
+                width: "100%",
+                height: "100%",
                 objectFit: "contain",
                 filter: "drop-shadow(0 18px 22px rgba(0,0,0,0.65))",
               }}

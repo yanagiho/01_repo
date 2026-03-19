@@ -29,7 +29,7 @@ const CHAR_SIZE = 255;
 const CATCH_RADIUS = 220;
 const PLAYER_Y_OFFSET = 200;
 const BASE_FALL_SPEED = 320;
-const SPAWN_INTERVAL_MS = 400;
+const SPAWN_INTERVAL_MS = 444;
 // ReactのDOM更新を30fpsに制限（60fps setItemsはWindows低スペックで重すぎる）
 const RENDER_INTERVAL_MS = 1000 / 30;
 
@@ -163,7 +163,7 @@ export function useGameLoop(
                         baseX,
                     };
 
-                    next = [it, ...cur].slice(0, 18);
+                    next = [it, ...cur].slice(0, 16);
                 }
 
                 // フィジクス＋当たり判定（全プレイヤー）

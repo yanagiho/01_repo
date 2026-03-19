@@ -27,6 +27,9 @@ export const StarBackground: React.FC = () => {
     const canvas = canvasRef.current!;
     const ctx = canvas.getContext("2d")!;
     let last = performance.now();
+    let cachedGrad: CanvasGradient | null = null;
+    let cachedW = 0;
+    let cachedH = 0;
 
     const resize = () => {
       const w = window.innerWidth;
@@ -36,6 +39,11 @@ export const StarBackground: React.FC = () => {
       canvas.style.width = `${w}px`;
       canvas.style.height = `${h}px`;
       ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+      cachedGrad = ctx.createRadialGradient(w * 0.5, h * 0.25, 0, w * 0.5, h * 0.25, Math.max(w, h));
+      cachedGrad.addColorStop(0, "#081018");
+      cachedGrad.addColorStop(0.6, "#000000");
+      cachedW = w;
+      cachedH = h;
       initStars(w, h);
     };
 
@@ -43,14 +51,11 @@ export const StarBackground: React.FC = () => {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
 
-      const w = window.innerWidth;
-      const h = window.innerHeight;
+      const w = cachedW;
+      const h = cachedH;
 
-      // 背景
-      const grad = ctx.createRadialGradient(w * 0.5, h * 0.25, 0, w * 0.5, h * 0.25, Math.max(w, h));
-      grad.addColorStop(0, "#081018");
-      grad.addColorStop(0.6, "#000000");
-      ctx.fillStyle = grad;
+      // 背景（キャッシュ済みグラデーション）
+      ctx.fillStyle = cachedGrad!;
       ctx.fillRect(0, 0, w, h);
 
       // 星

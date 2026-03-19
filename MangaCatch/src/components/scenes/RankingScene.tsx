@@ -57,11 +57,11 @@ export const RankingScene = ({
     >
       <div
         style={{
-          width: "min(1120px, 94vw)",
-          height: "min(820px, 92vh)",
+          width: "min(1600px, 96vw)",
+          height: "min(900px, 94vh)",
           display: "grid",
-          gridTemplateColumns: "700px 320px",
-          gap: 14,
+          gridTemplateColumns: "1fr 380px",
+          gap: 18,
           alignItems: "stretch",
           justifyContent: "center",
         }}
@@ -98,7 +98,7 @@ export const RankingScene = ({
               <div
                 key={`${rank}-${r.achieved_at}-${r.score}`}
                 style={{
-                  width: "min(620px, 96%)",
+                  width: "min(960px, 96%)",
                   display: "grid",
                   gridTemplateColumns: "56px 80px 80px minmax(180px, 1fr) 96px",
                   gap: 10,
@@ -106,8 +106,8 @@ export const RankingScene = ({
                   justifyContent: "center",
                   padding: "14px 16px",
                   borderRadius: 16,
-                  background: "rgba(0,0,0,0.28)",
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: isMe ? "rgba(0,238,187,0.08)" : "rgba(0,0,0,0.28)",
+                  border: isMe ? "2px solid rgba(0,238,187,0.75)" : "1px solid rgba(255,255,255,0.08)",
                   color: col,
                   boxSizing: "border-box",
                 }}

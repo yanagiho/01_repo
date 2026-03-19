@@ -112,7 +112,7 @@ export const PhotoScene = ({
             <div style={{ fontSize: "70pt", fontWeight: 900 }}>
               いっしょに写真を撮ってね
             </div>
-            <div style={{ fontSize: 16, opacity: 0.9, fontWeight: 800 }}>
+            <div style={{ fontSize: 26, fontWeight: 800, color: "#00eebb" }}>
               Take a photo together!
             </div>
           </div>
@@ -122,7 +122,7 @@ export const PhotoScene = ({
           style={{
             position: "absolute",
             top: 18,
-            right: 18,
+            right: 36,
             zIndex: 20,
             textAlign: "right",
             textShadow: "0 3px 12px rgba(0,0,0,0.85)",
@@ -143,7 +143,7 @@ export const PhotoScene = ({
               fontFamily: "monospace",
               fontSize: 28,
               fontWeight: 900,
-              opacity: 0.92,
+              color: "#00eebb",
             }}
           >
             {nowText}
@@ -155,15 +155,15 @@ export const PhotoScene = ({
             position: "absolute",
             left: 18,
             right: 18,
-            top: 110,
-            bottom: 86,
+            top: 210,
+            bottom: 18,
             display: "grid",
             gridTemplateColumns: "1fr 1fr 1fr",
             gap: 18,
             alignItems: "center",
           }}
         >
-          <div style={{ transform: "translateY(36px)" }}>
+          <div style={{ width: "100%", height: "100%", display: "grid", placeItems: "center" }}>
             {CoverImageComp ? (
               <CoverImageComp
                 char={bestChar}
@@ -184,16 +184,16 @@ export const PhotoScene = ({
             style={{
               display: "grid",
               placeItems: "center",
-              overflow: "visible",
-              transform: "translate(-120px, -120px)",
+              width: "100%",
+              height: "100%",
             }}
           >
             {CharacterImageComp ? (
               <CharacterImageComp
                 char={bestChar}
                 style={{
-                  width: 460,
-                  height: 460,
+                  width: "100%",
+                  height: "100%",
                   objectFit: "contain",
                   filter: "drop-shadow(0 18px 22px rgba(0,0,0,0.65))",
                   display: "block",

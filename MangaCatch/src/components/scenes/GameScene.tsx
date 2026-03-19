@@ -126,11 +126,11 @@ export const GameScene: React.FC<{
             char={it.char}
             style={{
               position: "absolute",
-              left: it.x,
-              top: y,
+              left: 0,
+              top: 0,
               width: CHAR_SIZE,
               height: CHAR_SIZE,
-              transform: `translate(-50%, -50%) scale(${scale})`,
+              transform: `translate(${it.x}px, ${y}px) translate(-50%, -50%) scale(${scale})`,
               objectFit: "contain",
               opacity,
               filter: "drop-shadow(0 12px 14px rgba(0,0,0,0.62))",
@@ -148,15 +148,16 @@ export const GameScene: React.FC<{
               key={i}
               style={{
                 position: "absolute",
-                left: px,
-                top: catcherY,
+                left: 0,
+                top: 0,
                 width: BIG_CATCHER_D,
                 height: BIG_CATCHER_D,
-                transform: "translate(-50%, -50%)",
+                transform: `translate(${px}px, ${catcherY}px) translate(-50%, -50%)`,
                 objectFit: "contain",
                 pointerEvents: "none",
                 zIndex: 12,
                 opacity: 0.92,
+                willChange: "transform",
                 filter: isHit
                   ? "drop-shadow(0 0 34px rgba(255,255,255,0.75)) drop-shadow(0 0 64px rgba(0,238,187,0.60))"
                   : "drop-shadow(0 0 24px rgba(0,238,187,0.40))",
