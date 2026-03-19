@@ -556,6 +556,7 @@ function createWindow(): void {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
+      backgroundThrottling: false,
     },
   });
 
@@ -592,6 +593,13 @@ function createWindow(): void {
 // ChromeOS Crostini の GPU 初期化エラー対策（Linux環境のみ）
 if (process.platform === 'linux') {
   app.commandLine.appendSwitch('disable-gpu');
+}
+
+// Windows: 描画パフォーマンス改善フラグ
+if (process.platform === 'win32') {
+  app.commandLine.appendSwitch('enable-gpu-rasterization');
+  app.commandLine.appendSwitch('enable-zero-copy');
+  app.commandLine.appendSwitch('ignore-gpu-blocklist');
 }
 
 app.whenReady().then(() => {

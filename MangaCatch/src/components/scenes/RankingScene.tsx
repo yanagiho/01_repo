@@ -1,5 +1,5 @@
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { RankingEntry } from "../../types/game";
 import { getCharacterById } from "../../constants/master";
 import * as CharMod from "../CharacterImage";
@@ -18,21 +18,6 @@ function rankColor(rank: number) {
   return "#00eebb";
 }
 
-function buildLogoCandidates(): string[] {
-  return Array.from(
-    new Set([
-      "/assets/ui/mangacatch_title_logo.png",
-      "/assets/ui/title_logo.png",
-      "/assets/title_logo.png",
-      "./assets/ui/mangacatch_title_logo.png",
-      "./assets/ui/title_logo.png",
-      "assets/ui/mangacatch_title_logo.png",
-      "assets/ui/title_logo.png",
-      "assets/title_logo.png",
-    ])
-  );
-}
-
 export const RankingScene = ({
   ranking,
   highlightAchievedAt,
@@ -48,8 +33,6 @@ export const RankingScene = ({
     (CoverMod as any).CoverImage ?? (CoverMod as any).default;
 
   const top = useMemo(() => ranking.slice(0, 5), [ranking]);
-  const logoCandidates = useMemo(() => buildLogoCandidates(), []);
-  const [logoIdx, setLogoIdx] = useState(0);
 
   const youIndex = useMemo(() => {
     if (top.length === 0) return -1;
@@ -98,8 +81,8 @@ export const RankingScene = ({
         >
           {/* タイトル */}
           <div style={{ textAlign: "center", marginBottom: 4 }}>
-            <div style={{ fontSize: 42, fontWeight: 900 }}>ランキング</div>
-            <div style={{ fontSize: 18, color: "#00eebb", fontWeight: 700 }}>Ranking</div>
+            <div style={{ fontSize: 72, fontWeight: 900 }}>ランキング</div>
+            <div style={{ fontSize: 24, color: "#00eebb", fontWeight: 700 }}>Ranking</div>
           </div>
 
           {top.map((r, idx) => {
@@ -328,23 +311,6 @@ export const RankingScene = ({
             </div>
           </div>
 
-          <img
-            src={logoCandidates[logoIdx]}
-            alt="MANGA Catch!"
-            onError={() => {
-              if (logoIdx + 1 < logoCandidates.length) {
-                setLogoIdx(logoIdx + 1);
-              }
-            }}
-            style={{
-              width: 260,
-              height: "auto",
-              marginTop: 4,
-              opacity: 0.92,
-              filter: "drop-shadow(0 12px 18px rgba(0,0,0,0.55))",
-            }}
-            draggable={false}
-          />
         </div>
       </div>
     </div>

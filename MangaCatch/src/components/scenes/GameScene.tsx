@@ -136,6 +136,7 @@ export const GameScene: React.FC<{
               filter: "drop-shadow(0 12px 14px rgba(0,0,0,0.62))",
               pointerEvents: "none",
               zIndex: 14,
+              willChange: "transform, opacity",
             }}
           />
         ) : null;

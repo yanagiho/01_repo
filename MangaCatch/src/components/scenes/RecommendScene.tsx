@@ -12,8 +12,8 @@ export const RecommendScene = ({ bestChar }: { bestChar: CharacterData | null })
     <div style={{ position: "absolute", inset: 0, zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#fff" }}>
       {/* ヘッダー */}
       <div style={{ textAlign: "center", marginBottom: 18 }}>
-        <div style={{ fontSize: 52, fontWeight: 900 }}>あなたが一番多く集めたのは</div>
-        <div style={{ fontSize: 22, color: "#00eebb", fontWeight: 700, marginTop: 4 }}>
+        <div style={{ fontSize: 72, fontWeight: 900 }}>あなたが一番多く集めたのは</div>
+        <div style={{ fontSize: 28, color: "#00eebb", fontWeight: 700, marginTop: 4 }}>
           The one you caught the most was
         </div>
       </div>
@@ -48,21 +48,21 @@ export const RecommendScene = ({ bestChar }: { bestChar: CharacterData | null })
 
         {/* テキスト */}
         <div style={{ textAlign: "left", display: "flex", flexDirection: "column", gap: 10 }}>
-          <div style={{ fontSize: 48, fontWeight: 900, color: "#00eebb" }}>
-            {(bestChar as any).work ?? ""} <span style={{ color: "#fff" }}>です</span>
+          <div style={{ fontSize: 64, fontWeight: 900, color: "#00eebb" }}>
+            {(bestChar as any).name ?? ""} <span style={{ color: "#fff" }}>です</span>
           </div>
-          <div style={{ fontSize: 20, color: "#00eebb", fontWeight: 700 }}>
-            {(bestChar as any).workEn ?? ""}
+          <div style={{ fontSize: 24, color: "#00eebb", fontWeight: 700 }}>
+            {(bestChar as any).nameEn ?? ""}
           </div>
 
-          <div style={{ marginTop: 10, fontSize: 30, fontWeight: 900 }}>
+          <div style={{ marginTop: 10, fontSize: 36, fontWeight: 900 }}>
             {(bestChar as any).artist ?? ""} 先生 の
           </div>
-          <div style={{ fontSize: 18, color: "#00eebb", fontWeight: 700 }}>
+          <div style={{ fontSize: 20, color: "#00eebb", fontWeight: 700 }}>
             {(bestChar as any).artistEn ?? ""}
           </div>
 
-          <div style={{ marginTop: 10, fontSize: 30, fontWeight: 900 }}>
+          <div style={{ marginTop: 10, fontSize: 36, fontWeight: 900 }}>
             作品に出てきます
           </div>
         </div>

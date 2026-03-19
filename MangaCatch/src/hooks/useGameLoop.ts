@@ -28,8 +28,10 @@ const GAME_TIME_SEC = 30;
 const CHAR_SIZE = 255;
 const CATCH_RADIUS = 220;
 const PLAYER_Y_OFFSET = 200;
-const BASE_FALL_SPEED = 220;
-const SPAWN_INTERVAL_MS = 520;
+const BASE_FALL_SPEED = 320;
+const SPAWN_INTERVAL_MS = 400;
+// ReactのDOM更新を30fpsに制限（60fps setItemsはWindows低スペックで重すぎる）
+const RENDER_INTERVAL_MS = 1000 / 30;
 
 function rand(min: number, max: number) {
     return min + Math.random() * (max - min);
@@ -106,7 +108,15 @@ export function useGameLoop(
 
         const step = (now: number) => {
             const prev = lastRef.current || now;
-            const rawDt = (now - prev) / 1000;
+            const frameDt = now - prev;
+
+            // 30fps cap: ReactのsetItems呼び出しを制限してDOM更新コストを削減
+            if (frameDt < RENDER_INTERVAL_MS) {
+                rafRef.current = requestAnimationFrame(step);
+                return;
+            }
+
+            const rawDt = frameDt / 1000;
             const dt = Math.min(0.2, Math.max(0, rawDt));
             lastRef.current = now;
 

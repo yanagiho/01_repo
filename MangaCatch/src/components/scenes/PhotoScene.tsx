@@ -16,22 +16,6 @@ function buildCameraCandidates(): string[] {
   );
 }
 
-function buildLogoCandidates(): string[] {
-  return Array.from(
-    new Set([
-      "/assets/ui/mangacatch_title_logo.png",
-      "/assets/ui/title_logo.png",
-      "/assets/title_logo.png",
-      "./assets/ui/mangacatch_title_logo.png",
-      "./assets/ui/title_logo.png",
-      "./assets/title_logo.png",
-      "assets/ui/mangacatch_title_logo.png",
-      "assets/ui/title_logo.png",
-      "assets/title_logo.png",
-    ])
-  );
-}
-
 export const PhotoScene = ({
   bestChar,
   score,
@@ -55,10 +39,8 @@ export const PhotoScene = ({
   }, []);
 
   const camCandidates = useMemo(() => buildCameraCandidates(), []);
-  const logoCandidates = useMemo(() => buildLogoCandidates(), []);
 
   const [camIdx, setCamIdx] = useState(0);
-  const [logoIdx, setLogoIdx] = useState(0);
   const [camBroken, setCamBroken] = useState(false);
 
   if (!bestChar) return null;
@@ -128,7 +110,7 @@ export const PhotoScene = ({
 
           <div style={{ lineHeight: 1.05 }}>
             <div style={{ fontSize: "70pt", fontWeight: 900 }}>
-              一緒に写真を撮ってね
+              いっしょに写真を撮ってね
             </div>
             <div style={{ fontSize: 16, opacity: 0.9, fontWeight: 800 }}>
               Take a photo together!
@@ -221,24 +203,6 @@ export const PhotoScene = ({
           </div>
         </div>
 
-        <img
-          src={logoCandidates[logoIdx]}
-          alt="MANGA Catch!"
-          onError={() => {
-            if (logoIdx + 1 < logoCandidates.length) setLogoIdx(logoIdx + 1);
-          }}
-          style={{
-            position: "absolute",
-            right: 18,
-            bottom: 14,
-            width: 320,
-            opacity: 0.92,
-            zIndex: 10,
-            filter: "drop-shadow(0 12px 18px rgba(0,0,0,0.55))",
-            pointerEvents: "none",
-          }}
-          draggable={false}
-        />
       </div>
     </div>
   );

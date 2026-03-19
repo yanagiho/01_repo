@@ -22,7 +22,7 @@ import type { RankingEntry, SceneType } from "./types/game";
 
 // ★表示時間（ご要望：結果/フォト/ランキングは10秒）
 const DUR_RESULT = 10000;
-const DUR_RECOMMEND = 5200;
+const DUR_RECOMMEND = 10000;
 const DUR_PHOTO = 10000;
 const DUR_RANKING = 10000;
 
