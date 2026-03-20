@@ -6,7 +6,7 @@ type Props = {
     visible?: boolean;
 };
 
-export default function SensorDebugOverlay({ debug, visible = true }: Props) {
+export default function SensorDebugOverlay({ debug, visible = false }: Props) {
     const [now, setNow] = useState(() => Date.now());
 
     useEffect(() => {

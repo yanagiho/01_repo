@@ -190,3 +190,19 @@ const JP_FONT = "'Noto Sans CJK JP', 'Yu Gothic UI', 'Yu Gothic', 'Hiragino Kaku
 - **数値・スコア・時刻**: `fontFamily: "monospace"`（デザイン意図・変更不可）
 - `index.html` の `lang="ja"` 必須（`lang="en"` だと漢字が中国語グリフで描画される）
 - `src/index.css` の `body` にも同じフォントスタックを設定済み（フォールバック保険）
+
+## バグ修正履歴（2026-03-20）
+
+### ランキング不具合を修正（Build #75）
+
+| 修正内容 | 影響ファイル |
+|---------|-------------|
+| 起動時に前日以前のランキングデータが残る → `clearOldRankings()` を追加し起動時に `mangacatch_ranking_` プレフィックスの旧キーを削除 | `App.tsx` |
+| ゲーム中スコアとランキングスコアが異なる → `setScore` を `setItems` の functional updater 内で呼ぶ React アンチパターンを解消。`itemsRef`/`scoreRef` を導入し `setItems`/`setScore` を RAF ステップのトップレベルで呼ぶよう変更 | `useGameLoop.ts` |
+| `GameScene` の `onEnd` で `score` state（レンダリングタイミング依存）の代わりに `scoreRef.current`（確定値）を使用 | `GameScene.tsx` |
+| `SensorDebugOverlay` の `visible` デフォルト値が `true` になっており、`?debug=1` なしでもoverlay表示される場合があった → `false` に修正 | `SensorDebugOverlay.tsx` |
+
+### ランキングの localStorage キー仕様
+- キー形式: `mangacatch_ranking_[toLocaleDateString()]`
+- 起動時に当日分以外を自動削除（前日以前は破棄）
+- 当日分は最大30件まで蓄積・スコア降順
