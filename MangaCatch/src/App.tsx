@@ -42,6 +42,18 @@ function loadRankingToday(): RankingEntry[] {
   }
 }
 
+function clearOldRankings() {
+  const today = todayKey();
+  const toDelete: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith("mangacatch_ranking_") && k !== today) {
+      toDelete.push(k);
+    }
+  }
+  toDelete.forEach((k) => localStorage.removeItem(k));
+}
+
 function saveRankingToday(entry: RankingEntry) {
   const list = loadRankingToday();
   list.push(entry);
@@ -100,6 +112,11 @@ export default function App() {
   const [highlightAchievedAt, setHighlightAchievedAt] = useState<number | undefined>(undefined);
 
   const bestChar = useMemo(() => (bestCharId ? getCharacterById(bestCharId) : null), [bestCharId]);
+
+  // 起動時に前日以前のランキングデータを削除
+  useEffect(() => {
+    clearOldRankings();
+  }, []);
 
   // ★起動直後にBGMの自動再生を試す（可能なら最初から鳴る）
   useEffect(() => {

@@ -18,7 +18,7 @@ export const GameScene: React.FC<{
   const CharacterImageComp = (CharMod as any).CharacterImage ?? (CharMod as any).default;
   const CatcherImageComp = (CatcherMod as any).CatcherImage ?? (CatcherMod as any).default;
 
-  const { items, score, timer, isHit, catchCount } = useGameLoop(
+  const { items, score, timer, isHit, catchCount, scoreRef } = useGameLoop(
     scene,
     playerXs,
     speedMultiplier,
@@ -26,8 +26,8 @@ export const GameScene: React.FC<{
   );
 
   useEffect(() => {
-    if (scene === "GAME" && timer <= 0) onEnd(score, catchCount.current);
-  }, [scene, timer, score, onEnd, catchCount]);
+    if (scene === "GAME" && timer <= 0) onEnd(scoreRef.current, catchCount.current);
+  }, [scene, timer, onEnd, catchCount, scoreRef]);
 
   const total = 30;
   const ratio = Math.max(0, Math.min(1, timer / total));
