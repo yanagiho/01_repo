@@ -49,9 +49,11 @@ export const RankingScene = ({
   const youIndex = useMemo(() => {
     if (top.length === 0) return -1;
     if (highlightAchievedAt != null) {
-      const matched = top.findIndex((r) => r.achieved_at === highlightAchievedAt);
-      if (matched >= 0) return matched;
+      // highlightAchievedAt が設定されている場合は完全一致のみ。
+      // 上位4件に入っていない場合は -1（"YOU" を表示しない）。
+      return top.findIndex((r) => r.achieved_at === highlightAchievedAt);
     }
+    // dev/preview 用フォールバック（highlightAchievedAt 未設定時のみ）
     return top.length - 1;
   }, [top, highlightAchievedAt]);
 
