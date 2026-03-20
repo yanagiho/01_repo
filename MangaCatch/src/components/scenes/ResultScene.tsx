@@ -2,6 +2,8 @@ import { useMemo } from "react";
 import { getCharacterById } from "../../constants/master";
 import * as CharMod from "../CharacterImage";
 
+const JP_FONT = "'Noto Sans CJK JP', 'Yu Gothic UI', 'Yu Gothic', 'Hiragino Kaku Gothic ProN', sans-serif";
+
 function rankColor(rank: number) {
   if (rank === 1) return "#ff3b30";
   if (rank === 2) return "#ff9500";
@@ -87,10 +89,10 @@ export const ResultScene = ({ score, counts }: { score: number; counts: Record<s
                   </div>
 
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 20, fontWeight: 900, color: "#fff", lineHeight: 1.15 }}>
+                    <div style={{ fontSize: 20, fontWeight: 900, color: "#fff", lineHeight: 1.15, fontFamily: JP_FONT }}>
                       {work || " "}
                     </div>
-                    <div style={{ marginTop: 4, fontSize: 16, opacity: 0.9, lineHeight: 1.1 }}>
+                    <div style={{ marginTop: 4, fontSize: 16, opacity: 0.9, lineHeight: 1.1, fontFamily: JP_FONT }}>
                       {artist || " "}
                     </div>
 
@@ -135,8 +137,8 @@ export const ResultScene = ({ score, counts }: { score: number; counts: Record<s
             textAlign: "right",
           }}
         >
-          <div style={{ fontSize: 54, fontWeight: 900, color: "#00eebb" }}>RESULT</div>
-          <div style={{ fontSize: 54, fontWeight: 900, opacity: 0.85 }}>SCORE</div>
+          <div style={{ fontSize: 54, fontWeight: 900, color: "#00eebb", fontFamily: JP_FONT }}>RESULT</div>
+          <div style={{ fontSize: 54, fontWeight: 900, opacity: 0.85, fontFamily: JP_FONT }}>SCORE</div>
 
           <div
             style={{

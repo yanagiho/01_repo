@@ -1,6 +1,8 @@
 import { useMemo, useRef, useState } from "react";
 import * as TitleBgModule from "../TitleBackgroundVideo";
 
+const JP_FONT = "'Noto Sans CJK JP', 'Yu Gothic UI', 'Yu Gothic', 'Hiragino Kaku Gothic ProN', sans-serif";
+
 type Props = { onStart: () => void };
 
 /**
@@ -100,6 +102,7 @@ export const TitleScene = ({ onStart }: Props) => {
                         fontSize: 36,
                         fontWeight: 900,
                         letterSpacing: 3,
+                        fontFamily: JP_FONT,
                         animation: "blinkStart 1.1s ease-in-out infinite",
                         boxShadow: "0 0 22px rgba(0,238,187,0.18)",
                     }}
@@ -119,6 +122,7 @@ export const TitleScene = ({ onStart }: Props) => {
                     fontSize: 32,
                     lineHeight: 1.35,
                     color: "rgba(255,255,255,0.78)",
+                    fontFamily: JP_FONT,
                     textShadow: "0 2px 10px rgba(0,0,0,0.65)",
                     userSelect: "none",
                     pointerEvents: "none",

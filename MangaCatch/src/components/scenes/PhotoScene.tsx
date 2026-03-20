@@ -4,6 +4,8 @@ import * as CoverMod from "../CoverImage";
 import * as CharMod from "../CharacterImage";
 import type { CharacterData } from "../../constants/master";
 
+const JP_FONT = "'Noto Sans CJK JP', 'Yu Gothic UI', 'Yu Gothic', 'Hiragino Kaku Gothic ProN', sans-serif";
+
 function buildCameraCandidates(): string[] {
   return Array.from(
     new Set([
@@ -109,10 +111,10 @@ export const PhotoScene = ({
           )}
 
           <div style={{ lineHeight: 1.05 }}>
-            <div style={{ fontSize: "70pt", fontWeight: 900, fontFamily: "'Noto Sans CJK JP', 'Yu Gothic UI', 'Yu Gothic', 'Hiragino Kaku Gothic ProN', sans-serif" }}>
+            <div style={{ fontSize: "70pt", fontWeight: 900, fontFamily: JP_FONT }}>
               いっしょに写真を撮ってね
             </div>
-            <div style={{ fontSize: 34, fontWeight: 800, color: "#00eebb", marginTop: 6, textAlign: "center" }}>
+            <div style={{ fontSize: 34, fontWeight: 800, color: "#00eebb", marginTop: 6, textAlign: "center", fontFamily: JP_FONT }}>
               Take a photo together!
             </div>
           </div>

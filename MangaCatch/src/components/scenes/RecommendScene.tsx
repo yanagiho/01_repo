@@ -2,6 +2,8 @@ import * as CoverMod from "../CoverImage";
 import * as CharMod from "../CharacterImage";
 import type { CharacterData } from "../../constants/master";
 
+const JP_FONT = "'Noto Sans CJK JP', 'Yu Gothic UI', 'Yu Gothic', 'Hiragino Kaku Gothic ProN', sans-serif";
+
 export const RecommendScene = ({ bestChar }: { bestChar: CharacterData | null }) => {
   const CoverImageComp = (CoverMod as any).CoverImage ?? (CoverMod as any).default;
   const CharacterImageComp = (CharMod as any).CharacterImage ?? (CharMod as any).default;
@@ -12,8 +14,8 @@ export const RecommendScene = ({ bestChar }: { bestChar: CharacterData | null })
     <div style={{ position: "absolute", inset: 0, zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#fff", paddingTop: 80 }}>
       {/* ヘッダー */}
       <div style={{ textAlign: "center", marginBottom: 24 }}>
-        <div style={{ fontSize: 96, fontWeight: 900, fontFamily: "'Noto Sans CJK JP', 'Yu Gothic UI', 'Yu Gothic', 'Hiragino Kaku Gothic ProN', sans-serif" }}>あなたが一番多く集めたのは</div>
-        <div style={{ fontSize: 36, color: "#00eebb", fontWeight: 700, marginTop: 6 }}>
+        <div style={{ fontSize: 96, fontWeight: 900, fontFamily: JP_FONT }}>あなたが一番多く集めたのは</div>
+        <div style={{ fontSize: 36, color: "#00eebb", fontWeight: 700, marginTop: 6, fontFamily: JP_FONT }}>
           The one you caught the most was
         </div>
       </div>
@@ -48,21 +50,21 @@ export const RecommendScene = ({ bestChar }: { bestChar: CharacterData | null })
 
         {/* テキスト */}
         <div style={{ textAlign: "left", display: "flex", flexDirection: "column", gap: 14 }}>
-          <div style={{ fontSize: 96, fontWeight: 900, color: "#00eebb", whiteSpace: "nowrap" }}>
+          <div style={{ fontSize: 96, fontWeight: 900, color: "#00eebb", whiteSpace: "nowrap", fontFamily: JP_FONT }}>
             {(bestChar as any).name ?? ""} <span style={{ color: "#fff" }}>です</span>
           </div>
-          <div style={{ fontSize: 36, color: "#00eebb", fontWeight: 700, whiteSpace: "nowrap" }}>
+          <div style={{ fontSize: 36, color: "#00eebb", fontWeight: 700, whiteSpace: "nowrap", fontFamily: JP_FONT }}>
             {(bestChar as any).nameEn ?? ""}
           </div>
 
-          <div style={{ marginTop: 16, fontSize: 60, fontWeight: 900, whiteSpace: "nowrap" }}>
+          <div style={{ marginTop: 16, fontSize: 60, fontWeight: 900, whiteSpace: "nowrap", fontFamily: JP_FONT }}>
             {(bestChar as any).artist ?? ""} 先生 の
           </div>
-          <div style={{ fontSize: 32, color: "#00eebb", fontWeight: 700, whiteSpace: "nowrap" }}>
+          <div style={{ fontSize: 32, color: "#00eebb", fontWeight: 700, whiteSpace: "nowrap", fontFamily: JP_FONT }}>
             {(bestChar as any).artistEn ?? ""}
           </div>
 
-          <div style={{ marginTop: 16, fontSize: 60, fontWeight: 900 }}>
+          <div style={{ marginTop: 16, fontSize: 60, fontWeight: 900, fontFamily: JP_FONT }}>
             作品に出てきます
           </div>
         </div>

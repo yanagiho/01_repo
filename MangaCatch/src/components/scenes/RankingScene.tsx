@@ -1,6 +1,8 @@
 
 import { useMemo } from "react";
 
+const JP_FONT = "'Noto Sans CJK JP', 'Yu Gothic UI', 'Yu Gothic', 'Hiragino Kaku Gothic ProN', sans-serif";
+
 const RANKING_STYLES = `
   @keyframes blinkBorder {
     0%, 100% { box-shadow: 0 0 0 2px rgba(0,238,187,0.85), 0 0 18px rgba(0,238,187,0.25); }
@@ -94,8 +96,8 @@ export const RankingScene = ({
         >
           {/* タイトル */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 4, width: "100%" }}>
-            <div style={{ fontSize: 80, fontWeight: 900, fontFamily: "'Noto Sans CJK JP', 'Yu Gothic UI', 'Yu Gothic', 'Hiragino Kaku Gothic ProN', sans-serif" }}>ランキング</div>
-            <div style={{ fontSize: 30, color: "#00eebb", fontWeight: 700 }}>Ranking</div>
+            <div style={{ fontSize: 80, fontWeight: 900, fontFamily: JP_FONT }}>ランキング</div>
+            <div style={{ fontSize: 30, color: "#00eebb", fontWeight: 700, fontFamily: JP_FONT }}>Ranking</div>
           </div>
 
           {top.map((r, idx) => {
@@ -217,6 +219,7 @@ export const RankingScene = ({
                       whiteSpace: "nowrap",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
+                      fontFamily: JP_FONT,
                     }}
                   >
                     {work || " "}
@@ -230,6 +233,7 @@ export const RankingScene = ({
                       whiteSpace: "nowrap",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
+                      fontFamily: JP_FONT,
                     }}
                   >
                     {artist || " "}
@@ -283,10 +287,10 @@ export const RankingScene = ({
         >
           {/* 本日のトップスコア */}
           <div>
-            <div style={{ fontSize: 52, fontWeight: 900, lineHeight: 1.1 }}>
+            <div style={{ fontSize: 52, fontWeight: 900, lineHeight: 1.1, fontFamily: JP_FONT }}>
               本日のトップスコア
             </div>
-            <div style={{ fontSize: 26, color: "#00eebb", fontWeight: 700, marginTop: 4 }}>
+            <div style={{ fontSize: 26, color: "#00eebb", fontWeight: 700, marginTop: 4, fontFamily: JP_FONT }}>
               Top Score
             </div>
             <div
@@ -305,10 +309,10 @@ export const RankingScene = ({
 
           {/* あなたのスコア */}
           <div>
-            <div style={{ fontSize: 52, fontWeight: 900, lineHeight: 1.1 }}>
+            <div style={{ fontSize: 52, fontWeight: 900, lineHeight: 1.1, fontFamily: JP_FONT }}>
               あなたのスコア
             </div>
-            <div style={{ fontSize: 26, color: "#00eebb", fontWeight: 700, marginTop: 4 }}>
+            <div style={{ fontSize: 26, color: "#00eebb", fontWeight: 700, marginTop: 4, fontFamily: JP_FONT }}>
               You Score
             </div>
             <div
