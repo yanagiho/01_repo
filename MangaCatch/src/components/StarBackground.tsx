@@ -1,7 +1,12 @@
 // MangaCatch/src/components/StarBackground.tsx
+// 30fps cap + バッチ描画でCeleron/Intel UHD環境の負荷を軽減
 import React, { useEffect, useRef } from "react";
 
-type Star = { x: number; y: number; r: number; a: number; v: number };
+type Star = { x: number; y: number; r: number; v: number };
+
+const FRAME_MIN = 1000 / 30;
+// 星密度を下げる（旧: /12000 → 新: /18000）
+const STAR_DENSITY = 18000;
 
 export const StarBackground: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -9,15 +14,14 @@ export const StarBackground: React.FC = () => {
   const rafRef = useRef<number>(0);
 
   const initStars = (w: number, h: number) => {
-    const n = Math.floor((w * h) / 12000); // 密度調整
+    const n = Math.floor((w * h) / STAR_DENSITY);
     const stars: Star[] = [];
     for (let i = 0; i < n; i++) {
       stars.push({
         x: Math.random() * w,
         y: Math.random() * h,
-        r: 0.6 + Math.random() * 1.9,
-        a: 0.25 + Math.random() * 0.75,
-        v: 10 + Math.random() * 40, // px/sec
+        r: 0.6 + Math.random() * 1.6,
+        v: 8 + Math.random() * 32,
       });
     }
     starsRef.current = stars;
@@ -26,7 +30,7 @@ export const StarBackground: React.FC = () => {
   useEffect(() => {
     const canvas = canvasRef.current!;
     const ctx = canvas.getContext("2d")!;
-    let last = performance.now();
+    let last = 0;
     let cachedGrad: CanvasGradient | null = null;
     let cachedW = 0;
     let cachedH = 0;
@@ -48,6 +52,9 @@ export const StarBackground: React.FC = () => {
     };
 
     const tick = (now: number) => {
+      rafRef.current = requestAnimationFrame(tick);
+      // 30fps cap
+      if (now - last < FRAME_MIN) return;
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
 
@@ -58,22 +65,22 @@ export const StarBackground: React.FC = () => {
       ctx.fillStyle = cachedGrad!;
       ctx.fillRect(0, 0, w, h);
 
-      // 星
+      // 星をバッチ描画（per-star globalAlpha変更を廃止し1回のfillで全描画）
+      ctx.globalAlpha = 0.75;
       ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
       for (const s of starsRef.current) {
         s.y += s.v * dt;
         if (s.y > h + 10) {
           s.y = -10;
           s.x = Math.random() * w;
-          s.v = 10 + Math.random() * 40;
-          s.a = 0.25 + Math.random() * 0.75;
-          s.r = 0.6 + Math.random() * 1.9;
+          s.v = 8 + Math.random() * 32;
+          s.r = 0.6 + Math.random() * 1.6;
         }
-        ctx.globalAlpha = s.a;
-        ctx.beginPath();
+        ctx.moveTo(s.x + s.r, s.y);
         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fill();
       }
+      ctx.fill();
       ctx.globalAlpha = 1;
 
       rafRef.current = requestAnimationFrame(tick);

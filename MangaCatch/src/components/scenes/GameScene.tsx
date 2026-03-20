@@ -133,10 +133,8 @@ export const GameScene: React.FC<{
               transform: `translate(${it.x}px, ${y}px) translate(-50%, -50%) scale(${scale})`,
               objectFit: "contain",
               opacity,
-              filter: "drop-shadow(0 12px 14px rgba(0,0,0,0.62))",
               pointerEvents: "none",
               zIndex: 14,
-              willChange: "transform, opacity",
             }}
           />
         ) : null;
@@ -156,11 +154,8 @@ export const GameScene: React.FC<{
                 objectFit: "contain",
                 pointerEvents: "none",
                 zIndex: 12,
-                opacity: 0.92,
+                opacity: isHit ? 1.0 : 0.92,
                 willChange: "transform",
-                filter: isHit
-                  ? "drop-shadow(0 0 34px rgba(255,255,255,0.75)) drop-shadow(0 0 64px rgba(0,238,187,0.60))"
-                  : "drop-shadow(0 0 24px rgba(0,238,187,0.40))",
               }}
             />
           ))

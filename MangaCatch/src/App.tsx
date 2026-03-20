@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StarBackground } from "./components/StarBackground";
 import { ScreentoneWipe } from "./components/ScreentoneWipe";
+import { ParticleCanvas } from "./components/ParticleCanvas";
 
 import { useParticles } from "./hooks/useParticles";
 import { useSensor } from "./hooks/useSensor";
@@ -67,7 +68,7 @@ export default function App() {
   const audio = AudioManager.instance;
 
   const { personCount, speedMultiplier, playerXs, sensorDebug } = useSensor();
-  const { particles, createParticles } = useParticles();
+  const { particlesRef, createParticles } = useParticles();
 
   const devScene = useMemo(() => {
     const p = new URLSearchParams(window.location.search).get("scene");
@@ -191,25 +192,8 @@ export default function App() {
       <ScreentoneWipe trigger={wipeTrigger} onMiddle={onWipeMiddle} onComplete={onWipeComplete} />
       <SensorDebugOverlay debug={sensorDebug} visible={new URLSearchParams(window.location.search).has('debug')} />
 
-      {/* particles */}
-      {particles.map((p) => (
-        <div
-          key={p.id}
-          style={{
-            position: "absolute",
-            left: p.x,
-            top: p.y,
-            width: p.size,
-            height: p.size,
-            borderRadius: "50%",
-            background: "#00eebb",
-            opacity: p.life,
-            transform: "translate(-50%, -50%)",
-            pointerEvents: "none",
-            zIndex: 30,
-          }}
-        />
-      ))}
+      {/* particles: DOM divの代わりにcanvasで描画（パフォーマンス最適化） */}
+      <ParticleCanvas particlesRef={particlesRef} />
 
       {scene === "TITLE" && (
         <TitleScene
