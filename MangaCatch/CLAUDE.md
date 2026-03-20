@@ -135,7 +135,7 @@ npm run dist:win
 
 | 画面 | テキスト |
 |---|---|
-| オススメ画面 | `アナタがキャッチしたのは` |
+| オススメ画面 | `あなたが一番多く集めたのは` |
 | ランキング画面（自分） | `YOU` |
 
 > システムや翻訳機能による日本語変換禁止。カタカナ・英語で厳密にハードコード。
@@ -166,12 +166,27 @@ cd MangaCatch && npx vite --config vite.web.config.ts --port 5174
 node screenshot2.js
 ```
 
-- 出力先: `/tmp/ss_recommend.png`, `/tmp/ss_photo.png`, `/tmp/ss_ranking.png`
-- URLに `?debug=1` が含まれており、デバッグoverlay付きで撮影される
+- 出力先: `/tmp/ss_title.png`, `/tmp/ss_result.png`, `/tmp/ss_recommend.png`, `/tmp/ss_photo.png`, `/tmp/ss_ranking.png`
+- デバッグoverlay **なし**（`?debug=1` は付けない）
 - Chromium: `/usr/bin/chromium`（ChromeBook Crostini環境）
+- Ranking撮影時は `localStorage` に事前データを仕込む必要あり（スクリプト内で自動処理）
+- Ranking は `DUR_RANKING=10000ms` で自動遷移するため、撮影は起動後4秒以内に完了させること
 
 ## 写真撮影画面（PhotoScene）
 
 - 解像度: 1920×1080 (Full HD) フル活用
 - 黒枠（レターボックス）なし
 - フォントサイズ: スコア等 **71pt**、「写真を撮ってね」**70pt**
+
+## フォント設計
+
+全画面の全テキスト要素に `JP_FONT` 定数を**明示的**に指定済み。bodyからの継承に依存しない。
+
+```ts
+const JP_FONT = "'Noto Sans CJK JP', 'Yu Gothic UI', 'Yu Gothic', 'Hiragino Kaku Gothic ProN', sans-serif";
+```
+
+- **日本語テキスト・英語ラベル**: `JP_FONT`（Windows実機では Yu Gothic UI にフォールバック）
+- **数値・スコア・時刻**: `fontFamily: "monospace"`（デザイン意図・変更不可）
+- `index.html` の `lang="ja"` 必須（`lang="en"` だと漢字が中国語グリフで描画される）
+- `src/index.css` の `body` にも同じフォントスタックを設定済み（フォールバック保険）
