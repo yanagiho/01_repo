@@ -69,7 +69,11 @@ export default function App() {
   const { personCount, speedMultiplier, playerXs, sensorDebug } = useSensor();
   const { particles, createParticles } = useParticles();
 
-  const [scene, setScene] = useState<SceneType>("TITLE");
+  const devScene = useMemo(() => {
+    const p = new URLSearchParams(window.location.search).get("scene");
+    return p ? (p.toUpperCase() as SceneType) : null;
+  }, []);
+  const [scene, setScene] = useState<SceneType>(devScene ?? "TITLE");
 
   // ワイプ
   const [wipeTrigger, setWipeTrigger] = useState(false);
@@ -77,12 +81,21 @@ export default function App() {
   const transitioningRef = useRef(false);
 
   // 結果
-  const [score, setScore] = useState(0);
+  const devCharId = useMemo(() => {
+    return new URLSearchParams(window.location.search).get("charId") ?? "";
+  }, []);
+  const devScore = useMemo(() => {
+    return parseInt(new URLSearchParams(window.location.search).get("score") ?? "90", 10);
+  }, []);
+
+  const [score, setScore] = useState(devScore);
   const [counts, setCounts] = useState<Record<string, number>>({});
-  const [bestCharId, setBestCharId] = useState<string>("");
+  const [bestCharId, setBestCharId] = useState<string>(devCharId);
 
   // ランキング
-  const [ranking, setRanking] = useState<RankingEntry[]>([]);
+  const [ranking, setRanking] = useState<RankingEntry[]>(() =>
+    devScene === "RANKING" ? loadRankingToday() : []
+  );
   const [highlightAchievedAt, setHighlightAchievedAt] = useState<number | undefined>(undefined);
 
   const bestChar = useMemo(() => (bestCharId ? getCharacterById(bestCharId) : null), [bestCharId]);

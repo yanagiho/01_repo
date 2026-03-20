@@ -1,5 +1,15 @@
 
 import { useMemo } from "react";
+
+const RANKING_STYLES = `
+  @keyframes blinkBorder {
+    0%, 100% { box-shadow: 0 0 0 2px rgba(0,238,187,0.85), 0 0 18px rgba(0,238,187,0.25); }
+    50% { box-shadow: 0 0 0 2px rgba(0,238,187,0.0), 0 0 0 rgba(0,238,187,0); }
+  }
+  .ranking-me-row {
+    animation: blinkBorder 1s ease-in-out infinite;
+  }
+`;
 import type { RankingEntry } from "../../types/game";
 import { getCharacterById } from "../../constants/master";
 import * as CharMod from "../CharacterImage";
@@ -32,7 +42,7 @@ export const RankingScene = ({
   const CoverImageComp =
     (CoverMod as any).CoverImage ?? (CoverMod as any).default;
 
-  const top = useMemo(() => ranking.slice(0, 5), [ranking]);
+  const top = useMemo(() => ranking.slice(0, 4), [ranking]);
 
   const youIndex = useMemo(() => {
     if (top.length === 0) return -1;
@@ -55,12 +65,13 @@ export const RankingScene = ({
         padding: 18,
       }}
     >
+      <style>{RANKING_STYLES}</style>
       <div
         style={{
           width: "min(1600px, 96vw)",
           height: "min(900px, 94vh)",
           display: "grid",
-          gridTemplateColumns: "1fr 380px",
+          gridTemplateColumns: "1fr 540px",
           gap: 18,
           alignItems: "stretch",
           justifyContent: "center",
@@ -80,9 +91,9 @@ export const RankingScene = ({
           }}
         >
           {/* タイトル */}
-          <div style={{ textAlign: "center", marginBottom: 4 }}>
-            <div style={{ fontSize: 72, fontWeight: 900 }}>ランキング</div>
-            <div style={{ fontSize: 24, color: "#00eebb", fontWeight: 700 }}>Ranking</div>
+          <div style={{ textAlign: "center", marginBottom: 8, width: "100%" }}>
+            <div style={{ fontSize: 130, fontWeight: 900 }}>ランキング</div>
+            <div style={{ fontSize: 40, color: "#00eebb", fontWeight: 700 }}>Ranking</div>
           </div>
 
           {top.map((r, idx) => {
@@ -97,17 +108,18 @@ export const RankingScene = ({
             return (
               <div
                 key={`${rank}-${r.achieved_at}-${r.score}`}
+                className={isMe ? "ranking-me-row" : undefined}
                 style={{
                   width: "min(960px, 96%)",
                   display: "grid",
-                  gridTemplateColumns: "56px 80px 80px minmax(180px, 1fr) 96px",
-                  gap: 10,
+                  gridTemplateColumns: "70px 120px 120px minmax(200px, 1fr) 120px",
+                  gap: 14,
                   alignItems: "center",
                   justifyContent: "center",
-                  padding: "14px 16px",
+                  padding: "20px 24px",
                   borderRadius: 16,
                   background: isMe ? "rgba(0,238,187,0.08)" : "rgba(0,0,0,0.28)",
-                  border: isMe ? "2px solid rgba(0,238,187,0.75)" : "1px solid rgba(255,255,255,0.08)",
+                  border: isMe ? "none" : "1px solid rgba(255,255,255,0.08)",
                   color: col,
                   boxSizing: "border-box",
                 }}
@@ -115,7 +127,7 @@ export const RankingScene = ({
                 <div
                   style={{
                     fontFamily: "monospace",
-                    fontSize: 36,
+                    fontSize: 48,
                     fontWeight: 900,
                     textAlign: "right",
                   }}
@@ -125,8 +137,8 @@ export const RankingScene = ({
 
                 <div
                   style={{
-                    width: 80,
-                    height: 80,
+                    width: 120,
+                    height: 120,
                     display: "grid",
                     placeItems: "center",
                   }}
@@ -135,8 +147,8 @@ export const RankingScene = ({
                     <CharacterImageComp
                       char={c}
                       style={{
-                        width: 75,
-                        height: 75,
+                        width: 112,
+                        height: 112,
                         objectFit: "contain",
                       }}
                     />
@@ -147,8 +159,8 @@ export const RankingScene = ({
 
                 <div
                   style={{
-                    width: 80,
-                    height: 80,
+                    width: 120,
+                    height: 120,
                     display: "grid",
                     placeItems: "center",
                   }}
@@ -157,8 +169,8 @@ export const RankingScene = ({
                     <CoverImageComp
                       char={c}
                       style={{
-                        width: 75,
-                        height: 75,
+                        width: 112,
+                        height: 112,
                         objectFit: "contain",
                         borderRadius: 6,
                       }}
@@ -172,7 +184,7 @@ export const RankingScene = ({
                   <div
                     style={{
                       fontFamily: "monospace",
-                      fontSize: 26,
+                      fontSize: 38,
                       fontWeight: 900,
                       lineHeight: 1.0,
                     }}
@@ -184,7 +196,7 @@ export const RankingScene = ({
                     style={{
                       marginTop: 6,
                       fontFamily: "monospace",
-                      fontSize: 20,
+                      fontSize: 26,
                       fontWeight: 900,
                       opacity: 0.78,
                       lineHeight: 1.0,
@@ -196,7 +208,7 @@ export const RankingScene = ({
                   <div
                     style={{
                       marginTop: 8,
-                      fontSize: 15,
+                      fontSize: 22,
                       fontWeight: 900,
                       color: "rgba(255,255,255,0.94)",
                       lineHeight: 1.1,
@@ -211,7 +223,7 @@ export const RankingScene = ({
                   <div
                     style={{
                       marginTop: 4,
-                      fontSize: 13,
+                      fontSize: 18,
                       opacity: 0.9,
                       whiteSpace: "nowrap",
                       overflow: "hidden",
@@ -269,20 +281,20 @@ export const RankingScene = ({
         >
           {/* 本日のトップスコア */}
           <div>
-            <div style={{ fontSize: 28, fontWeight: 900, lineHeight: 1.1 }}>
+            <div style={{ fontSize: 52, fontWeight: 900, lineHeight: 1.1 }}>
               本日のトップスコア
             </div>
-            <div style={{ fontSize: 18, color: "#00eebb", fontWeight: 700, marginTop: 2 }}>
+            <div style={{ fontSize: 26, color: "#00eebb", fontWeight: 700, marginTop: 4 }}>
               Top Score
             </div>
             <div
               style={{
                 fontFamily: "monospace",
-                fontSize: 80,
+                fontSize: 130,
                 fontWeight: 900,
                 color: "#ff3b30",
                 lineHeight: 1.0,
-                marginTop: 6,
+                marginTop: 8,
               }}
             >
               {top[0]?.score ?? 0}
@@ -291,20 +303,20 @@ export const RankingScene = ({
 
           {/* あなたのスコア */}
           <div>
-            <div style={{ fontSize: 28, fontWeight: 900, lineHeight: 1.1 }}>
+            <div style={{ fontSize: 52, fontWeight: 900, lineHeight: 1.1 }}>
               あなたのスコア
             </div>
-            <div style={{ fontSize: 18, color: "#00eebb", fontWeight: 700, marginTop: 2 }}>
+            <div style={{ fontSize: 26, color: "#00eebb", fontWeight: 700, marginTop: 4 }}>
               You Score
             </div>
             <div
               style={{
                 fontFamily: "monospace",
-                fontSize: 80,
+                fontSize: 130,
                 fontWeight: 900,
                 color: "#00eebb",
                 lineHeight: 1.0,
-                marginTop: 6,
+                marginTop: 8,
               }}
             >
               {myScore ?? 0}

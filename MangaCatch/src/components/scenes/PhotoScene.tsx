@@ -68,12 +68,12 @@ export const PhotoScene = ({
         <div
           style={{
             position: "absolute",
-            top: 18,
-            left: 18,
+            top: 50,
+            left: 50,
             zIndex: 20,
             display: "flex",
             alignItems: "center",
-            gap: 16,
+            gap: 24,
           }}
         >
           {!camBroken && (
@@ -112,7 +112,7 @@ export const PhotoScene = ({
             <div style={{ fontSize: "70pt", fontWeight: 900 }}>
               いっしょに写真を撮ってね
             </div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: "#00eebb" }}>
+            <div style={{ fontSize: 34, fontWeight: 800, color: "#00eebb", marginTop: 6, textAlign: "center" }}>
               Take a photo together!
             </div>
           </div>
@@ -121,8 +121,8 @@ export const PhotoScene = ({
         <div
           style={{
             position: "absolute",
-            top: 18,
-            right: 36,
+            top: 50,
+            right: 50,
             zIndex: 20,
             textAlign: "right",
             textShadow: "0 3px 12px rgba(0,0,0,0.85)",
@@ -153,13 +153,13 @@ export const PhotoScene = ({
         <div
           style={{
             position: "absolute",
-            left: 18,
-            right: 18,
-            top: 210,
-            bottom: 18,
+            left: 50,
+            right: 50,
+            top: 280,
+            bottom: 50,
             display: "grid",
             gridTemplateColumns: "1fr 1fr 1fr",
-            gap: 18,
+            gap: 24,
             alignItems: "center",
           }}
         >
@@ -168,11 +168,12 @@ export const PhotoScene = ({
               <CoverImageComp
                 char={bestChar}
                 style={{
-                  width: "100%",
-                  height: "100%",
+                  maxWidth: "80%",
+                  maxHeight: 480,
+                  width: "auto",
+                  height: "auto",
                   objectFit: "contain",
                   borderRadius: 16,
-                  background: "rgba(0,0,0,0.22)",
                 }}
               />
             ) : null}

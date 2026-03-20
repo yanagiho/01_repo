@@ -11,9 +11,9 @@ export const RecommendScene = ({ bestChar }: { bestChar: CharacterData | null })
   return (
     <div style={{ position: "absolute", inset: 0, zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#fff" }}>
       {/* ヘッダー */}
-      <div style={{ textAlign: "center", marginBottom: 18 }}>
-        <div style={{ fontSize: 72, fontWeight: 900 }}>あなたが一番多く集めたのは</div>
-        <div style={{ fontSize: 28, color: "#00eebb", fontWeight: 700, marginTop: 4 }}>
+      <div style={{ textAlign: "center", marginBottom: 24 }}>
+        <div style={{ fontSize: 96, fontWeight: 900 }}>あなたが一番多く集めたのは</div>
+        <div style={{ fontSize: 36, color: "#00eebb", fontWeight: 700, marginTop: 6 }}>
           The one you caught the most was
         </div>
       </div>
@@ -38,7 +38,7 @@ export const RecommendScene = ({ bestChar }: { bestChar: CharacterData | null })
             char={bestChar}
             style={{
               width: "100%",
-              height: 520,
+              height: 650,
               objectFit: "contain",
               borderRadius: 16,
               background: "rgba(0,0,0,0.22)",
@@ -47,28 +47,28 @@ export const RecommendScene = ({ bestChar }: { bestChar: CharacterData | null })
         ) : <div />}
 
         {/* テキスト */}
-        <div style={{ textAlign: "left", display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ fontSize: 72, fontWeight: 900, color: "#00eebb" }}>
+        <div style={{ textAlign: "left", display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ fontSize: 96, fontWeight: 900, color: "#fff", whiteSpace: "nowrap" }}>
             {(bestChar as any).name ?? ""} <span style={{ color: "#fff" }}>です</span>
           </div>
-          <div style={{ fontSize: 28, color: "#00eebb", fontWeight: 700 }}>
+          <div style={{ fontSize: 36, color: "#00eebb", fontWeight: 700, whiteSpace: "nowrap" }}>
             {(bestChar as any).nameEn ?? ""}
           </div>
 
-          <div style={{ marginTop: 14, fontSize: 44, fontWeight: 900 }}>
+          <div style={{ marginTop: 16, fontSize: 60, fontWeight: 900, whiteSpace: "nowrap" }}>
             {(bestChar as any).artist ?? ""} 先生 の
           </div>
-          <div style={{ fontSize: 24, color: "#00eebb", fontWeight: 700 }}>
+          <div style={{ fontSize: 32, color: "#00eebb", fontWeight: 700, whiteSpace: "nowrap" }}>
             {(bestChar as any).artistEn ?? ""}
           </div>
 
-          <div style={{ marginTop: 14, fontSize: 44, fontWeight: 900 }}>
+          <div style={{ marginTop: 16, fontSize: 60, fontWeight: 900 }}>
             作品に出てきます
           </div>
         </div>
 
         {/* キャラクター */}
-        <div style={{ display: "grid", placeItems: "center", height: 520 }}>
+        <div style={{ display: "grid", placeItems: "center", height: 650 }}>
           {CharacterImageComp ? (
             <CharacterImageComp
               char={bestChar}
