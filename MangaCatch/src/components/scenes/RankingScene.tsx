@@ -60,9 +60,11 @@ export const RankingScene = ({
         inset: 0,
         zIndex: 10,
         display: "grid",
-        placeItems: "center",
+        alignItems: "flex-start",
+        justifyItems: "center",
         color: "#fff",
         padding: 18,
+        paddingTop: 40,
       }}
     >
       <style>{RANKING_STYLES}</style>
@@ -91,9 +93,9 @@ export const RankingScene = ({
           }}
         >
           {/* タイトル */}
-          <div style={{ textAlign: "center", marginBottom: 8, width: "100%" }}>
-            <div style={{ fontSize: 130, fontWeight: 900 }}>ランキング</div>
-            <div style={{ fontSize: 40, color: "#00eebb", fontWeight: 700 }}>Ranking</div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 4, width: "100%" }}>
+            <div style={{ fontSize: 80, fontWeight: 900, fontFamily: "'Noto Sans CJK JP', 'Yu Gothic UI', 'Yu Gothic', 'Hiragino Kaku Gothic ProN', sans-serif" }}>ランキング</div>
+            <div style={{ fontSize: 30, color: "#00eebb", fontWeight: 700 }}>Ranking</div>
           </div>
 
           {top.map((r, idx) => {
@@ -112,11 +114,11 @@ export const RankingScene = ({
                 style={{
                   width: "min(960px, 96%)",
                   display: "grid",
-                  gridTemplateColumns: "70px 120px 120px minmax(200px, 1fr) 120px",
+                  gridTemplateColumns: "70px 96px 96px minmax(200px, 1fr) 120px",
                   gap: 14,
                   alignItems: "center",
                   justifyContent: "center",
-                  padding: "20px 24px",
+                  padding: "10px 24px",
                   borderRadius: 16,
                   background: isMe ? "rgba(0,238,187,0.08)" : "rgba(0,0,0,0.28)",
                   border: isMe ? "none" : "1px solid rgba(255,255,255,0.08)",
@@ -137,8 +139,8 @@ export const RankingScene = ({
 
                 <div
                   style={{
-                    width: 120,
-                    height: 120,
+                    width: 96,
+                    height: 96,
                     display: "grid",
                     placeItems: "center",
                   }}
@@ -147,8 +149,8 @@ export const RankingScene = ({
                     <CharacterImageComp
                       char={c}
                       style={{
-                        width: 112,
-                        height: 112,
+                        width: 88,
+                        height: 88,
                         objectFit: "contain",
                       }}
                     />
@@ -159,8 +161,8 @@ export const RankingScene = ({
 
                 <div
                   style={{
-                    width: 120,
-                    height: 120,
+                    width: 96,
+                    height: 96,
                     display: "grid",
                     placeItems: "center",
                   }}
@@ -169,8 +171,8 @@ export const RankingScene = ({
                     <CoverImageComp
                       char={c}
                       style={{
-                        width: 112,
-                        height: 112,
+                        width: 88,
+                        height: 88,
                         objectFit: "contain",
                         borderRadius: 6,
                       }}

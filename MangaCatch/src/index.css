@@ -4,4 +4,5 @@ body {
     background-color: #000;
     overflow: hidden;
     user-select: none;
+    font-family: 'Noto Sans CJK JP', 'Yu Gothic UI', 'Yu Gothic', 'Hiragino Kaku Gothic ProN', sans-serif;
 }

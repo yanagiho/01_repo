@@ -147,7 +147,28 @@ URL に `?debug=1` を付けたときのみ画面右上に表示される（通�
 
 表示内容: OSC受信状態・frame・playerCount・playerX・rawPlayers・parseMode・usingFallback 等。
 
+OSC状態表示の仕様:
+- `未受信`: OSCをまだ一度も受信していない
+- `受信中 (Xms前)`: 1500ms以内に受信
+- `停止? (Xms前)`: 1500ms〜3000ms以内に受信（最後の受信から時間が経っている）
+
 デバッグ時のURL例: `http://localhost:5173/?debug=1`
+
+## スクリーンショット自動撮影
+
+`screenshot2.js`（Git未管理・ローカルのみ）で Puppeteer による自動撮影が可能。
+
+```bash
+# Viteサーバーを先に起動
+cd MangaCatch && npx vite --config vite.web.config.ts --port 5174
+
+# 別ターミナルで実行
+node screenshot2.js
+```
+
+- 出力先: `/tmp/ss_recommend.png`, `/tmp/ss_photo.png`, `/tmp/ss_ranking.png`
+- URLに `?debug=1` が含まれており、デバッグoverlay付きで撮影される
+- Chromium: `/usr/bin/chromium`（ChromeBook Crostini環境）
 
 ## 写真撮影画面（PhotoScene）
 

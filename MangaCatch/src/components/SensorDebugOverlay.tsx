@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { SensorDebugInfo } from '../game/sensor/SensorManager';
 
 type Props = {
@@ -7,11 +7,11 @@ type Props = {
 };
 
 export default function SensorDebugOverlay({ debug, visible = true }: Props) {
-    const [, forceTick] = useState(0);
+    const [now, setNow] = useState(() => Date.now());
 
     useEffect(() => {
         const timer = window.setInterval(() => {
-            forceTick((v) => v + 1);
+            setNow(Date.now());
         }, 250);
 
         return () => {
@@ -19,17 +19,12 @@ export default function SensorDebugOverlay({ debug, visible = true }: Props) {
         };
     }, []);
 
-    const receivedAgoMs = useMemo(() => {
-        if (!debug.lastReceivedAt) {
-            return -1;
-        }
-        return Date.now() - debug.lastReceivedAt;
-    }, [debug.lastReceivedAt]);
+    const receivedAgoMs = debug.lastReceivedAt > 0 ? now - debug.lastReceivedAt : -1;
 
     const oscStatus =
-        debug.lastReceivedAt > 0 && receivedAgoMs >= 0 && receivedAgoMs <= 1500
-            ? '受信中'
-            : '未受信/停止';
+        debug.lastReceivedAt > 0 && receivedAgoMs >= 0 && receivedAgoMs <= 3000
+            ? receivedAgoMs <= 1500 ? `受信中 (${receivedAgoMs}ms前)` : `停止? (${receivedAgoMs}ms前)`
+            : '未受信';
 
     if (!visible) {
         return null;
@@ -55,7 +50,6 @@ export default function SensorDebugOverlay({ debug, visible = true }: Props) {
             }}
         >
             <div>OSC: {oscStatus}</div>
-            <div>receivedAgoMs: {receivedAgoMs >= 0 ? receivedAgoMs : '(none)'}</div>
             <div>frame: {debug.frame}</div>
             <div>lastOscAddress: {debug.lastOscAddress}</div>
             <div>argCount: {debug.argCount}</div>

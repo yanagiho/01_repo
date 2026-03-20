@@ -68,7 +68,7 @@ export const PhotoScene = ({
         <div
           style={{
             position: "absolute",
-            top: 50,
+            top: 120,
             left: 50,
             zIndex: 20,
             display: "flex",
@@ -109,7 +109,7 @@ export const PhotoScene = ({
           )}
 
           <div style={{ lineHeight: 1.05 }}>
-            <div style={{ fontSize: "70pt", fontWeight: 900 }}>
+            <div style={{ fontSize: "70pt", fontWeight: 900, fontFamily: "'Noto Sans CJK JP', 'Yu Gothic UI', 'Yu Gothic', 'Hiragino Kaku Gothic ProN', sans-serif" }}>
               いっしょに写真を撮ってね
             </div>
             <div style={{ fontSize: 34, fontWeight: 800, color: "#00eebb", marginTop: 6, textAlign: "center" }}>
@@ -121,7 +121,7 @@ export const PhotoScene = ({
         <div
           style={{
             position: "absolute",
-            top: 50,
+            top: 120,
             right: 50,
             zIndex: 20,
             textAlign: "right",
@@ -155,7 +155,7 @@ export const PhotoScene = ({
             position: "absolute",
             left: 50,
             right: 50,
-            top: 280,
+            top: 360,
             bottom: 50,
             display: "grid",
             gridTemplateColumns: "1fr 1fr 1fr",

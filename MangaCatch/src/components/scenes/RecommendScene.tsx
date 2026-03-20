@@ -9,10 +9,10 @@ export const RecommendScene = ({ bestChar }: { bestChar: CharacterData | null })
   if (!bestChar) return null;
 
   return (
-    <div style={{ position: "absolute", inset: 0, zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#fff" }}>
+    <div style={{ position: "absolute", inset: 0, zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#fff", paddingTop: 80 }}>
       {/* ヘッダー */}
       <div style={{ textAlign: "center", marginBottom: 24 }}>
-        <div style={{ fontSize: 96, fontWeight: 900 }}>あなたが一番多く集めたのは</div>
+        <div style={{ fontSize: 96, fontWeight: 900, fontFamily: "'Noto Sans CJK JP', 'Yu Gothic UI', 'Yu Gothic', 'Hiragino Kaku Gothic ProN', sans-serif" }}>あなたが一番多く集めたのは</div>
         <div style={{ fontSize: 36, color: "#00eebb", fontWeight: 700, marginTop: 6 }}>
           The one you caught the most was
         </div>
@@ -48,7 +48,7 @@ export const RecommendScene = ({ bestChar }: { bestChar: CharacterData | null })
 
         {/* テキスト */}
         <div style={{ textAlign: "left", display: "flex", flexDirection: "column", gap: 14 }}>
-          <div style={{ fontSize: 96, fontWeight: 900, color: "#fff", whiteSpace: "nowrap" }}>
+          <div style={{ fontSize: 96, fontWeight: 900, color: "#00eebb", whiteSpace: "nowrap" }}>
             {(bestChar as any).name ?? ""} <span style={{ color: "#fff" }}>です</span>
           </div>
           <div style={{ fontSize: 36, color: "#00eebb", fontWeight: 700, whiteSpace: "nowrap" }}>

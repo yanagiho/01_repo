@@ -188,12 +188,12 @@ export default function App() {
       }}
     >
 
-      <StarBackground />
+      {!new URLSearchParams(window.location.search).has('screenshot') && <StarBackground />}
       <ScreentoneWipe trigger={wipeTrigger} onMiddle={onWipeMiddle} onComplete={onWipeComplete} />
       <SensorDebugOverlay debug={sensorDebug} visible={new URLSearchParams(window.location.search).has('debug')} />
 
       {/* particles: DOM divの代わりにcanvasで描画（パフォーマンス最適化） */}
-      <ParticleCanvas particlesRef={particlesRef} />
+      {!new URLSearchParams(window.location.search).has('screenshot') && <ParticleCanvas particlesRef={particlesRef} />}
 
       {scene === "TITLE" && (
         <TitleScene
