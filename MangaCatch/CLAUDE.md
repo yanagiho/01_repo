@@ -203,6 +203,15 @@ const JP_FONT = "'Noto Sans CJK JP', 'Yu Gothic UI', 'Yu Gothic', 'Hiragino Kaku
 | `SensorDebugOverlay` の `visible` デフォルト値が `true` になっており、`?debug=1` なしでもoverlay表示される場合があった → `false` に修正 | `SensorDebugOverlay.tsx` |
 
 ### ランキングの localStorage キー仕様
-- キー形式: `mangacatch_ranking_[toLocaleDateString()]`
-- 起動時に当日分以外を自動削除（前日以前は破棄）
-- 当日分は最大30件まで蓄積・スコア降順
+- キー形式: `mangacatch_ranking_YYYY-MM-DD`（ロケール非依存・固定形式）
+- 起動時に全ランキングを削除（当日分含む）→ セッション内のプレイのみ蓄積
+- 当日分は最大30件まで蓄積・スコア降順（セッション内）
+
+## バグ修正履歴（2026-03-21）
+
+### 起動時に高得点ランキングが残ったまま初回プレイが始まる不具合を修正
+
+| 修正内容 | 影響ファイル |
+|---------|-------------|
+| `clearOldRankings()` が前日以前しか削除しないため、当日の過去セッションのスコアが残り初回プレイヤーがランキングに入れなかった → 起動時に `localStorage.removeItem(todayKey())` を追加し当日分もリセット | `App.tsx` |
+| `toLocaleDateString()` がロケール依存のため Windows 英語環境でキー形式が変わりランキングが消える可能性 → `YYYY-MM-DD` 固定形式に変更 | `App.tsx` |
