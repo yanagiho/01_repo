@@ -173,6 +173,16 @@ export default function App() {
     transitioningRef.current = false;
   }, []);
 
+  // タイトル画面：センサーで人を検知したら自動スタート
+  useEffect(() => {
+    if (scene !== "TITLE" || personCount === 0) return;
+    audio.unlock().then(() => {
+      audio.playSeClick();
+      audio.playBgm("ui");
+      goto("TUTORIAL_VIDEO");
+    });
+  }, [scene, personCount, audio, goto]);
+
   // 自動遷移（TITLEは手動）
   useEffect(() => {
     if (scene === "RESULT") {
