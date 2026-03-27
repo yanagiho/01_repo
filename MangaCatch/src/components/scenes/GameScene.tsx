@@ -1,10 +1,26 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useGameLoop } from "../../hooks/useGameLoop";
-import * as CharMod from "../CharacterImage";
-import * as CatcherMod from "../CatcherImage";
+import { getEnabledCharacters } from "../../constants/master";
 
 function clamp(n: number, a: number, b: number) {
   return Math.max(a, Math.min(b, n));
+}
+
+function baseUrl(): string {
+  const b = (import.meta as any)?.env?.BASE_URL ?? "/";
+  return b.endsWith("/") ? b : b + "/";
+}
+
+function loadImage(candidates: string[]): HTMLImageElement {
+  const img = new Image();
+  let idx = 0;
+  const tryNext = () => {
+    if (idx >= candidates.length) return;
+    img.src = candidates[idx++];
+  };
+  img.onerror = tryNext;
+  tryNext();
+  return img;
 }
 
 export const GameScene: React.FC<{
@@ -15,26 +31,120 @@ export const GameScene: React.FC<{
   onEnd: (score: number, counts: Record<string, number>) => void;
   onCatchFx: (x: number, y: number) => void;
 }> = ({ scene, playerXs, speedMultiplier, onEnd, onCatchFx }) => {
-  const CharacterImageComp = (CharMod as any).CharacterImage ?? (CharMod as any).default;
-  const CatcherImageComp = (CatcherMod as any).CatcherImage ?? (CatcherMod as any).default;
-
-  const { items, score, timer, isHit, catchCount, scoreRef } = useGameLoop(
+  const { itemsRef, isHitRef, score, timer, isHit, catchCount, scoreRef } = useGameLoop(
     scene,
     playerXs,
     speedMultiplier,
     onCatchFx
   );
 
+  // タイマー終了 → ゲーム終了コールバック
   useEffect(() => {
     if (scene === "GAME" && timer <= 0) onEnd(scoreRef.current, catchCount.current);
   }, [scene, timer, onEnd, catchCount, scoreRef]);
 
+  // プレイヤー位置をrefで追跡（Canvas RAFクロージャから読む）
+  const playerXsRef = useRef(playerXs);
+  useEffect(() => { playerXsRef.current = playerXs; }, [playerXs]);
+
+  // 画像プリロード（マウント時1回のみ）
+  const imageMapRef = useRef<Map<string, HTMLImageElement>>(new Map());
+  const catcherImgRef = useRef<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    const b = baseUrl();
+
+    // キャッチャー画像
+    catcherImgRef.current = loadImage([
+      b + "assets/ui/catcher.png",
+      "/assets/ui/catcher.png",
+      "./assets/ui/catcher.png",
+    ]);
+
+    // 全キャラクター画像
+    for (const char of getEnabledCharacters()) {
+      const filename = char.characterImage;
+      imageMapRef.current.set(
+        char.id,
+        loadImage([
+          b + "assets/characters/" + filename,
+          "/assets/characters/" + filename,
+          "./assets/characters/" + filename,
+        ])
+      );
+    }
+  }, []);
+
+  // Canvas描画ループ
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const ctx = canvas.getContext("2d")!;
+    const CHAR_SIZE = 255;
+    const BIG_CATCHER_D = 420;
+
+    let rafId: number;
+    const draw = () => {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const now = performance.now();
+      const catcherY = h - 200;
+
+      // キャラクター描画
+      for (const it of itemsRef.current) {
+        const img = imageMapRef.current.get(it.char.id);
+        if (!img || !img.complete || img.naturalWidth === 0) continue;
+
+        const age = (now - it.bornAt) / 1000;
+        const t = clamp(age / 0.22, 0, 1);
+        const opacity = 0.15 + 0.85 * t;
+        const scale = 0.92 + 0.08 * t;
+        const drawSize = CHAR_SIZE * scale;
+        const y = Math.max(it.y, CHAR_SIZE / 2 + 2);
+
+        ctx.globalAlpha = opacity;
+        ctx.drawImage(img, it.x - drawSize / 2, y - drawSize / 2, drawSize, drawSize);
+      }
+
+      // キャッチャー描画
+      const catcherImg = catcherImgRef.current;
+      if (catcherImg && catcherImg.complete && catcherImg.naturalWidth > 0) {
+        ctx.globalAlpha = isHitRef.current ? 1.0 : 0.92;
+        for (const px of playerXsRef.current) {
+          ctx.drawImage(
+            catcherImg,
+            px - BIG_CATCHER_D / 2,
+            catcherY - BIG_CATCHER_D / 2,
+            BIG_CATCHER_D,
+            BIG_CATCHER_D
+          );
+        }
+      }
+
+      ctx.globalAlpha = 1.0;
+      rafId = requestAnimationFrame(draw);
+    };
+
+    rafId = requestAnimationFrame(draw);
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", resize);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const total = 30;
   const ratio = Math.max(0, Math.min(1, timer / total));
-
-  const catcherY = window.innerHeight - 200;
-  const CHAR_SIZE = 255;
-  const BIG_CATCHER_D = 420;
   const barW = Math.floor(window.innerWidth / 3);
 
   return (
@@ -47,6 +157,18 @@ export const GameScene: React.FC<{
         }
       `}</style>
 
+      {/* Canvas（キャラ・キャッチャー描画） */}
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          zIndex: 11,
+        }}
+      />
+
+      {/* スコア */}
       <div
         style={{
           position: "absolute",
@@ -70,6 +192,7 @@ export const GameScene: React.FC<{
         {score}
       </div>
 
+      {/* タイマーバー */}
       <div
         style={{
           position: "absolute",
@@ -95,6 +218,7 @@ export const GameScene: React.FC<{
         />
       </div>
 
+      {/* タイマー数値 */}
       <div
         style={{
           position: "absolute",
@@ -112,54 +236,6 @@ export const GameScene: React.FC<{
       >
         {Math.max(0, Math.ceil(timer))}
       </div>
-
-      {items.map((it) => {
-        const age = (performance.now() - it.bornAt) / 1000;
-        const t = clamp(age / 0.22, 0, 1);
-        const opacity = 0.15 + 0.85 * t;
-        const scale = 0.92 + 0.08 * t;
-        const y = Math.max(it.y, CHAR_SIZE / 2 + 2);
-
-        return CharacterImageComp ? (
-          <CharacterImageComp
-            key={it.id}
-            char={it.char}
-            style={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              width: CHAR_SIZE,
-              height: CHAR_SIZE,
-              transform: `translate(${it.x}px, ${y}px) translate(-50%, -50%) scale(${scale})`,
-              objectFit: "contain",
-              opacity,
-              pointerEvents: "none",
-              zIndex: 14,
-            }}
-          />
-        ) : null;
-      })}
-
-      {CatcherImageComp
-        ? playerXs.map((px, i) => (
-            <CatcherImageComp
-              key={i}
-              style={{
-                position: "absolute",
-                left: 0,
-                top: 0,
-                width: BIG_CATCHER_D,
-                height: BIG_CATCHER_D,
-                transform: `translate(${px}px, ${catcherY}px) translate(-50%, -50%)`,
-                objectFit: "contain",
-                pointerEvents: "none",
-                zIndex: 12,
-                opacity: isHit ? 1.0 : 0.92,
-                willChange: "transform",
-              }}
-            />
-          ))
-        : null}
     </div>
   );
 };
