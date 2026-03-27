@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import * as CoverMod from "../CoverImage";
 import * as CharMod from "../CharacterImage";
 import type { CharacterData } from "../../constants/master";
+import { getArtistCredit } from "../../constants/legal";
 
 const JP_FONT = "'Noto Sans CJK JP', 'Yu Gothic UI', 'Yu Gothic', 'Hiragino Kaku Gothic ProN', sans-serif";
 
@@ -204,6 +205,27 @@ export const PhotoScene = ({
               />
             ) : null}
           </div>
+        </div>
+
+        {/* 著作権クレジット（右下） */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 20,
+            right: 20,
+            background: "rgba(255,255,255,0.90)",
+            color: "#222",
+            padding: "6px 16px",
+            borderRadius: 6,
+            fontSize: 22,
+            fontWeight: 700,
+            fontFamily: JP_FONT,
+            userSelect: "none",
+            pointerEvents: "none",
+            zIndex: 5,
+          }}
+        >
+          {getArtistCredit(bestChar.artist)}
         </div>
 
       </div>

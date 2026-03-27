@@ -10,7 +10,7 @@ type Props = { onStart: () => void };
  * （Excelの作家名から重複除外で作成）
  */
 const ALL_ARTISTS_COPYRIGHT =
-    "© 陸奥A子 / 萩岩睦美 / 文月今日子 / 山田圭子 / 北条司 / せきやてつじ / 畑中純 / 関谷ひさし";
+    "©せきやてつじ／小学館　©関谷ひさし　©萩岩睦美　©畑中純　©文月今日子　©北条司／コアミックス 1985　©陸奥A子　©山田圭子";
 
 function buildLogoCandidates(): string[] {
     const baseUrl = (import.meta as any)?.env?.BASE_URL ?? "./";
