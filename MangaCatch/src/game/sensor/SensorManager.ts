@@ -215,6 +215,9 @@ class SensorManager {
       this.playerXNormalized = normalizedX;
       this.playerXsNormalized = normalizedXs;
       this.lastSensorAt = payload.receivedAt;
+    } else if (this.playerXsNormalized.length !== 0) {
+      // playerCount=0 になったら playerXs を空配列に縮める
+      this.playerXsNormalized = [];
     }
 
     this.debugInfo = {
@@ -255,10 +258,10 @@ class SensorManager {
     };
 
     this.emitPersonCount();
+    this.emitPlayerXs();
 
     if (playerCount > 0) {
       this.emitPlayerX();
-      this.emitPlayerXs();
     }
 
     this.emitDebug();
