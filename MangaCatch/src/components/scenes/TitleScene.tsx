@@ -61,9 +61,9 @@ export const TitleScene = ({ onStart }: Props) => {
         >
             <style>{`
         @keyframes blinkStart {
-          0% { opacity: 0.25; transform: translateY(0); }
+          0% { opacity: 0.65; transform: translateY(0); }
           50% { opacity: 1; transform: translateY(-2px); }
-          100% { opacity: 0.25; transform: translateY(0); }
+          100% { opacity: 0.65; transform: translateY(0); }
         }
       `}</style>
 
@@ -95,16 +95,17 @@ export const TitleScene = ({ onStart }: Props) => {
                     style={{
                         marginTop: 34,
                         display: "inline-block",
-                        padding: "20px 64px",
+                        padding: "28px 80px",
                         borderRadius: 999,
-                        border: "2px solid rgba(255,255,255,0.28)",
-                        background: "rgba(0,0,0,0.28)",
-                        fontSize: 36,
+                        border: "2.5px solid rgba(255,255,255,0.85)",
+                        background: "rgba(0,0,0,0.55)",
+                        fontSize: 48,
                         fontWeight: 900,
-                        letterSpacing: 3,
+                        letterSpacing: 5,
                         fontFamily: JP_FONT,
                         animation: "blinkStart 1.1s ease-in-out infinite",
-                        boxShadow: "0 0 22px rgba(0,238,187,0.18)",
+                        boxShadow: "0 0 28px rgba(255,255,255,0.25), 0 0 22px rgba(0,238,187,0.18)",
+                        textShadow: "0 0 12px rgba(255,255,255,0.6)",
                     }}
                 >
                     START
@@ -119,14 +120,14 @@ export const TitleScene = ({ onStart }: Props) => {
                     right: 18,
                     bottom: 12,
                     zIndex: 3,
-                    fontSize: 32,
+                    fontSize: 20,
                     lineHeight: 1.35,
                     color: "rgba(255,255,255,0.78)",
                     fontFamily: JP_FONT,
                     textShadow: "0 2px 10px rgba(0,0,0,0.65)",
                     userSelect: "none",
                     pointerEvents: "none",
-                    whiteSpace: "pre-wrap",
+                    whiteSpace: "nowrap",
                     textAlign: "center",
                 }}
             >

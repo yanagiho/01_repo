@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import * as CoverMod from "../CoverImage";
 import * as CharMod from "../CharacterImage";
 import type { CharacterData } from "../../constants/master";
-import { getArtistCredit } from "../../constants/legal";
+import { getArtistCredit, getCoverCredit } from "../../constants/legal";
 
 const JP_FONT = "'Noto Sans CJK JP', 'Yu Gothic UI', 'Yu Gothic', 'Hiragino Kaku Gothic ProN', sans-serif";
 
@@ -207,7 +207,7 @@ export const PhotoScene = ({
           </div>
         </div>
 
-        {/* 著作権クレジット（右下） */}
+        {/* 著作権クレジット（右下：キャラクター） */}
         <div
           style={{
             position: "absolute",
@@ -227,6 +227,29 @@ export const PhotoScene = ({
         >
           {getArtistCredit(bestChar.artist)}
         </div>
+
+        {/* 著作権クレジット（左下：表紙）版元が異なる作家のみ表示 */}
+        {getCoverCredit(bestChar.artist) !== getArtistCredit(bestChar.artist) && (
+          <div
+            style={{
+              position: "absolute",
+              bottom: 20,
+              left: 20,
+              background: "rgba(255,255,255,0.90)",
+              color: "#222",
+              padding: "6px 16px",
+              borderRadius: 6,
+              fontSize: 22,
+              fontWeight: 700,
+              fontFamily: JP_FONT,
+              userSelect: "none",
+              pointerEvents: "none",
+              zIndex: 5,
+            }}
+          >
+            {getCoverCredit(bestChar.artist)}
+          </div>
+        )}
 
       </div>
     </div>

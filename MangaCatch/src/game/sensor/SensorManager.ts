@@ -60,6 +60,7 @@ function formatNum(value: number): string {
 
 class SensorManager {
   private personCount = 0;
+  private prevPlayerCount = 0; // 直前フレームのプレイヤー数（初フレーム左端チラつき防止用）
   private playerXNormalized = 0.5;
   private playerXsNormalized: number[] = [0.5];
   private lastSensorAt = 0;
@@ -212,13 +213,20 @@ class SensorManager {
     this.personCount = playerCount;
 
     if (playerCount > 0) {
-      this.playerXNormalized = normalizedX;
-      this.playerXsNormalized = normalizedXs;
+      if (this.prevPlayerCount > 0) {
+        // 継続検出中: 位置を正常に更新
+        this.playerXNormalized = normalizedX;
+        this.playerXsNormalized = normalizedXs;
+      }
+      // 0→N の初フレームは位置更新をスキップ（Hokuyoの初フレームx=0チラつき防止）
+      // playerXsNormalized は空配列のまま → 光の輪は次フレームから正位置で表示
       this.lastSensorAt = payload.receivedAt;
     } else if (this.playerXsNormalized.length !== 0) {
       // playerCount=0 になったら playerXs を空配列に縮める
       this.playerXsNormalized = [];
     }
+
+    this.prevPlayerCount = playerCount;
 
     this.debugInfo = {
       oscReceived: true,
