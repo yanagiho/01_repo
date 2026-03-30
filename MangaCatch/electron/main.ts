@@ -550,6 +550,7 @@ function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1600,
     height: 900,
+    fullscreen: true,
     backgroundColor: '#000000',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
