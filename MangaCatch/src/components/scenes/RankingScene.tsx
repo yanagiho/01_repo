@@ -118,7 +118,7 @@ export const RankingScene = ({
                 style={{
                   width: "min(960px, 96%)",
                   display: "grid",
-                  gridTemplateColumns: "70px 96px 96px minmax(200px, 1fr) 120px",
+                  gridTemplateColumns: "120px 96px 96px minmax(200px, 1fr) 120px",
                   gap: 14,
                   alignItems: "center",
                   justifyContent: "center",
@@ -133,19 +133,19 @@ export const RankingScene = ({
                 <div
                   style={{
                     fontFamily: "monospace",
-                    fontSize: 48,
+                    fontSize: 76,
                     fontWeight: 900,
-                    textAlign: "right",
+                    textAlign: "center",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "flex-end",
+                    justifyContent: "center",
                   }}
                 >
                   {rank <= 3 ? (
                     <img
                       src={`assets/rank${rank}.png`}
                       alt={`${rank}位`}
-                      style={{ width: 64, height: 64, objectFit: "contain" }}
+                      style={{ width: 112, height: 112, objectFit: "contain" }}
                     />
                   ) : (
                     rank
