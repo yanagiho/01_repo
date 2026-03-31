@@ -136,9 +136,20 @@ export const RankingScene = ({
                     fontSize: 48,
                     fontWeight: 900,
                     textAlign: "right",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "flex-end",
                   }}
                 >
-                  {rank}
+                  {rank <= 3 ? (
+                    <img
+                      src={`assets/rank${rank}.png`}
+                      alt={`${rank}位`}
+                      style={{ width: 64, height: 64, objectFit: "contain" }}
+                    />
+                  ) : (
+                    rank
+                  )}
                 </div>
 
                 <div

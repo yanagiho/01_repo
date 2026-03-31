@@ -185,7 +185,7 @@ export function useGameLoop(
                 }
 
                 if (caught) {
-                    addScore += 10;
+                    addScore += it.char.score;
                     const id = (it.char as any).id as string;
                     catchCount.current[id] = (catchCount.current[id] || 0) + 1;
                     onCatchFxRef.current(nx, ny + CHAR_SIZE / 2);

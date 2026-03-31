@@ -10,6 +10,10 @@ const SENSOR_X_MIN = 0.0;
 const SENSOR_X_MAX = 1.0;
 const MAX_PLAYERS = 3;
 
+// 光の輪スムージング係数（0=動かない, 1=即時追従）
+// 小さいほど滑らかだが遅延が増える。0.25 ≒ 4〜5フレームで収束
+const SMOOTHING_ALPHA = 0.25;
+
 export type SensorDebugInfo = {
   oscReceived: boolean;
   lastReceivedAt: number;
@@ -63,6 +67,7 @@ class SensorManager {
   private prevPlayerCount = 0; // 直前フレームのプレイヤー数（初フレーム左端チラつき防止用）
   private playerXNormalized = 0.5;
   private playerXsNormalized: number[] = [0.5];
+  private stableXs: number[] = []; // スムージング済み安定位置
   private lastSensorAt = 0;
 
   private personCountListeners = new Set<PersonCountListener>();
@@ -137,6 +142,48 @@ class SensorManager {
     };
 
     connect();
+  }
+
+  /**
+   * 最近傍マッチング + EMAスムージングで安定した位置配列を返す。
+   * - センサーの配列順入れ替わりによるリング飛びを防ぐ
+   * - 指数移動平均でガタつきを抑える
+   */
+  private stabilizePositions(incoming: number[]): number[] {
+    const n = incoming.length;
+    if (n === 0) return [];
+
+    // 初回 or 前フレームが0人: 安定位置をそのまま初期化（スムージングなし）
+    if (this.stableXs.length === 0) {
+      return [...incoming];
+    }
+
+    const prev = this.stableXs;
+    const usedIncoming = new Array(n).fill(false);
+    const result: number[] = [];
+
+    // 既存の安定位置それぞれを、最近傍のincoming位置にマッチ
+    const k = Math.min(prev.length, n);
+    for (let i = 0; i < k; i++) {
+      let bestDist = Infinity;
+      let bestJ = -1;
+      for (let j = 0; j < n; j++) {
+        if (!usedIncoming[j]) {
+          const d = Math.abs(incoming[j] - prev[i]);
+          if (d < bestDist) { bestDist = d; bestJ = j; }
+        }
+      }
+      usedIncoming[bestJ] = true;
+      // EMAスムージング: 前の安定位置とincomingを混ぜる
+      result.push(prev[i] * (1 - SMOOTHING_ALPHA) + incoming[bestJ] * SMOOTHING_ALPHA);
+    }
+
+    // 新たに参加したプレイヤー（増加分）: 最初のフレームはスムージングなしで配置
+    for (let j = 0; j < n; j++) {
+      if (!usedIncoming[j]) result.push(incoming[j]);
+    }
+
+    return result;
   }
 
   private normalizeRawX(rawX: number): number {
@@ -214,15 +261,17 @@ class SensorManager {
 
     if (playerCount > 0) {
       if (this.prevPlayerCount > 0) {
-        // 継続検出中: 位置を正常に更新
+        // 継続検出中: 最近傍マッチング + EMAスムージングで安定位置を更新
+        this.stableXs = this.stabilizePositions(normalizedXs);
         this.playerXNormalized = normalizedX;
-        this.playerXsNormalized = normalizedXs;
+        this.playerXsNormalized = this.stableXs;
       }
       // 0→N の初フレームは位置更新をスキップ（Hokuyoの初フレームx=0チラつき防止）
-      // playerXsNormalized は空配列のまま → 光の輪は次フレームから正位置で表示
+      // stableXs は空配列のまま → 光の輪は次フレームから正位置で表示
       this.lastSensorAt = payload.receivedAt;
     } else if (this.playerXsNormalized.length !== 0) {
-      // playerCount=0 になったら playerXs を空配列に縮める
+      // playerCount=0 になったら安定位置・playerXs を空配列にリセット
+      this.stableXs = [];
       this.playerXsNormalized = [];
     }
 
