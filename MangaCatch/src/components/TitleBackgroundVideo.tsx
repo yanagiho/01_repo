@@ -1,20 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 function buildCandidates(): string[] {
-    // あなたの現状（videos / mov/mp4 混在）でも拾えるようにしておく
     return Array.from(
         new Set([
-            "/assets/videos/title_bg.mov",
             "/assets/videos/title_bg.mp4",
-            "/assets/video/title_bg.mov",
-            "/assets/video/title_bg.mp4",
-            "./assets/videos/title_bg.mov",
             "./assets/videos/title_bg.mp4",
-            "./assets/video/title_bg.mov",
-            "./assets/video/title_bg.mp4",
-            "assets/videos/title_bg.mov",
             "assets/videos/title_bg.mp4",
-            "assets/video/title_bg.mov",
+            "/assets/video/title_bg.mp4",
+            "./assets/video/title_bg.mp4",
             "assets/video/title_bg.mp4",
         ])
     );

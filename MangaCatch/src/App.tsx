@@ -9,7 +9,8 @@ import { useSensor } from "./hooks/useSensor";
 
 
 import { TitleScene } from "./components/scenes/TitleScene";
-import { TutorialVideoScene } from "./components/scenes/TutorialVideoScene"; // ※中身は「静止画+カウントダウン」に差し替え済み想定
+import { TutorialVideoScene } from "./components/scenes/TutorialVideoScene";
+import { CountdownVideoScene } from "./components/scenes/CountdownVideoScene";
 import { GameScene } from "./components/scenes/GameScene";
 import { ResultScene } from "./components/scenes/ResultScene";
 import { RecommendScene } from "./components/scenes/RecommendScene";
@@ -271,10 +272,14 @@ export default function App() {
               tutorialAttractRef.current = false;
               goto("TITLE");
             } else {
-              goto("GAME");
+              goto("COUNTDOWN");
             }
           }}
         />
+      )}
+
+      {scene === "COUNTDOWN" && (
+        <CountdownVideoScene onEnded={() => goto("GAME")} />
       )}
 
       {scene === "GAME" && (

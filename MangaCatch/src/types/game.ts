@@ -4,6 +4,7 @@ import type { CharacterData } from "../constants/master";
 export type SceneType =
     | "TITLE"
     | "TUTORIAL_VIDEO"
+    | "COUNTDOWN"
     | "GAME"
     | "RESULT"
     | "RECOMMEND"
