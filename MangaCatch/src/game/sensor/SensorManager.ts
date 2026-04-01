@@ -158,8 +158,10 @@ class SensorManager {
     if (n === 0) return [];
 
     // 初回 or 前フレームが0人: 安定位置をそのまま初期化（スムージングなし）
+    // x≈0 はHokuyoの初期フレームアーティファクト → フィルターして次フレームまで待機
     if (this.stableXs.length === 0) {
-      return [...incoming];
+      const valid = incoming.filter(x => x > 0.01);
+      return valid;
     }
 
     const prev = this.stableXs;
