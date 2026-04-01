@@ -114,8 +114,19 @@ export default function App() {
     return parseInt(new URLSearchParams(window.location.search).get("score") ?? "90", 10);
   }, []);
 
+  const devCounts = useMemo(() => {
+    const p = new URLSearchParams(window.location.search).get("devCounts");
+    if (!p) return {};
+    const out: Record<string, number> = {};
+    p.split(",").forEach((pair) => {
+      const [id, cnt] = pair.split(":");
+      if (id && cnt) out[id] = parseInt(cnt, 10);
+    });
+    return out;
+  }, []);
+
   const [score, setScore] = useState(devScore);
-  const [counts, setCounts] = useState<Record<string, number>>({});
+  const [counts, setCounts] = useState<Record<string, number>>(devCounts);
   const [bestCharId, setBestCharId] = useState<string>(devCharId);
 
   // ランキング
