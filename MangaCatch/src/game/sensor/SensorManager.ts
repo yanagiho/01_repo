@@ -149,7 +149,11 @@ class SensorManager {
    * - センサーの配列順入れ替わりによるリング飛びを防ぐ
    * - 指数移動平均でガタつきを抑える
    */
-  private stabilizePositions(incoming: number[]): number[] {
+  /**
+   * skipNew=true のとき、新規参加プレイヤー（増加分）をこのフレームに追加しない。
+   * Hokuyoは新規検出の初フレームでx=0を送るため、途中参加時もチラつきを防ぐ。
+   */
+  private stabilizePositions(incoming: number[], skipNew = false): number[] {
     const n = incoming.length;
     if (n === 0) return [];
 
@@ -178,9 +182,12 @@ class SensorManager {
       result.push(prev[i] * (1 - SMOOTHING_ALPHA) + incoming[bestJ] * SMOOTHING_ALPHA);
     }
 
-    // 新たに参加したプレイヤー（増加分）: 最初のフレームはスムージングなしで配置
-    for (let j = 0; j < n; j++) {
-      if (!usedIncoming[j]) result.push(incoming[j]);
+    // 新たに参加したプレイヤー（増加分）
+    // skipNew=false のときのみ追加（初フレームはスキップしてチラつきを防ぐ）
+    if (!skipNew) {
+      for (let j = 0; j < n; j++) {
+        if (!usedIncoming[j]) result.push(incoming[j]);
+      }
     }
 
     return result;
@@ -262,7 +269,9 @@ class SensorManager {
     if (playerCount > 0) {
       if (this.prevPlayerCount > 0) {
         // 継続検出中: 最近傍マッチング + EMAスムージングで安定位置を更新
-        this.stableXs = this.stabilizePositions(normalizedXs);
+        // プレイヤー増加フレームは新規分をスキップ（Hokuyoの初フレームx=0チラつき防止）
+        const isIncrease = playerCount > this.prevPlayerCount;
+        this.stableXs = this.stabilizePositions(normalizedXs, isIncrease);
         this.playerXNormalized = normalizedX;
         this.playerXsNormalized = this.stableXs;
       }

@@ -551,6 +551,7 @@ function createWindow(): void {
     width: 1600,
     height: 900,
     fullscreen: true,
+    show: false,
     backgroundColor: '#000000',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
@@ -559,6 +560,12 @@ function createWindow(): void {
       sandbox: false,
       backgroundThrottling: false,
     },
+  });
+
+  // Windows でフルスクリーンが確実に適用されるよう ready-to-show で再設定
+  mainWindow.once('ready-to-show', () => {
+    mainWindow!.show();
+    mainWindow!.setFullScreen(true);
   });
 
   const devServerUrl = process.env.VITE_DEV_SERVER_URL;
