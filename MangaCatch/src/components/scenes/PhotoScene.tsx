@@ -72,10 +72,12 @@ export const PhotoScene = ({
           style={{
             position: "absolute",
             top: 120,
-            left: 50,
+            left: 0,
+            width: "60%",
             zIndex: 20,
             display: "flex",
             alignItems: "center",
+            justifyContent: "center",
             gap: 24,
           }}
         >
