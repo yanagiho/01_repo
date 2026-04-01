@@ -27,8 +27,6 @@ const DUR_RESULT = 10000;
 const DUR_RECOMMEND = 10000;
 const DUR_PHOTO = 10000;
 const DUR_RANKING = 10000;
-// タイトル画面でアトラクトループに入るまでの待機時間
-const DUR_TITLE_ATTRACT = 20000;
 
 function todayKey() {
   const d = new Date();
@@ -99,12 +97,6 @@ export default function App() {
   const [wipeTrigger, setWipeTrigger] = useState(false);
   const pendingRef = useRef<SceneType | null>(null);
   const transitioningRef = useRef(false);
-
-  // アトラクトループ管理
-  // true  = TUTORIAL_VIDEOが終わったらTITLEに戻る（アトラクトモード）
-  // false = TUTORIAL_VIDEOが終わったらGAMEへ進む（ゲームモード）
-  const tutorialAttractRef = useRef(false);
-  const attractTimerRef = useRef<number | null>(null);
 
   // 結果
   const devCharId = useMemo(() => {
@@ -193,23 +185,9 @@ export default function App() {
     transitioningRef.current = false;
   }, []);
 
-  // タイトル画面：一定時間後にアトラクトループ（TUTORIAL_VIDEO → TITLE）
-  useEffect(() => {
-    if (scene !== "TITLE") return;
-    attractTimerRef.current = window.setTimeout(() => {
-      tutorialAttractRef.current = true;
-      goto("TUTORIAL_VIDEO");
-    }, DUR_TITLE_ATTRACT);
-    return () => {
-      if (attractTimerRef.current !== null) window.clearTimeout(attractTimerRef.current);
-    };
-  }, [scene, goto]);
-
   // タイトル画面：センサーで人を検知したらゲームスタート
   useEffect(() => {
     if (scene !== "TITLE" || personCount === 0) return;
-    if (attractTimerRef.current !== null) window.clearTimeout(attractTimerRef.current);
-    tutorialAttractRef.current = false;
     audio.unlock().then(() => {
       audio.playSeClick();
       audio.playBgm("ui");
@@ -265,8 +243,6 @@ export default function App() {
       {scene === "TITLE" && (
         <TitleScene
           onStart={async () => {
-            if (attractTimerRef.current !== null) window.clearTimeout(attractTimerRef.current);
-            tutorialAttractRef.current = false;
             await audio.unlock();
             audio.playSeClick();
             audio.playBgm("ui");
@@ -279,12 +255,7 @@ export default function App() {
         <TutorialVideoScene
           onUserSkip={() => audio.playSeClick()}
           onEnded={() => {
-            if (tutorialAttractRef.current) {
-              tutorialAttractRef.current = false;
-              goto("TITLE");
-            } else {
-              goto("COUNTDOWN");
-            }
+            goto("COUNTDOWN");
           }}
         />
       )}

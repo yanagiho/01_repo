@@ -551,6 +551,7 @@ function createWindow(): void {
     width: 1920,
     height: 1080,
     kiosk: true,
+    fullscreen: true,
     show: false,
     backgroundColor: '#000000',
     webPreferences: {

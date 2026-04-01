@@ -188,19 +188,24 @@ export const PhotoScene = ({
 
           <div
             style={{
-              display: "grid",
-              placeItems: "center",
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "center",
               width: "100%",
-              height: "100%",
+              height: "calc(100vh - 410px)",
+              overflow: "hidden",
             }}
           >
             {CharacterImageComp ? (
               <CharacterImageComp
                 char={bestChar}
                 style={{
-                  width: "100%",
+                  maxWidth: "100%",
+                  maxHeight: "100%",
+                  width: "auto",
                   height: "100%",
                   objectFit: "contain",
+                  objectPosition: "center bottom",
                   filter: "drop-shadow(0 18px 22px rgba(0,0,0,0.65))",
                   display: "block",
                 }}

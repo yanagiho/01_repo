@@ -66,7 +66,7 @@ class SensorManager {
   private personCount = 0;
   private prevPlayerCount = 0; // 直前フレームのプレイヤー数（初フレーム左端チラつき防止用）
   private playerXNormalized = 0.5;
-  private playerXsNormalized: number[] = [0.5];
+  private playerXsNormalized: number[] = [];
   private stableXs: number[] = []; // スムージング済み安定位置
   private lastSensorAt = 0;
 
@@ -277,9 +277,11 @@ class SensorManager {
         this.stableXs = this.stabilizePositions(normalizedXs, isIncrease);
         this.playerXNormalized = normalizedX;
         this.playerXsNormalized = this.stableXs;
+      } else {
+        // 0→N の初フレームは位置をクリア（Hokuyoの初フレームx=0/x=0.5チラつき防止）
+        // stableXs は空配列のまま → 光の輪は次フレームから正位置で表示
+        this.playerXsNormalized = [];
       }
-      // 0→N の初フレームは位置更新をスキップ（Hokuyoの初フレームx=0チラつき防止）
-      // stableXs は空配列のまま → 光の輪は次フレームから正位置で表示
       this.lastSensorAt = payload.receivedAt;
     } else if (this.playerXsNormalized.length !== 0) {
       // playerCount=0 になったら安定位置・playerXs を空配列にリセット
