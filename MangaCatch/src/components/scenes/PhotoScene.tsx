@@ -188,9 +188,6 @@ export const PhotoScene = ({
 
           <div
             style={{
-              display: "flex",
-              alignItems: "flex-end",
-              justifyContent: "center",
               width: "100%",
               height: "calc(100vh - 410px)",
               overflow: "hidden",
@@ -200,9 +197,7 @@ export const PhotoScene = ({
               <CharacterImageComp
                 char={bestChar}
                 style={{
-                  maxWidth: "100%",
-                  maxHeight: "100%",
-                  width: "auto",
+                  width: "100%",
                   height: "100%",
                   objectFit: "contain",
                   objectPosition: "center bottom",
