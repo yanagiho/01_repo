@@ -36,7 +36,7 @@ Electron + React + TypeScript + Vite で構築された、タッチレスラク�
 
 ## シーン構成
 
-`TitleScene` → `TutorialVideoScene` → `TutorialScene` → `GameScene` → `ResultScene` → `RankingScene` → `RecommendScene` → `PhotoScene`
+`TitleScene` → `TutorialVideoScene` → `CountdownVideoScene` → `GameScene` → `ResultScene` → `RecommendScene` → `PhotoScene` → `RankingScene`
 
 ## センサー通信フロー
 
@@ -177,7 +177,9 @@ node screenshot2.js
 
 - 解像度: 1920×1080 (Full HD) フル活用
 - 黒枠（レターボックス）なし
-- フォントサイズ: スコア等 **71pt**、「写真を撮ってね」**70pt**
+- フォントサイズ: スコア等 **71pt**、「フォトタイム！」**70pt**
+- レイアウト: `gridTemplateColumns: "260px 1fr 1.5fr"`（表紙 | 人が立つスペース | キャラ）
+- カメラ＋テキストブロック: `left:0, width:"60%", justifyContent:"center"` で中央寄せ
 
 ## フォント設計
 
@@ -237,7 +239,31 @@ Celeron/Intel UHD環境での描画パフォーマンスを大幅改善。
 - 起動時に全ランキングを削除（当日分含む）→ セッション内のプレイのみ蓄積
 - 当日分は最大30件まで蓄積・スコア降順（セッション内）
 
-## 更新履歴（2026-04-01）Build #93
+## 更新履歴（2026-04-01）Build #96・#97
+
+### ゴーストリング根本修正（stableXs初期化パス）
+
+| 修正内容 | 影響ファイル |
+|---------|-------------|
+| Frame1（0→N）はスキップ済みだったが、Frame2（N→N）で `stableXs.length===0` の初期化パスに `x > 0.01` フィルターがなく、Hokuyoがx=0を送り続けると左端にゴーストリングが固定表示される根本バグがあった。さらにEMAスムージングにより 0→実位置へゆっくりスライドして目立つ問題も連鎖していた → 初期化パスにも `filter(x => x > 0.01)` を追加し、全3パス（skip/初期化/新規追加）で統一的にx≈0をフィルター | `SensorManager.ts` |
+
+### ゴーストリング対策の3パス構造（完成形）
+
+| パス | 条件 | 対策 |
+|-----|------|------|
+| skipフレーム | `prevPlayerCount=0`（0→N初回フレーム） | 位置更新自体をスキップ |
+| 初期化パス | `stableXs.length===0`（Frame2以降、空状態） | `filter(x => x > 0.01)` |
+| 新規追加パス | `!skipNew` の増加分 | `incoming[j] > 0.01` チェック |
+
+### デバッグ用URLパラメータ追加
+
+| 変更内容 | 影響ファイル |
+|---------|-------------|
+| `?devCounts=chara_001:5,chara_002:3` でResult画面のキャッチ数を注入可能に（スクリーンショット撮影用） | `App.tsx` |
+
+---
+
+## 更新履歴（2026-04-01）Build #93〜#95
 
 ### ランキング順位表示を拡大・センタリング
 
@@ -253,11 +279,37 @@ Celeron/Intel UHD環境での描画パフォーマンスを大幅改善。
 |---------|-------------|
 | 1人→2人など途中参加時、Hokuyoが新規プレイヤーの初フレームで x=0 を送るため左端に光の輪が出ていた → `stabilizePositions` に `skipNew` フラグを追加。プレイヤー増加フレームは新規分の位置追加をスキップし、次フレームから正位置で表示 | `SensorManager.ts` |
 
-### Windowsフルスクリーン確実化
+### Windowsフルスクリーン確実化（kioskモード）
 
 | 変更内容 | 影響ファイル |
 |---------|-------------|
-| `fullscreen: true` だけでは Windows で確実に適用されないケースがあった → `show: false` + `ready-to-show` イベントで `setFullScreen(true)` を明示呼び出し | `electron/main.ts` |
+| `fullscreen: true` では Windows で確実に適用されないケースがあった → `kiosk: true`（コンストラクタ）＋ `ready-to-show` イベントで `setKiosk(true)` を明示呼び出しに変更。ウィンドウ初期サイズも `1600×900` → `1920×1080` に修正 | `electron/main.ts` |
+
+---
+
+### 動画差し替え・カウントダウンシーン追加
+
+| 変更内容 | 影響ファイル |
+|---------|-------------|
+| タイトル背景動画を `TOPデモ.mp4` に差し替え | `public/assets/videos/title_bg.mp4` |
+| チュートリアル動画を `チュートリアル.mp4` に差し替え（アトラクトループにも使用） | `public/assets/tutorial/tutorial.mp4` |
+| カウントダウン動画（`カウントダウン.mp4`）を追加。チュートリアル終了後・ゲーム開始前に再生 | `public/assets/videos/countdown.mp4` |
+| `CountdownVideoScene` コンポーネント新規追加 | `src/components/scenes/CountdownVideoScene.tsx` |
+| シーン遷移: TUTORIAL_VIDEO → **COUNTDOWN** → GAME に変更（アトラクトループはTITLEに戻る） | `App.tsx`, `src/types/game.ts` |
+
+### フォト画面「フォトタイム！」変更・レイアウト修正
+
+| 変更内容 | 影響ファイル |
+|---------|-------------|
+| 「いっしょに写真を撮ってね」→「フォトタイム！」に変更（70pt） | `PhotoScene.tsx` |
+| カメラ+テキストブロックの表示位置を中央寄せに修正（`left:0, width:"60%", justifyContent:"center"`） | `PhotoScene.tsx` |
+| グリッド比率を修正し人が立つスペースを確保（`"260px 1fr 1.5fr"`） | `PhotoScene.tsx` |
+
+### 結果画面の順位バッジ画像表示
+
+| 変更内容 | 影響ファイル |
+|---------|-------------|
+| 結果画面の1〜3位もランキング画面同様にバッジ画像表示に変更（4位以降はテキスト） | `ResultScene.tsx` |
 
 ---
 
