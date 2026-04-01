@@ -68,10 +68,32 @@ export const PhotoScene = ({
           boxSizing: "border-box",
         }}
       >
+        {/* フォトタイム！ヘッダー */}
         <div
           style={{
             position: "absolute",
-            top: 120,
+            top: 18,
+            left: 0,
+            right: 0,
+            textAlign: "center",
+            fontSize: "52pt",
+            fontWeight: 900,
+            color: "#fff",
+            fontFamily: JP_FONT,
+            letterSpacing: 4,
+            textShadow: "0 3px 12px rgba(0,0,0,0.7)",
+            zIndex: 20,
+            userSelect: "none",
+            pointerEvents: "none",
+          }}
+        >
+          フォトタイム！
+        </div>
+
+        <div
+          style={{
+            position: "absolute",
+            top: 135,
             left: 50,
             zIndex: 20,
             display: "flex",
@@ -124,7 +146,7 @@ export const PhotoScene = ({
         <div
           style={{
             position: "absolute",
-            top: 120,
+            top: 135,
             right: 50,
             zIndex: 20,
             textAlign: "right",
@@ -161,7 +183,7 @@ export const PhotoScene = ({
             top: 360,
             bottom: 50,
             display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
+            gridTemplateColumns: "280px 0.2fr 2fr",
             gap: 24,
             alignItems: "center",
           }}
