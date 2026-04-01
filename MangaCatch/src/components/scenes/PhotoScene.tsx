@@ -161,7 +161,7 @@ export const PhotoScene = ({
             top: 360,
             bottom: 50,
             display: "grid",
-            gridTemplateColumns: "280px 0.2fr 2fr",
+            gridTemplateColumns: "260px 1fr 1.5fr",
             gap: 24,
             alignItems: "center",
           }}
