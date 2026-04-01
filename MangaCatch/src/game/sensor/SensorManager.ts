@@ -184,9 +184,10 @@ class SensorManager {
 
     // 新たに参加したプレイヤー（増加分）
     // skipNew=false のときのみ追加（初フレームはスキップしてチラつきを防ぐ）
+    // さらに x≈0（左端）の位置はHokuyoの誤検知/初期フレームと判断してスキップ
     if (!skipNew) {
       for (let j = 0; j < n; j++) {
-        if (!usedIncoming[j]) result.push(incoming[j]);
+        if (!usedIncoming[j] && incoming[j] > 0.01) result.push(incoming[j]);
       }
     }
 

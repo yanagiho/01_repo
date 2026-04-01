@@ -68,32 +68,10 @@ export const PhotoScene = ({
           boxSizing: "border-box",
         }}
       >
-        {/* フォトタイム！ヘッダー */}
         <div
           style={{
             position: "absolute",
-            top: 18,
-            left: 0,
-            right: 0,
-            textAlign: "center",
-            fontSize: "52pt",
-            fontWeight: 900,
-            color: "#fff",
-            fontFamily: JP_FONT,
-            letterSpacing: 4,
-            textShadow: "0 3px 12px rgba(0,0,0,0.7)",
-            zIndex: 20,
-            userSelect: "none",
-            pointerEvents: "none",
-          }}
-        >
-          フォトタイム！
-        </div>
-
-        <div
-          style={{
-            position: "absolute",
-            top: 135,
+            top: 120,
             left: 50,
             zIndex: 20,
             display: "flex",
@@ -135,7 +113,7 @@ export const PhotoScene = ({
 
           <div style={{ lineHeight: 1.05 }}>
             <div style={{ fontSize: "70pt", fontWeight: 900, fontFamily: JP_FONT }}>
-              いっしょに写真を撮ってね
+              フォトタイム！
             </div>
             <div style={{ fontSize: 34, fontWeight: 800, color: "#00eebb", marginTop: 6, textAlign: "center", fontFamily: JP_FONT }}>
               Take a photo together!
@@ -146,7 +124,7 @@ export const PhotoScene = ({
         <div
           style={{
             position: "absolute",
-            top: 135,
+            top: 120,
             right: 50,
             zIndex: 20,
             textAlign: "right",

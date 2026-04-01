@@ -548,9 +548,9 @@ function resolveRendererPath(): string | null {
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
-    width: 1600,
-    height: 900,
-    fullscreen: true,
+    width: 1920,
+    height: 1080,
+    kiosk: true,
     show: false,
     backgroundColor: '#000000',
     webPreferences: {
@@ -562,10 +562,9 @@ function createWindow(): void {
     },
   });
 
-  // Windows でフルスクリーンが確実に適用されるよう ready-to-show で再設定
   mainWindow.once('ready-to-show', () => {
+    mainWindow!.setKiosk(true);
     mainWindow!.show();
-    mainWindow!.setFullScreen(true);
   });
 
   const devServerUrl = process.env.VITE_DEV_SERVER_URL;

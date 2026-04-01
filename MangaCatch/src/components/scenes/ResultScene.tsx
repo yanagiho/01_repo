@@ -49,7 +49,7 @@ export const ResultScene = ({ score, counts }: { score: number; counts: Record<s
                   key={`${rank}-${r.id}-${r.cnt}`}
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "64px 96px 1fr 90px",
+                    gridTemplateColumns: "80px 96px 1fr 90px",
                     gap: 12,
                     alignItems: "center",
                     padding: "10px 10px",
@@ -60,14 +60,22 @@ export const ResultScene = ({ score, counts }: { score: number; counts: Record<s
                 >
                   <div
                     style={{
-                      fontFamily: "monospace",
-                      fontSize: 34,
-                      fontWeight: 900,
-                      color: col,
-                      textAlign: "center",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
-                    {rank}
+                    {rank <= 3 ? (
+                      <img
+                        src={`assets/rank${rank}.png`}
+                        alt={`${rank}位`}
+                        style={{ width: 72, height: 72, objectFit: "contain" }}
+                      />
+                    ) : (
+                      <span style={{ fontFamily: "monospace", fontSize: 34, fontWeight: 900, color: col }}>
+                        {rank}
+                      </span>
+                    )}
                   </div>
 
                   <div style={{ width: 96, height: 96, display: "grid", placeItems: "center" }}>
